@@ -11,11 +11,13 @@ Game.UIMode.gameStart = {
 
   render: function(display) {
     console.log("rendered gameStart");
-    display.drawText(5, 5, "hello");
+    display.drawText(5, 5, "Press any key to play");
   },
 
   handleInput: function(inputType, inputData) {
-
+    if (inputData.charCode !== 0) {
+      Game.switchUIMode(Game.UIMode.gamePlay);
+    }
   }
 }
 
@@ -30,7 +32,7 @@ Game.UIMode.gamePlay = {
 
   render: function(display) {
     console.log("rendered gamePlay");
-    display.drawText(5, 5, "hello");
+    display.drawText(5, 5, "Press W to win, L to lose");
   },
 
   handleInput: function(inputType, inputData) {
