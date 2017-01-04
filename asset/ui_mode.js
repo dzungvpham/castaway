@@ -36,7 +36,13 @@ Game.UIMode.gamePlay = {
   },
 
   handleInput: function(inputType, inputData) {
-
+    if (inputType == 'keypress') {
+      if (inputData.key == 'w' || (inputData.key == 'W' && inputData.shiftKey)) {
+        Game.switchUIMode(Game.UIMode.gameWin);
+      } else if (inputData.key == 'l' || (inputData.key == 'L' && inputData.shiftKey)) {
+        Game.switchUIMode(Game.UIMode.gameLose);
+      }
+    }
   }
 }
 
@@ -51,7 +57,7 @@ Game.UIMode.gameWin = {
 
   render: function(display) {
     console.log("rendered gameWin");
-    display.drawText(5, 5, "hello");
+    display.drawText(5, 5, "You won!");
   },
 
   handleInput: function(inputType, inputData) {
@@ -70,7 +76,7 @@ Game.UIMode.gameLose = {
 
   render: function(display) {
     console.log("rendered gameLose");
-    display.drawText(5, 5, "hello");
+    display.drawText(5, 5, "You lose!");
   },
 
   handleInput: function(inputType, inputData) {
