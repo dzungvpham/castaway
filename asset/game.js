@@ -19,6 +19,15 @@ window.onload = function() {
       Game.getDisplay('message').getContainer()
     );
 
+    var bindEventToScreen = function(eventType) {
+      window.addEventListener(eventType, function(evt) {
+        Game.eventHandler(eventType, evt);
+        });
+    };
+    // Bind keyboard input events
+    bindEventToScreen('keypress');
+    bindEventToScreen('keydown');
+
     Game.switchUIMode(Game.UIMode.gameStart);
   }
 };
@@ -76,15 +85,28 @@ var Game = {
   },
 
   renderMain: function() {
-    this._curUIMode.render(this.getDisplay('main'));
+    this.getDisplay('main').clear();
+    if (this._curUIMode) {
+      this._curUIMode.render(this.getDisplay('main'));
+    }
   },
 
   renderAvatar: function() {
-    this._curUIMode.render(this.getDisplay('avatar'));
+    var d = this.getDisplay('avatar');
+    d.drawText(5, 5, "AVATAR");
+    //this._curUIMode.render(this.getDisplay('avatar'));
   },
 
   renderMessage: function() {
-    this._curUIMode.render(this.getDisplay('message'));
+    var d = this.getDisplay('message');
+    d.drawText(5, 5, "MESSAGE");
+    //this._curUIMode.render(this.getDisplay('message'));
+  },
+
+  eventHandler: function(eventType, evt) {
+    if (this._curUIMode !== null) {
+      this._curUIMode.handleInput(eventType, evt);
+    }
   },
 
   switchUIMode: function(newUIMode) {
