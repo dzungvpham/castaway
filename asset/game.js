@@ -2,6 +2,7 @@ console.log("game.js loaded");
 
 window.onload = function() {
   console.log("Window loaded - Starting game");
+
   if (!ROT.isSupported()) {
     alert("rot.js is not supported by browser")
   } else {
@@ -17,11 +18,13 @@ window.onload = function() {
     document.getElementById("wsrl-message-display").appendChild(
       Game.getDisplay('message').getContainer()
     );
+
+    Game.switchUIMode(Game.UIMode.gameStart);
   }
 };
 
 var Game = {
-  
+
   _DISPLAY_SPACING: 1.1,
 
   display: {
@@ -42,6 +45,8 @@ var Game = {
     }
   },
 
+  _curUIMode: null,
+
   init: function() {
     this._randomSeed = 5 + Math.floor(Math.random()*100000);
     //this._randomSeed = 76250;
@@ -55,7 +60,6 @@ var Game = {
         spacing: this._DISPLAY_SPACING
       });
     }
-    this.renderDisplayAll();
   },
 
   getDisplay: function (displayId) {
@@ -72,19 +76,25 @@ var Game = {
   },
 
   renderMain: function() {
-    var d = this.display.main.o;
-    for (var i = 0; i < 10; i++) {
-      d.drawText(5,i+5,"hello world");
-    }
+    this._curUIMode.render(this.getDisplay('main'));
   },
 
   renderAvatar: function() {
-    var d = this.getDisplay('avatar');
-    d.drawText(5, 5, "Avatar");
+    this._curUIMode.render(this.getDisplay('avatar'));
   },
 
   renderMessage: function() {
-    var d = this.getDisplay('message');
-    d.drawText(5, 5, "Message");
+    this._curUIMode.render(this.getDisplay('message'));
+  },
+
+  switchUIMode: function(newUIMode) {
+    if (this._curUIMode !== null) {
+      this._curUIMode.exit();
+    }
+    this._curUIMode = newUIMode;
+    if (this._curUIMode !== null) {
+      this._curUIMode.enter();
+    }
+    this.renderDisplayAll();
   }
 };
