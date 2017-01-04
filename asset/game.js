@@ -20,6 +20,16 @@ var Game = {
       w: 80,
       h: 24,
       o: null
+    },
+    avatar: {
+      w: 20,
+      h: 24,
+      o: null
+    },
+    messages: {
+      w: 100,
+      h: 6
+      o: null
     }
   },
 
