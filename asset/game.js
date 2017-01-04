@@ -13,21 +13,37 @@ window.onload = function() {
 };
 
 var Game = {
+
   display: {
+    SPACING: 1.1,
     main: {
       w: 80,
       h: 24,
       o: null
     }
   },
+
   init: function() {
-    console.log("game init");
-    this.display.main.o = new ROT.Display({
-      width: this.display.main.w,
-      height: this.display.main.h,
-    });
+    this._randomSeed = 5 + Math.floor(Math.random()*100000);
+    //this._randomSeed = 76250;
+    console.log("using random seed "+this._randomSeed);
+    ROT.RNG.setSeed(this._randomSeed);
+
+    this.display.main.o = new ROT.Display({width: this.display.main.w, height: this.display.main.h, spacing: Game.display.SPACING});
+    this.renderMain();
+  },
+
+  getDisplay: function (displayId) {
+    if (this.display.hasOwnProperty(displayId)) {
+      return this.display[displayId].o;
+    }
+    return null;
+  },
+
+  renderMain: function() {
+    var d = this.display.main.o;
     for (var i = 0; i < 10; i++) {
-      this.display.main.o.drawText(5, i+5, "Hello World");
+      d.drawText(5,i+5,"hello world");
     }
   }
 };
