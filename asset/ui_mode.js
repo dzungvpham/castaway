@@ -1,5 +1,8 @@
 Game.UIMode = {};
 
+Game.UIMode.DEFAUlT_FG = '#fff';
+Game.UIMode.DEFAULT_BG = '#000';
+
 Game.UIMode.gameStart = {
   enter: function() {
     console.log("entered gameStart");
@@ -23,6 +26,10 @@ Game.UIMode.gameStart = {
 }
 
 Game.UIMode.gamePlay = {
+  attr: {
+      _map: null
+  },
+
   enter: function() {
     console.log("entered gamePlay");
     Game.Message.send("Playing");
@@ -35,6 +42,7 @@ Game.UIMode.gamePlay = {
   render: function(display) {
     console.log("rendered gamePlay");
     display.drawText(5, 5, "Press W to win, L to lose, = to save/load game");
+    this.attr._map.renderOn(display);
   },
 
   handleInput: function(inputType, inputData) {
@@ -48,6 +56,27 @@ Game.UIMode.gamePlay = {
         Game.switchUIMode(Game.UIMode.gamePersistence);
       }
     }
+  },
+
+  setupPlay: function() {
+    var gen = new ROT.Map.Cellular(80, 24);
+    gen.randomize(0.5);
+
+    var totalIterations = 3;
+    for (var i = 0; i < totalIterations - 1; i++) {
+      gen.create();
+    }
+
+    mapTiles = Game.util.init2DArray(80, 24, Game.Tile.nullTile);
+    gen.create(function(x, y, v) {
+      if (v === 1) {
+        mapTiles[x][y] = Game.Tile.floorTile;
+      } else {
+        mapTiles[x][y] = Game.Tile.wallTile;
+      }
+    });
+
+    this.attr._map = new Game.Map(mapTiles);
   }
 }
 
@@ -127,11 +156,13 @@ Game.UIMode.gamePersistence = {
     var json_state_data = window.localStorage.getItem(Game._PERSISTENCE_NAMESPACE);
     var state_data = JSON.parse(json_state_data);
     Game.setRandomSeed(state_data._randomSeed);
+    Game.UIMode.gamePlay.setupPlay();
     Game.switchUIMode(Game.UIMode.gamePlay);
   },
 
   newGame: function() {
     Game.setRandomSeed(5 + Math.floor(Math.random()*100000));
+    Game.UIMode.gamePlay.setupPlay();
     Game.switchUIMode(Game.UIMode.gameStart);
   },
 
