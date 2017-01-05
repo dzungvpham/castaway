@@ -28,12 +28,14 @@ window.onload = function() {
     bindEventToScreen('keypress');
     bindEventToScreen('keydown');
 
-    Game.switchUIMode(Game.UIMode.gameStart);
+    Game.switchUIMode(Game.UIMode.gamePersistence);
   }
 };
 
 var Game = {
 
+  _PERSISTENCE_NAMESPACE: "ws2017",
+  _randomSeed: null,
   _DISPLAY_SPACING: 1.1,
 
   display: {
@@ -55,11 +57,12 @@ var Game = {
   },
 
   _curUIMode: null,
+  _game: null,
 
   init: function() {
+    this._game = this;
     this._randomSeed = 5 + Math.floor(Math.random()*100000);
-    //this._randomSeed = 76250;
-    console.log("using random seed "+this._randomSeed);
+    console.log("Using random seed " + this._randomSeed);
     ROT.RNG.setSeed(this._randomSeed);
 
     for (var display_key in this.display) {
@@ -69,6 +72,16 @@ var Game = {
         spacing: this._DISPLAY_SPACING
       });
     }
+  },
+
+  setRandomSeed: function(seed) {
+    this._randomSeed = seed;
+    console.log("Using random seed " + this._randomSeed);
+    ROT.RNG.setSeed(this._randomSeed);
+  },
+
+  getRandomSeed: function() {
+    return this._randomSeed;
   },
 
   getDisplay: function (displayId) {
@@ -116,5 +129,12 @@ var Game = {
       this._curUIMode.enter();
     }
     this.renderDisplayAll();
+  },
+
+  toJSON: function() {
+    var json = {
+      "_randomSeed": this._randomSeed
+    };
+    return json;
   }
 };
