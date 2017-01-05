@@ -3,6 +3,7 @@ Game.UIMode = {};
 Game.UIMode.gameStart = {
   enter: function() {
     console.log("entered gameStart");
+    Game.Message.send("Welcome to WS2017");
   },
 
   exit: function() {
@@ -24,6 +25,7 @@ Game.UIMode.gameStart = {
 Game.UIMode.gamePlay = {
   enter: function() {
     console.log("entered gamePlay");
+    Game.Message.send("Playing");
   },
 
   exit: function() {
@@ -36,6 +38,7 @@ Game.UIMode.gamePlay = {
   },
 
   handleInput: function(inputType, inputData) {
+    Game.Message.send("You pressed the '" + String.fromCharCode(inputData.charCode) + "' key");
     if (inputType == 'keypress') {
       if (inputData.key == 'w' || (inputData.key == 'W' && inputData.shiftKey)) {
         Game.switchUIMode(Game.UIMode.gameWin);
@@ -61,7 +64,7 @@ Game.UIMode.gameWin = {
   },
 
   handleInput: function(inputType, inputData) {
-
+    Game.Message.clear();
   }
 }
 
@@ -80,6 +83,6 @@ Game.UIMode.gameLose = {
   },
 
   handleInput: function(inputType, inputData) {
-
+    Game.Message.clear();
   }
 }
