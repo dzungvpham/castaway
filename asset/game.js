@@ -98,9 +98,7 @@ var Game = {
   },
 
   renderMessage: function() {
-    var d = this.getDisplay('message');
-    d.drawText(5, 5, "MESSAGE");
-    //this._curUIMode.render(this.getDisplay('message'));
+    Game.Message.render(this.getDisplay('message'));
   },
 
   eventHandler: function(eventType, evt) {
