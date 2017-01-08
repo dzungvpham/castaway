@@ -21,11 +21,18 @@ Game.Map.prototype.getTile = function (x,y) {
   return this.attr._tiles[x][y] || Game.Tile.nullTile;
 };
 
-Game.Map.prototype.renderOn = function (display) {
-  for (var x = 0; x < this.attr._width; x++) {
-    for (var y = 0; y < this.attr._height; y++) {
-      var s = this.getTile(x, y).getSymbol();
-      s.draw(display, x, y);
+Game.Map.prototype.renderOn = function (display, camX, camY) {
+  var dispW = display._options.width; //width of visible display
+  var dispH = display._options.height; //height of visible display
+  var xStart = camX-Math.round(dispW/2); //camX & camY is at the center
+  var yStart = camY-Math.round(dispH/2);
+  for (var x = 0; x < this.getWidth(); x++) {
+    for (var y = 0; y < this.getHeight(); y++) {
+      var tile = this.getTile(xStart + x, yStart + y);
+      if (tile.getName() == 'nullTile') {
+        tile = Game.Tile.wallTile;
+      }
+      tile.getSymbol().draw(display, x, y);
     }
   }
 };

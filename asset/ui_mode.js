@@ -27,7 +27,13 @@ Game.UIMode.gameStart = {
 
 Game.UIMode.gamePlay = {
   attr: {
-      _map: null
+      _map: null,
+      _mapWidth: 300,
+      _mapHeight: 200,
+      _camX: 100,
+      _camY: 100,
+      _avaX: 100,
+      _avaY: 100
   },
 
   enter: function() {
@@ -41,25 +47,93 @@ Game.UIMode.gamePlay = {
 
   render: function(display) {
     console.log("rendered gamePlay");
-    display.drawText(5, 5, "Press W to win, L to lose, = to save/load game");
-    this.attr._map.renderOn(display);
+    display.drawText(1, 1, "Press W to win, L to lose, = to save/load game");
+    this.attr._map.renderOn(display, this.attr._camX, this.attr._camY);
+    this.renderAvatar(display);
+  },
+
+  renderAvatar: function(display) {
+    //Calculate position of avatar based on starting coords
+    Game.Symbol.AVATAR.draw(display, this.attr._avaX - this.attr._camX + display._options.width/2,
+      this.attr._avaY - this.attr._camY + display._options.height/2);
+  },
+
+  renderAvatarInfo: function (display) {
+    var fg = Game.UIMode.DEFAULT_FG;
+    var bg = Game.UIMode.DEFAULT_BG;
+    display.drawText(1, 2, "Avatar x: " + this.attr._avaX, fg, bg);
+    display.drawText(1, 3, "Avatar y: " + this.attr._avaY, fg, bg);
+  },
+
+  moveAvatar: function (dx,dy) {
+    this.attr._avaX = Math.min(Math.max(0, this.attr._avaX + dx), this.attr._mapWidth);
+    this.attr._avaY = Math.min(Math.max(0, this.attr._avaY + dy), this.attr._mapHeight);
+    this.setCameraToAvatar();
+  },
+
+  moveCamera: function (dx,dy) {
+    this.setCamera(this.attr._cameraX + dx,this.attr._cameraY + dy);
+  },
+
+  setCamera: function (sx, sy) {
+    this.attr._camX = Math.min(Math.max(0, sx), this.attr._mapWidth);
+    this.attr._camY = Math.min(Math.max(0, sy), this.attr._mapHeight);
+  },
+
+  setCameraToAvatar: function () {
+    this.setCamera(this.attr._avaX, this.attr._avaY);
   },
 
   handleInput: function(inputType, inputData) {
-    Game.Message.send("You pressed the '" + String.fromCharCode(inputData.charCode) + "' key");
+    var pressedKey = String.fromCharCode(inputData.charCode);
+    Game.Message.send("You pressed the '" + pressedKey + "' key");
+    Game.renderMessage();
     if (inputType == 'keypress') {
-      if (inputData.key == 'w' || (inputData.key == 'W' && inputData.shiftKey)) {
+      key = inputData.key;
+      if (key == 'w' || (key == 'W' && inputData.shiftKey)) {
         Game.switchUIMode(Game.UIMode.gameWin);
-      } else if (inputData.key == 'l' || (inputData.key == 'L' && inputData.shiftKey)) {
+      } else if (key == 'l' || (key == 'L' && inputData.shiftKey)) {
         Game.switchUIMode(Game.UIMode.gameLose);
-      } else if (inputData.key == '=') {
+      } else if (key == '=') {
         Game.switchUIMode(Game.UIMode.gamePersistence);
+      } else {
+        switch(key) {
+          case '1':
+            this.moveAvatar(-1, 1);
+            break;
+          case '2':
+            this.moveAvatar(0, 1);
+            break;
+          case '3':
+            this.moveAvatar(1, 1);
+            break;
+          case '4':
+            this.moveAvatar(-1, 0);
+            break;
+          case '5':
+            break;
+          case '6':
+            this.moveAvatar(1, 0);
+            break;
+          case '7':
+            this.moveAvatar(-1, -1);
+            break;
+          case '8':
+            this.moveAvatar(0, -1);
+            break;
+          case '9':
+            this.moveAvatar(1, -1);
+            break;
+          default:
+            break;
+        }
       }
+      Game.refresh();
     }
   },
 
   setupPlay: function() {
-    var gen = new ROT.Map.Cellular(80, 24);
+    var gen = new ROT.Map.Cellular(this.attr._mapWidth, this.attr._mapHeight);
     gen.randomize(0.5);
 
     var totalIterations = 3;
@@ -67,7 +141,7 @@ Game.UIMode.gamePlay = {
       gen.create();
     }
 
-    mapTiles = Game.util.init2DArray(80, 24, Game.Tile.nullTile);
+    mapTiles = Game.util.init2DArray(this.attr._mapWidth, this.attr._mapHeight, Game.Tile.nullTile);
     gen.create(function(x, y, v) {
       if (v === 1) {
         mapTiles[x][y] = Game.Tile.floorTile;
