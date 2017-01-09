@@ -153,7 +153,7 @@ Game.UIMode.gamePlay = {
 
     this.attr._map = new Game.Map(mapTiles);
     this.attr._avatar = new Game.Entity(Game.EntityTemplates.Avatar);
-    this.attr._avatar.setPos(100, 100);
+    this.attr._avatar.setPos(this.attr._map.getRandomWalkableLocation());
   }
 }
 

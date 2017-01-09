@@ -1,4 +1,4 @@
-Game.Map = function (tilesGrid) {
+Game.Map = function(tilesGrid) {
   this.attr = {
     _tiles: tilesGrid,
     _width: tilesGrid.length,
@@ -6,20 +6,39 @@ Game.Map = function (tilesGrid) {
   };
 };
 
-Game.Map.prototype.getWidth = function () {
+Game.Map.prototype.getWidth = function() {
   return this.attr._width;
 };
 
-Game.Map.prototype.getHeight = function () {
+Game.Map.prototype.getHeight = function() {
   return this.attr._height;
 };
 
-Game.Map.prototype.getTile = function (x,y) {
+Game.Map.prototype.getTile = function(x,y) {
   if ((x < 0) || (x >= this.attr._width) || (y<0) || (y >= this.attr._height)) {
     return Game.Tile.nullTile;
   }
   return this.attr._tiles[x][y] || Game.Tile.nullTile;
 };
+
+Game.Map.prototype.getRandomLocation = function(filter_func) {
+  if (filter_func === undefined) {
+    filter_func = function(tile) {
+      return true;
+    };
+  }
+  var tileX, tileY, t;
+  do {
+    tileX = Game.util.randomInt(0, this.attr._width - 1);
+    tileY = Game.util.randomInt(0, this.attr._height - 1);
+    tile = this.getTile(tileX, tileY);
+  } while (!filter_func(tile));
+  return {x: tileX, y: tileY};
+};
+
+Game.Map.prototype.getRandomWalkableLocation = function() {
+  return this.getRandomLocation(function (tile) {return tile.isWalkable(); });
+}
 
 Game.Map.prototype.renderOn = function (display, camX, camY) {
   var dispW = display._options.width; //width of visible display
