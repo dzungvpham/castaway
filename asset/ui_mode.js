@@ -32,8 +32,7 @@ Game.UIMode.gamePlay = {
       _mapHeight: 200,
       _camX: 100,
       _camY: 100,
-      _avaX: 100,
-      _avaY: 100
+      _avatar: null
   },
 
   enter: function() {
@@ -54,20 +53,20 @@ Game.UIMode.gamePlay = {
 
   renderAvatar: function(display) {
     //Calculate position of avatar based on starting coords
-    Game.Symbol.AVATAR.draw(display, this.attr._avaX - this.attr._camX + display._options.width/2,
-      this.attr._avaY - this.attr._camY + display._options.height/2);
+    this.attr._avatar.draw(display, this.attr._avatar.getX() - this.attr._camX + display._options.width/2,
+      this.attr._avatar.getY() - this.attr._camY + display._options.height/2);
   },
 
   renderAvatarInfo: function (display) {
     var fg = Game.UIMode.DEFAULT_FG;
     var bg = Game.UIMode.DEFAULT_BG;
-    display.drawText(1, 2, "Avatar x: " + this.attr._avaX, fg, bg);
-    display.drawText(1, 3, "Avatar y: " + this.attr._avaY, fg, bg);
+    display.drawText(1, 2, "Avatar x: " + this.attr._avatar.getX(), fg, bg);
+    display.drawText(1, 3, "Avatar y: " + this.attr._avatar.getY(), fg, bg);
   },
 
   moveAvatar: function (dx,dy) {
-    this.attr._avaX = Math.min(Math.max(0, this.attr._avaX + dx), this.attr._mapWidth);
-    this.attr._avaY = Math.min(Math.max(0, this.attr._avaY + dy), this.attr._mapHeight);
+    this.attr._avatar.setX(Math.min(Math.max(0, this.attr._avatar.getX() + dx), this.attr._mapWidth));
+    this.attr._avatar.setY(Math.min(Math.max(0, this.attr._avatar.getY() + dy), this.attr._mapHeight));
     this.setCameraToAvatar();
   },
 
@@ -81,7 +80,7 @@ Game.UIMode.gamePlay = {
   },
 
   setCameraToAvatar: function () {
-    this.setCamera(this.attr._avaX, this.attr._avaY);
+    this.setCamera(this.attr._avatar.getX(), this.attr._avatar.getY());
   },
 
   handleInput: function(inputType, inputData) {
@@ -151,6 +150,7 @@ Game.UIMode.gamePlay = {
     });
 
     this.attr._map = new Game.Map(mapTiles);
+    this.attr._avatar = new Game.Entity(Game.EntityTemplates.Avatar);
   }
 }
 
