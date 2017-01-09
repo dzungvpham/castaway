@@ -30,4 +30,4 @@ Game.Symbol.prototype.draw = function (display, dispX, dispY) {
   display.draw(dispX, dispY, this.attr._char, this.attr._fg, this.attr._bg);
 };
 
-Game.Symbol.AVATAR = new Game.Symbol({chr: '@', fg: '#dda'});
+//Game.Symbol.AVATAR = new Game.Symbol({chr: '@', fg: '#dda'});

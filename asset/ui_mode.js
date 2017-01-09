@@ -62,12 +62,14 @@ Game.UIMode.gamePlay = {
     var bg = Game.UIMode.DEFAULT_BG;
     display.drawText(1, 2, "Avatar x: " + this.attr._avatar.getX(), fg, bg);
     display.drawText(1, 3, "Avatar y: " + this.attr._avatar.getY(), fg, bg);
+    display.drawText(1, 4, "Turn: " + this.attr._avatar.getTurn());
+    display.drawText(1, 5, "HP: " + this.attr._avatar.getCurHp() + "/" + this.attr._avatar.getMaxHp());
   },
 
   moveAvatar: function (dx,dy) {
-    this.attr._avatar.setX(Math.min(Math.max(0, this.attr._avatar.getX() + dx), this.attr._mapWidth));
-    this.attr._avatar.setY(Math.min(Math.max(0, this.attr._avatar.getY() + dy), this.attr._mapHeight));
-    this.setCameraToAvatar();
+    if (this.attr._avatar.tryWalk(this.attr._map, dx, dy)) {
+      this.setCameraToAvatar();
+    }
   },
 
   moveCamera: function (dx,dy) {
@@ -151,6 +153,7 @@ Game.UIMode.gamePlay = {
 
     this.attr._map = new Game.Map(mapTiles);
     this.attr._avatar = new Game.Entity(Game.EntityTemplates.Avatar);
+    this.attr._avatar.setPos(100, 100);
   }
 }
 

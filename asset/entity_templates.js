@@ -1,9 +1,12 @@
+Game.ALL_ENTITIES = {};
+
 Game.EntityTemplates = {};
 
 Game.EntityTemplates.Avatar = {
   name: 'avatar',
   chr: '@',
   fg: '#dda',
-  x: 100,
-  y: 100
+  maxHp: 10,
+  curHp: 10,
+  mixins: [Game.EntityMixin.WalkerCorporeal, Game.EntityMixin.Chronicle, Game.EntityMixin.HitPoints]
 };
