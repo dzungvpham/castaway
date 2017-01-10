@@ -105,9 +105,13 @@ var Game = {
   },
 
   renderAvatar: function() {
-    var d = this.getDisplay('avatar');
-    d.drawText(5, 5, "AVATAR");
-    //this._curUIMode.render(this.getDisplay('avatar'));
+    this.getDisplay('avatar').clear();
+    if (this._curUIMode === null) {
+      return;
+   }
+    if (this._curUIMode.hasOwnProperty('renderAvatarInfo')) {
+      this._curUIMode.renderAvatarInfo(this.getDisplay('avatar'));
+    }
   },
 
   renderMessage: function() {
@@ -128,6 +132,10 @@ var Game = {
     if (this._curUIMode !== null) {
       this._curUIMode.enter();
     }
+    this.renderDisplayAll();
+  },
+
+  refresh: function() {
     this.renderDisplayAll();
   },
 
