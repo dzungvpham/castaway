@@ -57,7 +57,7 @@ Game.Entity.prototype.setName = function(name) {
 };
 
 Game.Entity.prototype.getID = function() {
-  return this.attr._entityID;
+  return this._entityID;
 };
 
 Game.Entity.prototype.getPos = function() {

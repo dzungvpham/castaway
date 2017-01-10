@@ -12,7 +12,7 @@ Game.EntityGenerator.learn('avatar', {
 Game.EntityGenerator.learn('moss', {
   name: 'moss',
   chr: '%',
-  fg: '#b6b',
+  fg: '#0f0',
   maxHp: 1,
   mixins: [Game.EntityMixin.HitPoints]
 });
