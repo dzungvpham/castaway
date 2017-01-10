@@ -154,7 +154,7 @@ Game.UIMode.gamePlay = {
     });
 
     this.attr._map = new Game.Map(mapTiles);
-    this.attr._avatar = new Game.Entity(Game.EntityTemplates.Avatar);
+    this.attr._avatar = Game.EntityGenerator.create('avatar');
 
     if (restorationData !== undefined && restorationData.hasOwnProperty(Game.UIMode.gamePlay.JSON_KEY)) {
       this.fromJSON(restorationData[Game.UIMode.gamePlay.JSON_KEY]);
