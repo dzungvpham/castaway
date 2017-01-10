@@ -85,4 +85,13 @@ Game.Entity.prototype.hasMixin = function(mixin) {
   } else {
     return this._mixinTracker.hasOwnProperty(mixin);
   }
+},
+
+Game.Entity.prototype.toJSON = function() {
+  var json = Game.UIMode.gamePersistence.BASE_toJSON.call(this);
+  return json;
+},
+
+Game.Entity.prototype.fromJSON = function(json) {
+  Game.UIMode.gamePersistence.BASE_fromJSON.call(this, json);
 }
