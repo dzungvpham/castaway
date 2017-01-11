@@ -16,8 +16,9 @@ Game.EntityMixin.WalkerCorporeal = {
 
     if (map.getTile(targetX, targetY).isWalkable()) {
       this.setPos(targetX, targetY);
-      if (this._map) { //Notify map
-        this._map.updateEntityLocation(this);
+      var myMap = this.getMap();
+      if (myMap) { //Notify map
+        myMap.updateEntityLocation(this);
       }
       if (this.hasMixin('Chronicle')) {
         this.trackTurn();

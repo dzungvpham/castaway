@@ -22,4 +22,4 @@ Game.Generator.prototype.create = function(createKey) {
   }
   template.generator_template_key = createKey;
   return new this._constructor(template);
-}
+};

@@ -27,12 +27,10 @@ Game.UIMode.gameStart = {
 
 Game.UIMode.gamePlay = {
   attr: {
-      _map: null,
-      _mapWidth: 80,
-      _mapHeight: 24,
+      _mapID: null,
       _camX: 40,
       _camY: 12,
-      _avatar: null
+      _avatarID: null
   },
 
   JSON_KEY: 'UIMode_gamePlay',
@@ -40,36 +38,58 @@ Game.UIMode.gamePlay = {
   enter: function() {
     console.log("entered gamePlay");
     Game.Message.send("Playing");
+    if (this.attr._avatarID) {
+      this.setCameraToAvatar();
+    }
+    Game.refresh();
   },
 
   exit: function() {
-    console.log("exitted gamePlay");
+    Game.refresh();
   },
 
   render: function(display) {
     console.log("rendered gamePlay");
-    this.attr._map.renderOn(display, this.attr._camX, this.attr._camY);
-    //this.renderAvatar(display);
+    this.getMap().renderOn(display, this.attr._camX, this.attr._camY);
+    this.renderAvatar(display);
     display.drawText(0, 0, "Press W to win, L to lose, = to save/load/start new game");
+  },
+
+  getMap: function() {
+    return Game.DATASTORE.MAP[this.attr._mapID];
+  },
+
+  setMap: function(map) {
+    this.attr._mapID = map.getID();
+  },
+
+  getAvatar: function() {
+    return Game.DATASTORE.ENTITY[this.attr._avatarID];
+  },
+
+  setAvatar: function(avatar) {
+    this.attr._avatarID = avatar.getID();
   },
 
   renderAvatar: function(display) {
     //Calculate position of avatar based on starting coords
-    this.attr._avatar.draw(display, this.attr._avatar.getX() - this.attr._camX + display._options.width/2,
-      this.attr._avatar.getY() - this.attr._camY + display._options.height/2);
+    var avatar = this.getAvatar();
+    avatar.draw(display, avatar.getX() - this.attr._camX + display._options.width/2,
+      avatar.getY() - this.attr._camY + display._options.height/2);
   },
 
   renderAvatarInfo: function (display) {
     var fg = Game.UIMode.DEFAULT_FG;
     var bg = Game.UIMode.DEFAULT_BG;
-    display.drawText(1, 2, "Avatar x: " + this.attr._avatar.getX(), fg, bg);
-    display.drawText(1, 3, "Avatar y: " + this.attr._avatar.getY(), fg, bg);
-    display.drawText(1, 4, "Turn: " + this.attr._avatar.getTurn());
-    display.drawText(1, 5, "HP: " + this.attr._avatar.getCurHp() + "/" + this.attr._avatar.getMaxHp());
+    var avatar = this.getAvatar();
+    display.drawText(1, 2, "Avatar x: " + avatar.getX(), fg, bg);
+    display.drawText(1, 3, "Avatar y: " + avatar.getY(), fg, bg);
+    display.drawText(1, 4, "Turn: " + avatar.getTurn());
+    display.drawText(1, 5, "HP: " + avatar.getCurHp() + "/" + avatar.getMaxHp());
   },
 
   moveAvatar: function (dx,dy) {
-    if (this.attr._avatar.tryWalk(this.attr._map, dx, dy)) {
+    if (this.getAvatar().tryWalk(this.getMap(), dx, dy)) {
       this.setCameraToAvatar();
     }
   },
@@ -79,12 +99,12 @@ Game.UIMode.gamePlay = {
   },
 
   setCamera: function (sx, sy) {
-    this.attr._camX = Math.min(Math.max(0, sx), this.attr._mapWidth);
-    this.attr._camY = Math.min(Math.max(0, sy), this.attr._mapHeight);
+    this.attr._camX = Math.min(Math.max(0, sx), this.getMap().getWidth());
+    this.attr._camY = Math.min(Math.max(0, sy), this.getMap().getHeight());
   },
 
   setCameraToAvatar: function () {
-    this.setCamera(this.attr._avatar.getX(), this.attr._avatar.getY());
+    this.setCamera(this.getAvatar().getX(), this.getAvatar().getY());
   },
 
   handleInput: function(inputType, inputData) {
@@ -135,39 +155,15 @@ Game.UIMode.gamePlay = {
     }
   },
 
-  setupPlay: function(restorationData) {
-    var gen = new ROT.Map.Cellular(this.attr._mapWidth, this.attr._mapHeight);
-    gen.randomize(0.5);
-
-    var totalIterations = 3;
-    for (var i = 0; i < totalIterations - 1; i++) {
-      gen.create();
-    }
-
-    mapTiles = Game.util.init2DArray(this.attr._mapWidth, this.attr._mapHeight, Game.Tile.nullTile);
-    gen.create(function(x, y, v) {
-      if (v === 1) {
-        mapTiles[x][y] = Game.Tile.floorTile;
-      } else {
-        mapTiles[x][y] = Game.Tile.wallTile;
-      }
-    });
-    this.attr._map = new Game.Map(mapTiles);
-    this.attr._avatar = Game.EntityGenerator.create('avatar');
-    this.attr._avatar.setMap(this.attr._map);
-
-    if (restorationData !== undefined && restorationData.hasOwnProperty(Game.UIMode.gamePlay.JSON_KEY)) {
-      this.fromJSON(restorationData[Game.UIMode.gamePlay.JSON_KEY]);
-      this.attr._map.updateEntityLocation(this.attr._avatar);
-    } else {
-      this.attr._avatar.setPos(this.attr._map.getRandomWalkableLocation());
-      this.attr._map.addEntity(this.attr._avatar, this.attr._avatar.getPos());
-      //this.attr._map.updateEntityLocation(this.attr._avatar);
-      for (var i = 0; i < 3; i++) {
-        this.attr._map.addEntity(Game.EntityGenerator.create('moss'), this.attr._map.getRandomWalkableLocation());
-      }
-    }
+  setupNewGame: function() {
+    this.setMap(new Game.Map('caves1'));
+    this.setAvatar(Game.EntityGenerator.create('avatar'));
+    var map = this.getMap();
+    map.addEntity(this.getAvatar(), map.getRandomWalkableLocation());
     this.setCameraToAvatar();
+    for (var count = 0; count < 80; count++) {
+       map.addEntity(Game.EntityGenerator.create('moss'), map.getRandomWalkableLocation());
+    }
   },
 
   toJSON: function() {
@@ -218,6 +214,8 @@ Game.UIMode.gameLose = {
 }
 
 Game.UIMode.gamePersistence = {
+  RANDOM_SEED_KEY: 'gameRandomSeed',
+
   enter: function() {
     console.log("entered gamePersistence");
     Game.Message.send("Save/load game")
@@ -246,7 +244,8 @@ Game.UIMode.gamePersistence = {
 
   saveGame: function() {
     if (this.localStorageAvailable()) {
-      window.localStorage.setItem(Game._PERSISTENCE_NAMESPACE, JSON.stringify(Game._game));
+      Game.DATASTORE.GAME_PLAY = Game.UIMode.gamePlay.attr;
+      window.localStorage.setItem(Game._PERSISTENCE_NAMESPACE, JSON.stringify(Game.DATASTORE));
       Game.switchUIMode(Game.UIMode.gamePlay);
     }
   },
@@ -254,14 +253,32 @@ Game.UIMode.gamePersistence = {
   loadGame: function() {
     var json_state_data = window.localStorage.getItem(Game._PERSISTENCE_NAMESPACE);
     var state_data = JSON.parse(json_state_data);
-    Game.setRandomSeed(state_data._randomSeed);
-    Game.UIMode.gamePlay.setupPlay(state_data);
+
+    Game.setRandomSeed(state_data[this.RANDOM_SEED_KEY]);
+
+    for (var mapID in state_data.MAP) {
+      if (state_data.MAP.hasOwnProperty(mapID)) {
+        var mapAttr = JSON.parse(state_data.MAP[mapID]);
+        Game.DATASTORE.MAP[mapID] = new Game.Map(mapAttr._mapTileSetName);
+        Game.DATASTORE.MAP[mapID].fromJSON(state_data.MAP[mapID]);
+      }
+    }
+
+    for (var entityID in state_data.ENTITY) {
+      if (state_data.ENTITY.hasOwnProperty(entityID)) {
+        var entityAttr = JSON.parse(state_data.ENTITY[entityID]);
+        Game.DATASTORE.ENTITY[entityID] = Game.EntityGenerator.create(entityAttr._generator_template_key);
+        Game.DATASTORE.ENTITY[entityID].fromJSON(state_data.ENTITY[entityID]);
+      }
+    }
+
+    Game.UIMode.gamePlay.attr = state_data.GAME_PLAY;
     Game.switchUIMode(Game.UIMode.gamePlay);
   },
 
   newGame: function() {
-    Game.setRandomSeed(5 + Math.floor(Math.random()*100000));
-    Game.UIMode.gamePlay.setupPlay();
+    Game.setRandomSeed(5 + Math.floor(Math.random() * 100000));
+    Game.UIMode.gamePlay.setupNewGame();
     Game.switchUIMode(Game.UIMode.gameStart);
   },
 
@@ -282,16 +299,17 @@ Game.UIMode.gamePersistence = {
     if (state_hash_name) {
       state = this[state_hash_name];
     }
-    var json = {};
-    for (var att in state) {
-      if (state.hasOwnProperty(att)) {
-        if (state[att] instanceof Object && 'toJSON' in state[att]) {
-          json[att] = state[att].toJSON();
-        } else {
-          json[att] = state[att];
-        }
-      }
-    }
+    var json = JSON.stringify(state);
+    // var json = {};
+    // for (var att in state) {
+    //   if (state.hasOwnProperty(att)) {
+    //     if (state[att] instanceof Object && 'toJSON' in state[att]) {
+    //       json[att] = state[att].toJSON();
+    //     } else {
+    //       json[att] = state[att];
+    //     }
+    //   }
+    // }
     return json;
   },
 
@@ -300,14 +318,15 @@ Game.UIMode.gamePersistence = {
     if (state_hash_name) {
       using_state_hash = state_hash_name;
     }
-    for (var at in this[using_state_hash]) {
-      if (this[using_state_hash].hasOwnProperty(at)) {
-        if (this[using_state_hash][at] instanceof Object && 'fromJSON' in this[using_state_hash][at]) {
-          this[using_state_hash][at].fromJSON(json[at]);
-        } else {
-          this[using_state_hash][at] = json[at];
-        }
-      }
-    }
+    this[using_state_hash] = JSON.parse(json);
+    // for (var at in this[using_state_hash]) {
+    //   if (this[using_state_hash].hasOwnProperty(at)) {
+    //     if (this[using_state_hash][at] instanceof Object && 'fromJSON' in this[using_state_hash][at]) {
+    //       this[using_state_hash][at].fromJSON(json[at]);
+    //     } else {
+    //       this[using_state_hash][at] = json[at];
+    //     }
+    //   }
+    // }
   }
 }

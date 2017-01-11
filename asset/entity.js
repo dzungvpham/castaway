@@ -10,8 +10,8 @@ Game.Entity = function(template) {
   this.attr._x = template.x || 0;
   this.attr._y = template.y || 0;
   this.attr._generator_template_key = template.generator_template_key || '';
-  this.attr._ID = Game.util.randomString(16);
-  this._map = null;
+  this.attr._ID = Game.util.randomString(Game._randomStringLength);
+  this.attr._mapID = null;
   Game.DATASTORE.ENTITY[this.attr._ID] = this;
 
   this._mixins = template.mixins || [];
@@ -92,11 +92,11 @@ Game.Entity.prototype.setY = function(y) {
 };
 
 Game.Entity.prototype.getMap = function() {
-  return this._map;
+  return Game.DATASTORE.MAP[this.attr._mapID];
 };
 
 Game.Entity.prototype.setMap = function(map) {
-  this._map = map;
+  this.attr._mapID = map.getID();
 };
 
 Game.Entity.prototype.hasMixin = function(mixin) {
