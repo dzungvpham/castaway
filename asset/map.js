@@ -2,7 +2,9 @@ Game.Map = function(tilesGrid) {
   this.attr = {
     _tiles: tilesGrid,
     _width: tilesGrid.length,
-    _height: tilesGrid[0].length
+    _height: tilesGrid[0].length,
+    _entitiesByLocation: {},
+    _locationsByEntities: {}
   };
 };
 
@@ -14,12 +16,43 @@ Game.Map.prototype.getHeight = function() {
   return this.attr._height;
 };
 
-Game.Map.prototype.getTile = function(x,y) {
+Game.Map.prototype.getTile = function(x_or_pos, y) {
+  x = x_or_pos;
+  if (typeof x_or_pos == 'object') {
+    x = x_or_pos.x;
+    y = x_or_pos.y;
+  }
+
   if ((x < 0) || (x >= this.attr._width) || (y<0) || (y >= this.attr._height)) {
     return Game.Tile.nullTile;
   }
   return this.attr._tiles[x][y] || Game.Tile.nullTile;
 };
+
+Game.Map.prototype.getEntity = function(x_or_pos, y) {
+  x = x_or_pos;
+  if (typeof x_or_pos == 'object') {
+    x = x_or_pos.x;
+    y = x_or_pos.y;
+  }
+  return this.attr._entitiesByLocation[x + ',' + y] || false;
+};
+
+Game.Map.prototype.addEntity = function(entity, pos) {
+  this.attr._locationsByEntities[entity.getID()] = pos.x + "," + pos.y;
+  this.attr._entitiesByLocation[pos.x + "," + pos.y] = entity;
+  entity.setMap(this);
+};
+
+Game.Map.prototype.updateEntityLocation = function(entity) {
+  var origPos = this.attr._locationsByEntities[entity.getID()];
+  if (origPos) {
+    this.attr._entitiesByLocation[origPos] = undefined;
+  }
+  var newPos = entity.getPos();
+  this.attr._entitiesByLocation[newPos.x + "," + newPos.y] = entity;
+  this.attr._locationsByEntities[entity.getID()] = newPos.x + "," + newPos.y;
+}
 
 Game.Map.prototype.getRandomLocation = function(filter_func) {
   if (filter_func === undefined) {
@@ -47,11 +80,25 @@ Game.Map.prototype.renderOn = function (display, camX, camY) {
   var yStart = camY-Math.round(dispH/2);
   for (var x = 0; x < this.getWidth(); x++) {
     for (var y = 0; y < this.getHeight(); y++) {
-      var tile = this.getTile(xStart + x, yStart + y);
+      var mapPos = {x: x + xStart, y: y + yStart};
+      var tile = this.getTile(mapPos); //Draw tiles
       if (tile.getName() == 'nullTile') {
         tile = Game.Tile.wallTile;
       }
       tile.draw(display, x, y);
+      var entity = this.getEntity(mapPos);
+      if (entity) {
+        entity.draw(display, x, y);
+      }
     }
   }
 };
+
+Game.Map.prototype.toJSON = function() {
+  //var json = Game.UIMode.gamePersistence.BASE_toJSON.call(this);
+  //return json;
+},
+
+Game.Map.prototype.fromJSON = function(json) {
+  //Game.UIMode.gamePersistence.BASE_fromJSON.call(this, json);
+}

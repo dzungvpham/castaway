@@ -28,10 +28,10 @@ Game.UIMode.gameStart = {
 Game.UIMode.gamePlay = {
   attr: {
       _map: null,
-      _mapWidth: 300,
-      _mapHeight: 200,
-      _camX: 100,
-      _camY: 100,
+      _mapWidth: 80,
+      _mapHeight: 24,
+      _camX: 40,
+      _camY: 12,
       _avatar: null
   },
 
@@ -49,7 +49,7 @@ Game.UIMode.gamePlay = {
   render: function(display) {
     console.log("rendered gamePlay");
     this.attr._map.renderOn(display, this.attr._camX, this.attr._camY);
-    this.renderAvatar(display);
+    //this.renderAvatar(display);
     display.drawText(0, 0, "Press W to win, L to lose, = to save/load/start new game");
   },
 
@@ -152,14 +152,20 @@ Game.UIMode.gamePlay = {
         mapTiles[x][y] = Game.Tile.wallTile;
       }
     });
-
     this.attr._map = new Game.Map(mapTiles);
-    this.attr._avatar = new Game.Entity(Game.EntityTemplates.Avatar);
+    this.attr._avatar = Game.EntityGenerator.create('avatar');
+    this.attr._avatar.setMap(this.attr._map);
 
     if (restorationData !== undefined && restorationData.hasOwnProperty(Game.UIMode.gamePlay.JSON_KEY)) {
       this.fromJSON(restorationData[Game.UIMode.gamePlay.JSON_KEY]);
+      this.attr._map.updateEntityLocation(this.attr._avatar);
     } else {
       this.attr._avatar.setPos(this.attr._map.getRandomWalkableLocation());
+      this.attr._map.addEntity(this.attr._avatar, this.attr._avatar.getPos());
+      //this.attr._map.updateEntityLocation(this.attr._avatar);
+      for (var i = 0; i < 3; i++) {
+        this.attr._map.addEntity(Game.EntityGenerator.create('moss'), this.attr._map.getRandomWalkableLocation());
+      }
     }
     this.setCameraToAvatar();
   },

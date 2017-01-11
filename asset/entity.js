@@ -1,3 +1,5 @@
+Game.ALL_ENTITIES = {};
+
 Game.Entity = function(template) {
   template = template || {};
   Game.Symbol.call(this, template);
@@ -8,6 +10,7 @@ Game.Entity = function(template) {
   this.attr._x = template.x || 0;
   this.attr._y = template.y || 0;
   this._entityID = Game.util.randomString(16);
+  this._map = null;
   Game.ALL_ENTITIES[this._entityID] = this;
 
   this._mixins = template.mixins || [];
@@ -53,6 +56,14 @@ Game.Entity.prototype.setName = function(name) {
     this.attr._name = name;
 };
 
+Game.Entity.prototype.getID = function() {
+  return this._entityID;
+};
+
+Game.Entity.prototype.getPos = function() {
+  return {x: this.attr._x, y: this.attr._y};
+};
+
 Game.Entity.prototype.setPos = function(x_or_xy,y) {
   if (typeof x_or_xy == 'object') {
     this.attr._x = x_or_xy.x;
@@ -77,6 +88,14 @@ Game.Entity.prototype.setX = function(x) {
 
 Game.Entity.prototype.setY = function(y) {
     this.attr._y = y;
+};
+
+Game.Entity.prototype.getMap = function() {
+  return this._map;
+};
+
+Game.Entity.prototype.setMap = function(map) {
+  this._map = map;
 };
 
 Game.Entity.prototype.hasMixin = function(mixin) {
