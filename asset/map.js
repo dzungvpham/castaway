@@ -1,11 +1,15 @@
+Game.DATASTORE.MAP = {};
+
 Game.Map = function(tilesGrid) {
+  this._tiles = tilesGrid;
   this.attr = {
-    _tiles: tilesGrid,
+    _id: Game.util.randomString(16),
     _width: tilesGrid.length,
     _height: tilesGrid[0].length,
     _entitiesByLocation: {},
     _locationsByEntities: {}
   };
+  Game.DATASTORE.MAP[this.attr._id] = this;
 };
 
 Game.Map.prototype.getWidth = function() {
@@ -26,7 +30,7 @@ Game.Map.prototype.getTile = function(x_or_pos, y) {
   if ((x < 0) || (x >= this.attr._width) || (y<0) || (y >= this.attr._height)) {
     return Game.Tile.nullTile;
   }
-  return this.attr._tiles[x][y] || Game.Tile.nullTile;
+  return this._tiles[x][y] || Game.Tile.nullTile;
 };
 
 Game.Map.prototype.getEntity = function(x_or_pos, y) {
@@ -35,22 +39,27 @@ Game.Map.prototype.getEntity = function(x_or_pos, y) {
     x = x_or_pos.x;
     y = x_or_pos.y;
   }
-  return this.attr._entitiesByLocation[x + ',' + y] || false;
+  var entityID = this.attr._entitiesByLocation[x + ',' + y];
+  if (entityID) {
+    return Game.DATASTORE.ENTITY[entityID];
+  }
+  return false;
 };
 
 Game.Map.prototype.addEntity = function(entity, pos) {
   this.attr._locationsByEntities[entity.getID()] = pos.x + "," + pos.y;
-  this.attr._entitiesByLocation[pos.x + "," + pos.y] = entity;
+  this.attr._entitiesByLocation[pos.x + "," + pos.y] = entity.getID();
   entity.setMap(this);
 };
 
 Game.Map.prototype.updateEntityLocation = function(entity) {
   var origPos = this.attr._locationsByEntities[entity.getID()];
   if (origPos) {
-    this.attr._entitiesByLocation[origPos] = undefined;
+    delete this.attr._entitiesByLocation[origPos];
+    //this.attr._entitiesByLocation[origPos] = undefined;
   }
   var newPos = entity.getPos();
-  this.attr._entitiesByLocation[newPos.x + "," + newPos.y] = entity;
+  this.attr._entitiesByLocation[newPos.x + "," + newPos.y] = entity.getID();
   this.attr._locationsByEntities[entity.getID()] = newPos.x + "," + newPos.y;
 }
 

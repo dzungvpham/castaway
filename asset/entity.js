@@ -1,4 +1,4 @@
-Game.ALL_ENTITIES = {};
+Game.DATASTORE.ENTITY = {};
 
 Game.Entity = function(template) {
   template = template || {};
@@ -9,9 +9,10 @@ Game.Entity = function(template) {
   this.attr._name = template.name || '';
   this.attr._x = template.x || 0;
   this.attr._y = template.y || 0;
-  this._entityID = Game.util.randomString(16);
+  this.attr._generator_template_key = template.generator_template_key || '';
+  this.attr._ID = Game.util.randomString(16);
   this._map = null;
-  Game.ALL_ENTITIES[this._entityID] = this;
+  Game.DATASTORE.ENTITY[this.attr._ID] = this;
 
   this._mixins = template.mixins || [];
   this._mixinTracker = {};
@@ -57,7 +58,7 @@ Game.Entity.prototype.setName = function(name) {
 };
 
 Game.Entity.prototype.getID = function() {
-  return this._entityID;
+  return this.attr._ID;
 };
 
 Game.Entity.prototype.getPos = function() {

@@ -1,12 +1,7 @@
-console.log("game.js loaded");
-
 window.onload = function() {
-  console.log("Window loaded - Starting game");
-
   if (!ROT.isSupported()) {
     alert("rot.js is not supported by browser")
   } else {
-
     Game.init();
 
     document.getElementById("wsrl-main-display").appendChild(
@@ -37,6 +32,9 @@ var Game = {
   _PERSISTENCE_NAMESPACE: "ws2017",
   _randomSeed: null,
   _DISPLAY_SPACING: 1.1,
+  _curUIMode: null,
+  _game: null,
+  DATASTORE: {},
 
   display: {
     main: {
@@ -55,9 +53,6 @@ var Game = {
       o: null
     }
   },
-
-  _curUIMode: null,
-  _game: null,
 
   init: function() {
     this._game = this;
