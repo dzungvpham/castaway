@@ -92,10 +92,10 @@ Game.Map.prototype.getRandomWalkableLocation = function() {
 Game.Map.prototype.renderOn = function (display, camX, camY) {
   var dispW = display._options.width; //width of visible display
   var dispH = display._options.height; //height of visible display
-  var xStart = camX-Math.round(dispW/2); //camX & camY is at the center
-  var yStart = camY-Math.round(dispH/2);
-  for (var x = 0; x < this.getWidth(); x++) {
-    for (var y = 0; y < this.getHeight(); y++) {
+  var xStart = camX - Math.round(dispW/2); //camX & camY is at the center
+  var yStart = camY - Math.round(dispH/2);
+  for (var x = 0; x < dispW; x++) {
+    for (var y = 0; y < dispH; y++) {
       var mapPos = {x: x + xStart, y: y + yStart};
       var tile = this.getTile(mapPos); //Draw tiles
       if (tile.getName() == 'nullTile') {

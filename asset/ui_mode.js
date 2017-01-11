@@ -28,8 +28,8 @@ Game.UIMode.gameStart = {
 Game.UIMode.gamePlay = {
   attr: {
       _mapID: null,
-      _camX: 40,
-      _camY: 12,
+      _camX: 0,
+      _camY: 0,
       _avatarID: null
   },
 
@@ -161,7 +161,7 @@ Game.UIMode.gamePlay = {
     var map = this.getMap();
     map.addEntity(this.getAvatar(), map.getRandomWalkableLocation());
     this.setCameraToAvatar();
-    for (var count = 0; count < 80; count++) {
+    for (var count = 0; count < 10; count++) {
        map.addEntity(Game.EntityGenerator.create('moss'), map.getRandomWalkableLocation());
     }
   },
@@ -255,6 +255,9 @@ Game.UIMode.gamePersistence = {
     var state_data = JSON.parse(json_state_data);
 
     Game.setRandomSeed(state_data[this.RANDOM_SEED_KEY]);
+
+    Game.DATASTORE.MAP = {};
+    Game.DATASTORE.ENTITY = {};
 
     for (var mapID in state_data.MAP) {
       if (state_data.MAP.hasOwnProperty(mapID)) {
