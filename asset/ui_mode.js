@@ -109,9 +109,8 @@ Game.UIMode.gamePlay = {
 
   handleInput: function(inputType, inputData) {
     var pressedKey = String.fromCharCode(inputData.charCode);
-    Game.Message.send("You pressed the '" + pressedKey + "' key");
-    Game.renderMessage();
     if (inputType == 'keypress') {
+      Game.Message.send("You pressed the '" + pressedKey + "' key");
       key = inputData.key;
       if (key == 'w' || (key == 'W' && inputData.shiftKey)) {
         Game.switchUIMode(Game.UIMode.gameWin);

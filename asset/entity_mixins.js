@@ -14,7 +14,8 @@ Game.EntityMixin.WalkerCorporeal = {
       return false;
     }
 
-    if (map.getTile(targetX, targetY).isWalkable()) {
+    targetTile = map.getTile(targetX, targetY);
+    if (targetTile.isWalkable()) {
       this.setPos(targetX, targetY);
       var myMap = this.getMap();
       if (myMap) { //Notify map
@@ -90,5 +91,15 @@ Game.EntityMixin.HitPoints = {
 
   recoverHits: function (amt) {
     this.attr._HitPoints_attr.curHp = Math.min(this.attr._HitPoints_attr.curHp + amt, this.attr._HitPoints_attr.maxHp);
+  }
+};
+
+Game.EntityMixin.PlayerMessager = {
+  META: {
+    mixinName: 'playerMessager',
+    mixinGroup: 'playerMessager',
+    listeners: {
+
+    }
   }
 };
