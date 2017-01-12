@@ -280,7 +280,7 @@ Game.UIMode.gamePersistence = {
   },
 
   newGame: function() {
-    Game.setRandomSeed(5 + Math.floor(Math.random() * 100000));
+    Game.setRandomSeed(5 + Math.floor(Game.TRANSIENT_RNG.getUniform() * 100000));
     Game.UIMode.gamePlay.setupNewGame();
     Game.switchUIMode(Game.UIMode.gameStart);
   },
@@ -303,16 +303,6 @@ Game.UIMode.gamePersistence = {
       state = this[state_hash_name];
     }
     var json = JSON.stringify(state);
-    // var json = {};
-    // for (var att in state) {
-    //   if (state.hasOwnProperty(att)) {
-    //     if (state[att] instanceof Object && 'toJSON' in state[att]) {
-    //       json[att] = state[att].toJSON();
-    //     } else {
-    //       json[att] = state[att];
-    //     }
-    //   }
-    // }
     return json;
   },
 
@@ -322,14 +312,5 @@ Game.UIMode.gamePersistence = {
       using_state_hash = state_hash_name;
     }
     this[using_state_hash] = JSON.parse(json);
-    // for (var at in this[using_state_hash]) {
-    //   if (this[using_state_hash].hasOwnProperty(at)) {
-    //     if (this[using_state_hash][at] instanceof Object && 'fromJSON' in this[using_state_hash][at]) {
-    //       this[using_state_hash][at].fromJSON(json[at]);
-    //     } else {
-    //       this[using_state_hash][at] = json[at];
-    //     }
-    //   }
-    // }
   }
 }

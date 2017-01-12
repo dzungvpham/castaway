@@ -36,6 +36,7 @@ var Game = {
   _curUIMode: null,
   _game: null,
   DATASTORE: {},
+  TRANSIENT_RNG: null,
 
   display: {
     main: {
@@ -57,9 +58,9 @@ var Game = {
 
   init: function() {
     this._game = this;
-    this._randomSeed = 5 + Math.floor(Math.random()*100000);
-    console.log("Using random seed " + this._randomSeed);
-    ROT.RNG.setSeed(this._randomSeed);
+    this.TRANSIENT_RNG = ROT.RNG.clone();
+    this.setRandomSeed(5 + Math.floor(this.TRANSIENT_RNG.getUniform() * 100000));
+    console.log("Using random seed " + this.getRandomSeed());
 
     for (var display_key in this.display) {
       this.display[display_key].o = new ROT.Display({
