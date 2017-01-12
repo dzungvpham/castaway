@@ -1,12 +1,7 @@
-console.log("game.js loaded");
-
 window.onload = function() {
-  console.log("Window loaded - Starting game");
-
   if (!ROT.isSupported()) {
     alert("rot.js is not supported by browser")
   } else {
-
     Game.init();
 
     document.getElementById("wsrl-main-display").appendChild(
@@ -36,7 +31,12 @@ var Game = {
 
   _PERSISTENCE_NAMESPACE: "ws2017",
   _randomSeed: null,
+  _randomStringLength: 16,
   _DISPLAY_SPACING: 1.1,
+  _curUIMode: null,
+  _game: null,
+  DATASTORE: {},
+  TRANSIENT_RNG: null,
 
   display: {
     main: {
@@ -56,14 +56,11 @@ var Game = {
     }
   },
 
-  _curUIMode: null,
-  _game: null,
-
   init: function() {
     this._game = this;
-    this._randomSeed = 5 + Math.floor(Math.random()*100000);
-    console.log("Using random seed " + this._randomSeed);
-    ROT.RNG.setSeed(this._randomSeed);
+    this.TRANSIENT_RNG = ROT.RNG.clone();
+    this.setRandomSeed(5 + Math.floor(this.TRANSIENT_RNG.getUniform() * 100000));
+    console.log("Using random seed " + this.getRandomSeed());
 
     for (var display_key in this.display) {
       this.display[display_key].o = new ROT.Display({
@@ -77,6 +74,7 @@ var Game = {
   setRandomSeed: function(seed) {
     this._randomSeed = seed;
     console.log("Using random seed " + this._randomSeed);
+    this.DATASTORE[Game.UIMode.gamePersistence.RANDOM_SEED_KEY] = this._randomSeed;
     ROT.RNG.setSeed(this._randomSeed);
   },
 
@@ -139,10 +137,10 @@ var Game = {
     this.renderDisplayAll();
   },
 
-  toJSON: function() {
-    var json = {};
-    json._randomSeed = this._randomSeed;
-    json[Game.UIMode.gamePlay.JSON_KEY] = Game.UIMode.gamePlay.toJSON();
-    return json;
-  }
+  //toJSON: function() {
+    //var json = {};
+    //json._randomSeed = this._randomSeed;
+    //json[Game.UIMode.gamePlay.JSON_KEY] = Game.UIMode.gamePlay.toJSON();
+    //return json;
+  //}
 };
