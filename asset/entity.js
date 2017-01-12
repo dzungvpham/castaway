@@ -16,9 +16,6 @@ Game.Entity = function(template) {
 
   this._mixins = template.mixins || [];
   this._mixinTracker = {};
-  console.dir(template);
-  console.dir(template.mixins);
-  console.dir(this._mixins);
 
   for (var i = 0; i < this._mixins.length; i++) {
     var mixin = this._mixins[i];
@@ -36,7 +33,11 @@ Game.Entity = function(template) {
       this.attr[mixin.META.stateNamespace] = {};
       for (var mixinStateProp in mixin.META.stateModel) {
         if (mixin.META.stateModel.hasOwnProperty(mixinStateProp)) {
-          this.attr[mixin.META.stateNamespace][mixinStateProp] = mixin.META.stateModel[mixinStateProp];
+          if (typeof mixin.META.stateModel[mixinStateProp] == "object") {
+            this.attr[mixin.META.stateNamespace][mixinStateProp] = JSON.parse(JSON.stringify(mixin.META.stateModel[mixinStateProp]));
+          } else {
+            this.attr[mixin.META.stateNamespace][mixinStateProp] = mixin.META.stateModel[mixinStateProp];
+          }
         }
       }
     }
@@ -105,13 +106,27 @@ Game.Entity.prototype.hasMixin = function(mixin) {
   } else {
     return this._mixinTracker.hasOwnProperty(mixin);
   }
-},
+};
+
+Game.Entity.prototype.raiseEntityEvent = function(evt, data) {
+  for (var i = 0; i < this._mixins.length; i++) {
+    var mixin = this._mixins[i];
+    if (mixin.META.listeners && mixin.META.listeners[evt]) {
+      mixin.META.listeners[evt].call(this, data);
+    }
+  }
+};
+
+Game.Entity.prototype.destroy = function() {
+  this.getMap().removeEntity(this);
+  delete Game.DATASTORE.ENTITY[this.getID()];
+};
 
 Game.Entity.prototype.toJSON = function() {
   var json = Game.UIMode.gamePersistence.BASE_toJSON.call(this);
   return json;
-},
+};
 
 Game.Entity.prototype.fromJSON = function(json) {
   Game.UIMode.gamePersistence.BASE_fromJSON.call(this, json);
-}
+};

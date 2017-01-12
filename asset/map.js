@@ -68,6 +68,20 @@ Game.Map.prototype.updateEntityLocation = function(entity) {
   var newPos = entity.getPos();
   this.attr._entitiesByLocation[newPos.x + "," + newPos.y] = entity.getID();
   this.attr._locationsByEntities[entity.getID()] = newPos.x + "," + newPos.y;
+};
+
+Game.Map.prototype.removeEntity = function(entity) {
+  delete this.attr._entitiesByLocation[entity.getX() + "," + entity.getY];
+  delete this.attr._locationsByEntities[entity.getID()];
+  return entity;
+};
+
+Game.Map.prototype.removeEntityAt = function(x_or_pos, y) {
+  var entity = getEntity(x_or_pos, y);
+  if (entity) {
+    return this.removeEntity(entity);
+  }
+  return entity;
 }
 
 Game.Map.prototype.getRandomLocation = function(filter_func) {
@@ -87,7 +101,7 @@ Game.Map.prototype.getRandomLocation = function(filter_func) {
 
 Game.Map.prototype.getRandomWalkableLocation = function() {
   return this.getRandomLocation(function (tile) {return tile.isWalkable(); });
-}
+};
 
 Game.Map.prototype.renderOn = function (display, camX, camY) {
   var dispW = display._options.width; //width of visible display
@@ -113,8 +127,8 @@ Game.Map.prototype.renderOn = function (display, camX, camY) {
 Game.Map.prototype.toJSON = function() {
   var json = Game.UIMode.gamePersistence.BASE_toJSON.call(this);
   return json;
-},
+};
 
 Game.Map.prototype.fromJSON = function(json) {
   Game.UIMode.gamePersistence.BASE_fromJSON.call(this, json);
-}
+};

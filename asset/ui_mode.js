@@ -85,7 +85,9 @@ Game.UIMode.gamePlay = {
     display.drawText(1, 2, "Avatar x: " + avatar.getX(), fg, bg);
     display.drawText(1, 3, "Avatar y: " + avatar.getY(), fg, bg);
     display.drawText(1, 4, "Turn: " + avatar.getTurn());
-    display.drawText(1, 5, "HP: " + avatar.getCurHp() + "/" + avatar.getMaxHp());
+    display.drawText(1, 5, "HP: " + avatar.getCurrentHP() + "/" + avatar.getMaxHP());
+    display.drawText(1, 6, "Atk: " + avatar.getAttackPower());
+    display.drawText(1, 7, "Killed: " + avatar.getKillCount());
   },
 
   moveAvatar: function (dx,dy) {
@@ -110,7 +112,7 @@ Game.UIMode.gamePlay = {
   handleInput: function(inputType, inputData) {
     var pressedKey = String.fromCharCode(inputData.charCode);
     if (inputType == 'keypress') {
-      Game.Message.send("You pressed the '" + pressedKey + "' key");
+      //Game.Message.send("You pressed the '" + pressedKey + "' key");
       key = inputData.key;
       if (key == 'w' || (key == 'W' && inputData.shiftKey)) {
         Game.switchUIMode(Game.UIMode.gameWin);
@@ -133,6 +135,8 @@ Game.UIMode.gamePlay = {
             this.moveAvatar(-1, 0);
             break;
           case '5':
+            Game.renderMessage();
+            //this.getAvatar.raiseEntityEvent('tookTurn');
             break;
           case '6':
             this.moveAvatar(1, 0);
@@ -151,6 +155,7 @@ Game.UIMode.gamePlay = {
         }
       }
       Game.refresh();
+      Game.Message.ageMessages();
     }
   },
 

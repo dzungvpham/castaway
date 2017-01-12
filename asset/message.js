@@ -23,6 +23,9 @@ Game.Message = {
     for (freshIndex = 0; freshIndex < this.attr.fresh.length && dispRow < dispRowMax; freshIndex++) {
       dispRow += display.drawText(1, dispRow, '%c{#fff}%b{#000}' + this.attr.fresh[freshIndex] + '%c{}%b{}', dispColMax);
     }
+  },
+
+  ageMessages: function(lastStaleIndex) {
 
     //Move stale messages to archived
     while (this.attr.stale.length > 0) {
@@ -48,5 +51,17 @@ Game.Message = {
   clear: function() {
     this.attr.fresh = [];
     this.attr.stale = [];
+  },
+
+  getArchive: function() {
+    return this.attr.archived;
+  },
+
+  getArchiveLimit: function() {
+    return this.attr.archivedMax;
+  },
+
+  setArchiveLimit: function(max) {
+    this.attr.archivedMax = max;
   }
 };
