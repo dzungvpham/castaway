@@ -15,10 +15,13 @@ Game.Generator.prototype.learn = function(template, createKey) {
   this._templates[createKey] = template;
 };
 
-Game.Generator.prototype.create = function(createKey) {
-  var template = this._templates[createKey];
+Game.Generator.prototype.create = function(createKey, presetID) {
+  var template = JSON.parse(JSON.stringify(this._templates[createKey]));
   if (!template) {
     template = this._templates._DEFAULT;
+  }
+  if (presetID) {
+    template.presetID = presetID;
   }
   template.generator_template_key = createKey;
   return new this._constructor(template);

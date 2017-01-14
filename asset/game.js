@@ -31,7 +31,6 @@ var Game = {
 
   _PERSISTENCE_NAMESPACE: "ws2017",
   _randomSeed: null,
-  _randomStringLength: 16,
   _DISPLAY_SPACING: 1.1,
   _curUIMode: null,
   _game: null,
@@ -57,6 +56,7 @@ var Game = {
   },
 
   init: function() {
+    Game.KeyBinding.useKeyBinding();
     this._game = this;
     this.TRANSIENT_RNG = ROT.RNG.clone();
     this.setRandomSeed(5 + Math.floor(this.TRANSIENT_RNG.getUniform() * 100000));

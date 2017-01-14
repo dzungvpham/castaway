@@ -10,11 +10,15 @@ Game.Entity = function(template) {
   this.attr._x = template.x || 0;
   this.attr._y = template.y || 0;
   this.attr._generator_template_key = template.generator_template_key || '';
-  this.attr._ID = Game.util.randomString(Game._randomStringLength);
+  this.attr._ID = template.presetID || Game.util.uniqueID();
   this.attr._mapID = null;
   Game.DATASTORE.ENTITY[this.attr._ID] = this;
 
-  this._mixins = template.mixins || [];
+  this._mixinsName = template.mixins || [];
+  this._mixins = [];
+  for (var i = 0; i < this._mixinsName.length; i++) {
+    this._mixins.push(Game.EntityMixin[this._mixinsName[i]]);
+  }
   this._mixinTracker = {};
 
   for (var i = 0; i < this._mixins.length; i++) {

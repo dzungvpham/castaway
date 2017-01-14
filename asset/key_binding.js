@@ -1,0 +1,5 @@
+Game.KeyBinding = {
+  useKeyBinding: function() {
+    
+  }
+};

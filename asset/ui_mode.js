@@ -260,7 +260,7 @@ Game.UIMode.gamePersistence = {
     for (var entityID in state_data.ENTITY) {
       if (state_data.ENTITY.hasOwnProperty(entityID)) {
         var entityAttr = JSON.parse(state_data.ENTITY[entityID]);
-        Game.DATASTORE.ENTITY[entityID] = Game.EntityGenerator.create(entityAttr._generator_template_key);
+        Game.DATASTORE.ENTITY[entityID] = Game.EntityGenerator.create(entityAttr._generator_template_key, entityAttr._ID);
         Game.DATASTORE.ENTITY[entityID].fromJSON(state_data.ENTITY[entityID]);
       }
     }

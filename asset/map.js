@@ -4,7 +4,7 @@ Game.Map = function(mapTileSetName) {
   console.log("Setting up new map using " + mapTileSetName + " tile set");
   this._tiles = Game.MapTileSets[mapTileSetName].getMapTiles();
   this.attr = {
-    _id: Game.util.randomString(Game._randomStringLength),
+    _id: Game.util.uniqueID(),
     _mapTileSetName: mapTileSetName,
     _width: this._tiles.length,
     _height: this._tiles[0].length,
@@ -95,12 +95,14 @@ Game.Map.prototype.getRandomLocation = function(filter_func) {
     tileX = Game.util.randomInt(0, this.attr._width - 1);
     tileY = Game.util.randomInt(0, this.attr._height - 1);
     tile = this.getTile(tileX, tileY);
-  } while (!filter_func(tile));
+  } while (!filter_func(tile, this, tileX, tileY));
   return {x: tileX, y: tileY};
 };
 
 Game.Map.prototype.getRandomWalkableLocation = function() {
-  return this.getRandomLocation(function (tile) {return tile.isWalkable(); });
+  return this.getRandomLocation(function (tile, map, tileX, tileY) {
+    return (tile.isWalkable() && map.getEntity(tileX, tileY) !== 'object');
+  });
 };
 
 Game.Map.prototype.renderOn = function (display, camX, camY) {
