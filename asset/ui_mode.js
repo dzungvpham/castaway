@@ -5,16 +5,12 @@ Game.UIMode.DEFAULT_BG = '#000';
 
 Game.UIMode.gameStart = {
   enter: function() {
-    console.log("entered gameStart");
-    Game.Message.send("Welcome to WS2017");
   },
 
   exit: function() {
-    console.log("exitted gameStart");
   },
 
   render: function(display) {
-    console.log("rendered gameStart");
     display.drawText(5, 5, "Press any key to play");
   },
 
@@ -36,8 +32,6 @@ Game.UIMode.gamePlay = {
   JSON_KEY: 'UIMode_gamePlay',
 
   enter: function() {
-    console.log("entered gamePlay");
-    Game.Message.send("Playing");
     if (this.attr._avatarID) {
       this.setCameraToAvatar();
     }
@@ -49,7 +43,6 @@ Game.UIMode.gamePlay = {
   },
 
   render: function(display) {
-    console.log("rendered gamePlay");
     this.getMap().renderOn(display, this.attr._camX, this.attr._camY);
     this.renderAvatar(display);
     display.drawText(0, 0, "Press W to win, L to lose, = to save/load/start new game");
@@ -135,8 +128,7 @@ Game.UIMode.gamePlay = {
             this.moveAvatar(-1, 0);
             break;
           case '5':
-            Game.renderMessage();
-            //this.getAvatar.raiseEntityEvent('tookTurn');
+            this.getAvatar().raiseEntityEvent('tookTurn');
             break;
           case '6':
             this.moveAvatar(1, 0);
@@ -154,12 +146,15 @@ Game.UIMode.gamePlay = {
             break;
         }
       }
-      Game.refresh();
-      Game.Message.ageMessages();
+      if (!isNaN(key)) {
+        Game.refresh();
+        Game.Message.ageMessages();
+      }
     }
   },
 
   setupNewGame: function() {
+    Game.Message.clear();
     this.setMap(new Game.Map('caves1'));
     this.setAvatar(Game.EntityGenerator.create('avatar'));
     var map = this.getMap();
@@ -181,15 +176,12 @@ Game.UIMode.gamePlay = {
 
 Game.UIMode.gameWin = {
   enter: function() {
-    console.log("entered gameWin");
   },
 
   exit: function() {
-    console.log("exitted gameWin");
   },
 
   render: function(display) {
-    console.log("rendered gameWin");
     display.drawText(5, 5, "You won!");
   },
 
@@ -200,15 +192,12 @@ Game.UIMode.gameWin = {
 
 Game.UIMode.gameLose = {
   enter: function() {
-    console.log("entered gameLose");
   },
 
   exit: function() {
-    console.log("exitted gameLose");
   },
 
   render: function(display) {
-    console.log("rendered gameLose");
     display.drawText(5, 5, "You lose!");
   },
 
@@ -221,16 +210,12 @@ Game.UIMode.gamePersistence = {
   RANDOM_SEED_KEY: 'gameRandomSeed',
 
   enter: function() {
-    console.log("entered gamePersistence");
-    Game.Message.send("Save/load game")
   },
 
   exit: function() {
-    console.log("exitted gamePersistence");
   },
 
   render: function(display) {
-    console.log("rendered gamePersistence");
     display.drawText(5, 5, "Press S to save, L to load, N for new game");
   },
 
@@ -249,6 +234,7 @@ Game.UIMode.gamePersistence = {
   saveGame: function() {
     if (this.localStorageAvailable()) {
       Game.DATASTORE.GAME_PLAY = Game.UIMode.gamePlay.attr;
+      Game.DATASTORE.MESSAGE = Game.Message.attr;
       window.localStorage.setItem(Game._PERSISTENCE_NAMESPACE, JSON.stringify(Game.DATASTORE));
       Game.switchUIMode(Game.UIMode.gamePlay);
     }
@@ -280,6 +266,7 @@ Game.UIMode.gamePersistence = {
     }
 
     Game.UIMode.gamePlay.attr = state_data.GAME_PLAY;
+    Game.Message.attr = state_data.MESSAGE;
     Game.switchUIMode(Game.UIMode.gamePlay);
   },
 
