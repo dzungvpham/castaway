@@ -5,9 +5,13 @@ Game.UIMode.DEFAULT_BG = '#000';
 
 Game.UIMode.gameStart = {
   enter: function() {
+    Game.KeyBinding.setKeyBinding();
+    Game.refresh();
   },
 
   exit: function() {
+    Game.KeyBinding.informPlayer();
+    Game.refresh();
   },
 
   render: function(display) {
@@ -30,11 +34,14 @@ Game.UIMode.gamePlay = {
   },
 
   JSON_KEY: 'UIMode_gamePlay',
+  IS_STARTED: false,
 
   enter: function() {
+    this.IS_STARTED = true;
     if (this.attr._avatarID) {
       this.setCameraToAvatar();
     }
+    Game.KeyBinding.setKeyBinding(Game.UIMode.gamePersistence._storedKeyBinding);
     Game.refresh();
   },
 
@@ -86,7 +93,9 @@ Game.UIMode.gamePlay = {
   moveAvatar: function (dx,dy) {
     if (this.getAvatar().tryWalk(this.getMap(), dx, dy)) {
       this.setCameraToAvatar();
+      return true;
     }
+    return false;
   },
 
   moveCamera: function (dx,dy) {
@@ -103,54 +112,41 @@ Game.UIMode.gamePlay = {
   },
 
   handleInput: function(inputType, inputData) {
-    var pressedKey = String.fromCharCode(inputData.charCode);
-    if (inputType == 'keypress') {
-      //Game.Message.send("You pressed the '" + pressedKey + "' key");
-      key = inputData.key;
-      if (key == 'w' || (key == 'W' && inputData.shiftKey)) {
-        Game.switchUIMode(Game.UIMode.gameWin);
-      } else if (key == 'l' || (key == 'L' && inputData.shiftKey)) {
-        Game.switchUIMode(Game.UIMode.gameLose);
-      } else if (key == '=') {
-        Game.switchUIMode(Game.UIMode.gamePersistence);
-      } else {
-        switch(key) {
-          case '1':
-            this.moveAvatar(-1, 1);
-            break;
-          case '2':
-            this.moveAvatar(0, 1);
-            break;
-          case '3':
-            this.moveAvatar(1, 1);
-            break;
-          case '4':
-            this.moveAvatar(-1, 0);
-            break;
-          case '5':
-            this.getAvatar().raiseEntityEvent('tookTurn');
-            break;
-          case '6':
-            this.moveAvatar(1, 0);
-            break;
-          case '7':
-            this.moveAvatar(-1, -1);
-            break;
-          case '8':
-            this.moveAvatar(0, -1);
-            break;
-          case '9':
-            this.moveAvatar(1, -1);
-            break;
-          default:
-            break;
-        }
-      }
-      if (!isNaN(key)) {
-        Game.refresh();
-        Game.Message.ageMessages();
-      }
+    var actionBinding = Game.KeyBinding.getInputBinding(inputType, inputData);
+    if (!actionBinding || (actionBinding.actionKey == 'CANCEL')) {
+      return false;
     }
+    var tookTurn = false;
+    if (actionBinding.actionKey == 'MOVE_UL') {
+      tookTurn = this.moveAvatar(-1, -1);
+    } else if (actionBinding.actionKey == 'MOVE_U') {
+      tookTurn = this.moveAvatar(0 , -1);
+    } else if (actionBinding.actionKey == 'MOVE_UR') {
+      tookTurn = this.moveAvatar(1, -1);
+    } else if (actionBinding.actionKey == 'MOVE_L') {
+      tookTurn = this.moveAvatar(-1, 0);
+    } else if (actionBinding.actionKey == 'MOVE_WAIT') {
+      tookTurn = true;
+    } else if (actionBinding.actionKey == 'MOVE_R') {
+      tookTurn = this.moveAvatar(1, 0);
+    } else if (actionBinding.actionKey == 'MOVE_DL') {
+      tookTurn = this.moveAvatar(-1, 1);
+    } else if (actionBinding.actionKey == 'MOVE_D') {
+      tookTurn = this.moveAvatar(0, 1);
+    } else if (actionBinding.actionKey == 'MOVE_DR') {
+      tookTurn = this.moveAvatar(1, 1);
+    } else if (actionBinding.actionKey == 'CHANGE_BINDINGS') {
+      Game.KeyBinding.swapToNextKeyBinding();
+    } else if (actionBinding.actionKey == 'PERSISTENCE') {
+      Game.switchUIMode(Game.UIMode.gamePersistence);
+    }
+
+    Game.refresh();
+    if (tookTurn) {
+      Game.Message.ageMessages();
+      return true;
+    }
+    return false;
   },
 
   setupNewGame: function() {
@@ -208,33 +204,49 @@ Game.UIMode.gameLose = {
 
 Game.UIMode.gamePersistence = {
   RANDOM_SEED_KEY: 'gameRandomSeed',
+  _storedKeyBinding: '',
 
   enter: function() {
+    this._storedKeyBinding = Game.KeyBinding.getKeyBinding();
+    Game.KeyBinding.setKeyBinding('persist');
+    Game.refresh();
   },
 
   exit: function() {
   },
 
   render: function(display) {
-    display.drawText(5, 5, "Press S to save, L to load, N for new game");
+    if (Game.isStarted()) {
+      display.drawText(5, 5, "Press S to save, L to load, N for new game, ESC to resume");
+    } else {
+      display.drawText(5, 5, "Press S to save, L to load, N for new game");
+    }
   },
 
   handleInput: function(inputType, inputData) {
-    if (inputType == 'keypress') {
-      if (inputData.key == 's' || (inputData.key == 'S' && inputData.shiftKey)) {
-        this.saveGame();
-      } else if (inputData.key == 'l' || (inputData.key == 'L' && inputData.shiftKey)) {
-        this.loadGame();
-      } else if (inputData.key == 'n' || (inputData.key == 'N' && inputData.shiftKey)) {
-        this.newGame();
+    var actionBinding = Game.KeyBinding.getInputBinding(inputType, inputData);
+    if (!actionBinding) {
+      return false;
+    }
+    if (actionBinding.actionKey == 'PERSISTENCE_SAVE') {
+     this.saveGame();
+    } else if (actionBinding.actionKey == 'PERSISTENCE_LOAD') {
+     this.loadGame();
+    } else if (actionBinding.actionKey == 'PERSISTENCE_NEW') {
+     this.newGame();
+    } else if (actionBinding.actionKey == 'CANCEL') {
+      if (Game.isStarted()) {
+        Game.switchUIMode(Game.UIMode.gamePlay);
       }
     }
+    return false;
   },
 
   saveGame: function() {
     if (this.localStorageAvailable()) {
       Game.DATASTORE.GAME_PLAY = Game.UIMode.gamePlay.attr;
       Game.DATASTORE.MESSAGE = Game.Message.attr;
+      Game.DATASTORE.KEY_BINDING_SET = this._storedKeyBinding;
       window.localStorage.setItem(Game._PERSISTENCE_NAMESPACE, JSON.stringify(Game.DATASTORE));
       Game.switchUIMode(Game.UIMode.gamePlay);
     }
@@ -246,13 +258,14 @@ Game.UIMode.gamePersistence = {
 
     Game.setRandomSeed(state_data[this.RANDOM_SEED_KEY]);
 
+    Game.DATASTORE = {};
     Game.DATASTORE.MAP = {};
     Game.DATASTORE.ENTITY = {};
 
     for (var mapID in state_data.MAP) {
       if (state_data.MAP.hasOwnProperty(mapID)) {
         var mapAttr = JSON.parse(state_data.MAP[mapID]);
-        Game.DATASTORE.MAP[mapID] = new Game.Map(mapAttr._mapTileSetName);
+        Game.DATASTORE.MAP[mapID] = new Game.Map(mapAttr._mapTileSetName, mapID);
         Game.DATASTORE.MAP[mapID].fromJSON(state_data.MAP[mapID]);
       }
     }
@@ -267,10 +280,14 @@ Game.UIMode.gamePersistence = {
 
     Game.UIMode.gamePlay.attr = state_data.GAME_PLAY;
     Game.Message.attr = state_data.MESSAGE;
+    this._storedKeyBinding = state_data.KEY_BINDING_SET;
     Game.switchUIMode(Game.UIMode.gamePlay);
   },
 
   newGame: function() {
+    Game.DATASTORE = {};
+    Game.DATASTORE.MAP = {};
+    Game.DATASTORE.ENTITY = {};
     Game.setRandomSeed(5 + Math.floor(Game.TRANSIENT_RNG.getUniform() * 100000));
     Game.UIMode.gamePlay.setupNewGame();
     Game.switchUIMode(Game.UIMode.gameStart);
