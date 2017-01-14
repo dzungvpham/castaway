@@ -14,14 +14,14 @@ window.onload = function() {
       Game.getDisplay('message').getContainer()
     );
 
-    var bindEventToScreen = function(eventType) {
+    var bindEventToUIMode = function(eventType) {
       window.addEventListener(eventType, function(evt) {
         Game.eventHandler(eventType, evt);
         });
     };
     // Bind keyboard input events
-    bindEventToScreen('keypress');
-    bindEventToScreen('keydown');
+    bindEventToUIMode('keypress');
+    bindEventToUIMode('keydown');
 
     Game.switchUIMode(Game.UIMode.gamePersistence);
   }
@@ -31,7 +31,6 @@ var Game = {
 
   _PERSISTENCE_NAMESPACE: "ws2017",
   _randomSeed: null,
-  _randomStringLength: 16,
   _DISPLAY_SPACING: 1.1,
   _curUIMode: null,
   _game: null,
@@ -57,6 +56,7 @@ var Game = {
   },
 
   init: function() {
+    Game.KeyBinding.setKeyBinding();
     this._game = this;
     this.TRANSIENT_RNG = ROT.RNG.clone();
     this.setRandomSeed(5 + Math.floor(this.TRANSIENT_RNG.getUniform() * 100000));
@@ -82,9 +82,9 @@ var Game = {
     return this._randomSeed;
   },
 
-  getDisplay: function (displayId) {
-    if (this.display.hasOwnProperty(displayId)) {
-      return this.display[displayId].o;
+  getDisplay: function (displayID) {
+    if (this.display.hasOwnProperty(displayID)) {
+      return this.display[displayID].o;
     }
     return null;
   },
@@ -128,6 +128,7 @@ var Game = {
     }
     this._curUIMode = newUIMode;
     if (this._curUIMode !== null) {
+      this.clearDisplayAll();
       this._curUIMode.enter();
     }
     this.renderDisplayAll();
@@ -137,10 +138,16 @@ var Game = {
     this.renderDisplayAll();
   },
 
-  //toJSON: function() {
-    //var json = {};
-    //json._randomSeed = this._randomSeed;
-    //json[Game.UIMode.gamePlay.JSON_KEY] = Game.UIMode.gamePlay.toJSON();
-    //return json;
-  //}
+  isStarted: function() {
+    return Game.UIMode.gamePlay.IS_STARTED;
+  },
+
+  clearDisplayAll: function() {
+    for (var displayID in this.display) {
+      disp = this.getDisplay(displayID);
+      if (disp !== null)  {
+        disp.clear();
+      }
+    }
+  }
 };

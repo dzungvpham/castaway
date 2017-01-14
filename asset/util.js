@@ -1,5 +1,11 @@
 Game.util = {
 
+  ID_SEQUENCE: 0,
+
+  uniqueID: function() {
+    return Date.now() + ++Game.util.ID_SEQUENCE + this.randomString(24);
+  },
+
   randomString: function(len) {
     var charSource = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split('');
     var res='';
