@@ -42,11 +42,13 @@ Game.UIMode.gamePlay = {
       this.setCameraToAvatar();
     }
     Game.KeyBinding.setKeyBinding(Game.UIMode.gamePersistence._storedKeyBinding);
+    Game.TimeEngine.unlock();
     Game.refresh();
   },
 
   exit: function() {
     Game.refresh();
+    Game.TimeEngine.lock();
   },
 
   render: function(display) {
@@ -143,6 +145,7 @@ Game.UIMode.gamePlay = {
 
     Game.refresh();
     if (tookTurn) {
+      this.getAvatar().raiseEntityEvent('actionDone');
       Game.Message.ageMessages();
       return true;
     }
@@ -158,6 +161,7 @@ Game.UIMode.gamePlay = {
     this.setCameraToAvatar();
     for (var count = 0; count < 10; count++) {
        map.addEntity(Game.EntityGenerator.create('moss'), map.getRandomWalkableLocation());
+       map.addEntity(Game.EntityGenerator.create('newt'), map.getRandomWalkableLocation());
     }
   },
 
@@ -247,6 +251,14 @@ Game.UIMode.gamePersistence = {
       Game.DATASTORE.GAME_PLAY = Game.UIMode.gamePlay.attr;
       Game.DATASTORE.MESSAGE = Game.Message.attr;
       Game.DATASTORE.KEY_BINDING_SET = this._storedKeyBinding;
+      Game.DATASTORE.SCHEDULE = {};
+      // NOTE: offsetting times by 1 so later restore can just drop them in and go
+      Game.DATASTORE.SCHEDULE[Game.Scheduler._current.getID()] = 1;
+      for (var i = 0; i < Game.Scheduler._queue._eventTimes.length; i++) {
+        Game.DATASTORE.SCHEDULE[Game.Scheduler._queue._events[i].getID()] = Game.Scheduler._queue._eventTimes[i] + 1;
+      }
+      Game.DATASTORE.SCHEDULE_TIME = Game.Scheduler._queue.getTime() - 1; // offset by 1 so that when the engine is started after restore the queue state will match that as when it was saved
+
       window.localStorage.setItem(Game._PERSISTENCE_NAMESPACE, JSON.stringify(Game.DATASTORE));
       Game.switchUIMode(Game.UIMode.gamePlay);
     }
@@ -270,6 +282,8 @@ Game.UIMode.gamePersistence = {
       }
     }
 
+    ROT.RNG.getUniform(); //Once map is generated, RNG is cycled to get new data for entity generation
+
     for (var entityID in state_data.ENTITY) {
       if (state_data.ENTITY.hasOwnProperty(entityID)) {
         var entityAttr = JSON.parse(state_data.ENTITY[entityID]);
@@ -281,6 +295,18 @@ Game.UIMode.gamePersistence = {
     Game.UIMode.gamePlay.attr = state_data.GAME_PLAY;
     Game.Message.attr = state_data.MESSAGE;
     this._storedKeyBinding = state_data.KEY_BINDING_SET;
+
+    Game.initTimeEngine();
+      for (var schedItemId in state_data.SCHEDULE) {
+        if (state_data.SCHEDULE.hasOwnProperty(schedItemId)) {
+          // check here to determine which data store thing will be added to the scheduler (and the actual addition may vary - e.g. not everyting will be a repeatable thing)
+          if (Game.DATASTORE.ENTITY.hasOwnProperty(schedItemId)) {
+            Game.Scheduler.add(Game.DATASTORE.ENTITY[schedItemId], true, state_data.SCHEDULE[schedItemId]);
+          }
+        }
+      }
+      Game.Scheduler._queue._time = state_data.SCHEDULE_TIME;
+
     Game.switchUIMode(Game.UIMode.gamePlay);
   },
 
@@ -288,6 +314,7 @@ Game.UIMode.gamePersistence = {
     Game.DATASTORE = {};
     Game.DATASTORE.MAP = {};
     Game.DATASTORE.ENTITY = {};
+    Game.initTimeEngine();
     Game.setRandomSeed(5 + Math.floor(Game.TRANSIENT_RNG.getUniform() * 100000));
     Game.UIMode.gamePlay.setupNewGame();
     Game.switchUIMode(Game.UIMode.gameStart);

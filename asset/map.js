@@ -95,12 +95,13 @@ Game.Map.prototype.getRandomLocation = function(filter_func) {
     tileX = Game.util.randomInt(0, this.attr._width - 1);
     tileY = Game.util.randomInt(0, this.attr._height - 1);
     tile = this.getTile(tileX, tileY);
-  } while (!filter_func(tile, this, tileX, tileY));
+  } while (!filter_func(tile, tileX, tileY));
   return {x: tileX, y: tileY};
 };
 
 Game.Map.prototype.getRandomWalkableLocation = function() {
-  return this.getRandomLocation(function (tile, map, tileX, tileY) {
+  var map = this;
+  return this.getRandomLocation(function (tile, tileX, tileY) {
     return (tile.isWalkable() && map.getEntity(tileX, tileY) !== 'object');
   });
 };

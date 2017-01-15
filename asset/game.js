@@ -14,15 +14,6 @@ window.onload = function() {
       Game.getDisplay('message').getContainer()
     );
 
-    var bindEventToUIMode = function(eventType) {
-      window.addEventListener(eventType, function(evt) {
-        Game.eventHandler(eventType, evt);
-        });
-    };
-    // Bind keyboard input events
-    bindEventToUIMode('keypress');
-    bindEventToUIMode('keydown');
-
     Game.switchUIMode(Game.UIMode.gamePersistence);
   }
 };
@@ -36,6 +27,8 @@ var Game = {
   _game: null,
   DATASTORE: {},
   TRANSIENT_RNG: null,
+  Scheduler: null,
+  TimeEngine: null,
 
   display: {
     main: {
@@ -60,7 +53,6 @@ var Game = {
     this._game = this;
     this.TRANSIENT_RNG = ROT.RNG.clone();
     this.setRandomSeed(5 + Math.floor(this.TRANSIENT_RNG.getUniform() * 100000));
-    console.log("Using random seed " + this.getRandomSeed());
 
     for (var display_key in this.display) {
       this.display[display_key].o = new ROT.Display({
@@ -69,6 +61,22 @@ var Game = {
         spacing: this._DISPLAY_SPACING
       });
     }
+
+    var bindEventToUIMode = function(eventType) {
+      window.addEventListener(eventType, function(evt) {
+          if (Game._curUIMode !== null) {
+            Game._curUIMode.handleInput(eventType, evt);
+          }
+        });
+    };
+    // Bind keyboard input events
+    bindEventToUIMode('keypress');
+    bindEventToUIMode('keydown');
+  },
+
+  initTimeEngine: function() {
+    this.Scheduler = new ROT.Scheduler.Action();
+    this.TimeEngine = new ROT.Engine(this.Scheduler);
   },
 
   setRandomSeed: function(seed) {
