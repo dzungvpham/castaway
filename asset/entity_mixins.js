@@ -7,12 +7,11 @@ Game.EntityMixin.WalkerCorporeal = {
   },
 
   tryWalk: function (map, dx, dy) {
-    var targetX = Math.min(Math.max(0,this.getX() + dx), map.getWidth());
-    var targetY = Math.min(Math.max(0,this.getY() + dy), map.getHeight());
+    var targetX = Math.min(Math.max(0,this.getX() + dx), map.getWidth() - 1);
+    var targetY = Math.min(Math.max(0,this.getY() + dy), map.getHeight() - 1);
 
     if (map.getEntity(targetX, targetY)) { //Cannot walk into other entities
       this.raiseEntityEvent('bumpEntity', {actor: this, recipient: map.getEntity(targetX, targetY)});
-      this.raiseEntityEvent('tookTurn');
       return false;
     }
 
@@ -23,7 +22,6 @@ Game.EntityMixin.WalkerCorporeal = {
       if (myMap) { //Notify map
         myMap.updateEntityLocation(this);
       }
-      this.raiseEntityEvent('tookTurn');
       return true;
     } else {
       this.raiseEntityEvent('walkForbidden', {target: targetTile});
@@ -46,8 +44,8 @@ Game.EntityMixin.Chronicle = {
     },
 
     listeners: {
-      'tookTurn': function(data) {
-        this.trackTurn();
+      'actionDone': function(data) {
+        this.trackTurnCount();
       },
 
       'madeKill': function(data) {
@@ -60,7 +58,7 @@ Game.EntityMixin.Chronicle = {
     }
   },
 
-  trackTurn: function () {
+  trackTurnCount: function () {
     this.attr._Chronicle_attr.turnCounter++;
   },
 
@@ -170,6 +168,7 @@ Game.EntityMixin.MeleeAttacker = {
     listeners: {
       'bumpEntity': function(data) {
         data.recipient.raiseEntityEvent('attacked', {attacker: this, attackPower: this.getAttackPower()});
+        this.raiseEntityEvent('actionDone');
       }
     }
   },
@@ -209,5 +208,112 @@ Game.EntityMixin.PlayerMessager = {
         //Game.renderMessage();
       }
     },
+  }
+};
+
+Game.EntityMixin.PlayerActor = {
+  META: {
+    mixinName: "PlayerActor",
+    mixinGroup: "Actor",
+    stateNamespace: "_PlayerActor_attr",
+    stateModel: {
+      baseActionDuration: 1000,
+      actingState: false,
+      currentActionDuration: 1000
+    },
+
+    init: function(template) {
+      Game.Scheduler.add(this, true, 1);
+    },
+
+    listeners: {
+      'actionDone': function(data) {
+        Game.Scheduler.setDuration(this.getCurrentActionDuration());
+        this.setCurrentActionDuration(this.getBaseActionDuration() + Game.util.randomInt(-5, 5));
+        Game.TimeEngine.unlock();
+        setTimeout(function() {Game.TimeEngine.unlock();}, 1);
+      }
+    }
+  },
+
+  getBaseActionDuration: function () {
+    return this.attr._PlayerActor_attr.baseActionDuration;
+  },
+
+  setBaseActionDuration: function (n) {
+    this.attr._PlayerActor_attr.baseActionDuration = n;
+  },
+
+  getCurrentActionDuration: function () {
+    return this.attr._PlayerActor_attr.currentActionDuration;
+  },
+
+  setCurrentActionDuration: function (n) {
+    this.attr._PlayerActor_attr.currentActionDuration = n;
+  },
+
+  isActing: function(state) {
+    if (state !== undefined) {
+      this.attr._PlayerActor_attr.actingState = state;
+    }
+    return this.attr._PlayerActor_attr.actingState;
+  },
+
+  act: function() {
+    if (this.isActing()) {
+      return;
+    }
+    this.isActing(true);
+    Game.refresh();
+    Game.TimeEngine.lock();
+    this.isActing(false);
+  }
+};
+
+Game.EntityMixin.WanderActor = {
+  META: {
+    mixinName: 'WanderActor',
+    mixinGroup: 'Actor',
+    stateNamespace: '_WanderActor_attr',
+    stateModel:  {
+      baseActionDuration: 1000,
+      currentActionDuration: 1000
+    },
+
+    init: function (template) {
+      Game.Scheduler.add(this, true, Game.util.randomInt(2, this.getBaseActionDuration()));
+    }
+  },
+
+  getBaseActionDuration: function () {
+    return this.attr._WanderActor_attr.baseActionDuration;
+  },
+
+  setBaseActionDuration: function (n) {
+    this.attr._WanderActor_attr.baseActionDuration = n;
+  },
+
+  getCurrentActionDuration: function () {
+    return this.attr._WanderActor_attr.currentActionDuration;
+  },
+
+  setCurrentActionDuration: function (n) {
+    this.attr._WanderActor_attr.currentActionDuration = n;
+  },
+
+  getMove: function () {
+    return Game.util.positionsAdjacentTo({x: 0, y: 0}).random();
+  },
+
+  act: function () {
+    Game.TimeEngine.lock();
+    var move = this.getMove();
+    if (this.hasMixin('Walker')) {
+      this.tryWalk(this.getMap(),move.x, move.y);
+    }
+    Game.Scheduler.setDuration(this.getCurrentActionDuration());
+    this.setCurrentActionDuration(this.getBaseActionDuration() + Game.util.randomInt(-10, 10));
+    this.raiseEntityEvent('actionDone');
+    Game.TimeEngine.unlock();
   }
 };
