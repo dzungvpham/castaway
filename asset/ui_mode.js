@@ -199,6 +199,7 @@ Game.UIMode.gamePersistence = {
     this._storedKeyBinding = Game.KeyBinding.getKeyBinding();
     Game.KeyBinding.setKeyBinding('persist');
     Game.refresh();
+    setTimeout(function() {Game.specialMessage(" ");}, 1);
   },
 
   exit: function() {
@@ -208,7 +209,7 @@ Game.UIMode.gamePersistence = {
     if (Game.isStarted()) {
       display.drawText(5, 5, Game.UIMode.DEFAULT_COLOR_STR + "Press S to save, L to load, N for new game, ESC to resume");
     } else {
-      display.drawText(5, 5, Game.UIMode.DEFAULT_COLOR_STR + "Press S to save, L to load, N for new game");
+      display.drawText(5, 5, Game.UIMode.DEFAULT_COLOR_STR + "Press L to load, N for new game");
     }
   },
 
@@ -381,8 +382,11 @@ Game.UIMode.gameLose = {
 Game.UIMode.LAYER_textReading = {
   _storedKeyBinding: '',
   _text: 'default',
+  _renderY: 0,
+  _renderScrollLimit: 0,
 
   enter: function() {
+    this._renderY = 0;
     this._storedKeyBinding = Game.KeyBinding.getKeyBinding();
     Game.KeyBinding.setKeyBinding('LAYER_textReading');
     Game.refresh();
@@ -396,7 +400,11 @@ Game.UIMode.LAYER_textReading = {
 
   render: function(display) {
     var dim = Game.util.getDisplayDim(display);
-    display.drawText(1, 1, Game.UIMode.DEFAULT_COLOR_STR + this._text, dim.w - 2);
+    var linesTaken = display.drawText(1, this._renderY, Game.UIMode.DEFAULT_COLOR_STR + this._text, dim.w - 2);
+    this._renderScrollLimit = dim.h - linesTaken;
+    if (this._renderScrolLimit > 0) {
+      this._renderScrollLimit = 0;
+    }
   },
 
   handleInput: function(inputType, inputData) {
@@ -404,8 +412,25 @@ Game.UIMode.LAYER_textReading = {
     if (!actionBinding) {
       return false;
     }
-    if (actionBinding.actionKey == "CANCEL") {
-      Game.removeUIMode();
+    switch (actionBinding.actionKey) {
+      case "CANCEL":
+        Game.removeUIMode();
+        break;
+      case "DATA_NAV_UP":
+        this._renderY--;
+        if (this._renderY < this._renderScrolLimit) {
+          this._renderY = this._renderScrollLimit;
+        }
+        Game.renderMain();
+        return true;
+      case "DATA_NAV_DOWN":
+        this._renderY++;
+        if (this._renderY > 0) {
+          this._renderY = 0;
+        }
+        Game.renderMain();
+        return true;
+
     }
   },
 

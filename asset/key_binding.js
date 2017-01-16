@@ -105,7 +105,7 @@ Game.KeyBinding = {
       movementHelpTemplate = movementHelpTemplate.replace('mDL',Game.KeyBinding.Action.MOVE_DL[this._curBindingKey].label);
       movementHelpTemplate = movementHelpTemplate.replace('mD',Game.KeyBinding.Action.MOVE_D[this._curBindingKey].label);
       movementHelpTemplate = movementHelpTemplate.replace('mDR',Game.KeyBinding.Action.MOVE_DR[this._curBindingKey].label);
-      this._bindingHelpText = "movement\n"+movementHelpTemplate + "\n"+ this._bindingHelpText;
+      this._bindingHelpText = "Movement\n"+movementHelpTemplate + "\n"+ this._bindingHelpText;
     }
   },
 
@@ -188,7 +188,13 @@ Game.KeyBinding = {
       waxd  : {label:'c' ,inputMatch:ROT.VK_C       ,inputType:'keydown' ,inputMetaShift:false ,inputMetaCtrl:false}
     },
 
-    //HELP action definition goes here
+    DATA_NAV_UP : {action_group:'data_nav' ,guid:Game.util.uniqueID() ,ordering:4.1 ,short:'up' ,long :'scroll content up',
+      LAYER_textReading: {label:']'     ,inputMatch:']'      ,inputType:'keypress' ,inputMetaShift:false ,inputMetaCtrl:false}
+    },
+    DATA_NAV_DOWN : {action_group:'data_nav' ,guid:Game.util.uniqueID() ,ordering:4.2 ,short:'down' ,long :'scroll content down',
+      LAYER_textReading: {label:'['     ,inputMatch:'['      ,inputType:'keypress' ,inputMetaShift:false ,inputMetaCtrl:false}
+    },
+
     HELP : {action_group:'meta' ,guid :Game.util.uniqueID() ,ordering:1 ,short:'help' ,long:'show which keys do which commands',
       all: {label:'?'     ,inputMatch:'?'      ,inputType:'keypress' ,inputMetaShift:true ,inputMetaCtrl:false}
     },
