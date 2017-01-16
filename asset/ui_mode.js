@@ -1,7 +1,8 @@
 Game.UIMode = {};
 
-Game.UIMode.DEFAUlT_FG = '#fff';
+Game.UIMode.DEFAULT_FG = '#fff';
 Game.UIMode.DEFAULT_BG = '#000';
+Game.UIMode.DEFAULT_COLOR_STR = '%c{' + Game.UIMode.DEFAULT_FG + '}%b{' + Game.UIMode.DEFAULT_BG + '}';
 
 Game.UIMode.gameStart = {
   enter: function() {
@@ -15,12 +16,12 @@ Game.UIMode.gameStart = {
   },
 
   render: function(display) {
-    display.drawText(5, 5, "Press any key to play");
+    display.drawText(5, 5, Game.UIMode.DEFAULT_COLOR_STR + "Press any key to play");
   },
 
   handleInput: function(inputType, inputData) {
     if (inputData.charCode !== 0) {
-      Game.switchUIMode(Game.UIMode.gamePlay);
+      Game.switchUIMode("gamePlay");
     }
   }
 }
@@ -28,9 +29,9 @@ Game.UIMode.gameStart = {
 Game.UIMode.gamePlay = {
   attr: {
       _mapID: null,
+      _avatarID: null,
       _camX: 0,
-      _camY: 0,
-      _avatarID: null
+      _camY: 0
   },
 
   JSON_KEY: 'UIMode_gamePlay',
@@ -41,7 +42,7 @@ Game.UIMode.gamePlay = {
     if (this.attr._avatarID) {
       this.setCameraToAvatar();
     }
-    Game.KeyBinding.setKeyBinding(Game.UIMode.gamePersistence._storedKeyBinding);
+
     Game.TimeEngine.unlock();
     Game.refresh();
   },
@@ -54,7 +55,7 @@ Game.UIMode.gamePlay = {
   render: function(display) {
     this.getMap().renderOn(display, this.attr._camX, this.attr._camY);
     this.renderAvatar(display);
-    display.drawText(0, 0, "Press W to win, L to lose, = to save/load/start new game");
+    display.drawText(0, 0, Game.UIMode.DEFAULT_COLOR_STR + "Press = to save/load/start new game");
   },
 
   getMap: function() {
@@ -140,7 +141,7 @@ Game.UIMode.gamePlay = {
     } else if (actionBinding.actionKey == 'CHANGE_BINDINGS') {
       Game.KeyBinding.swapToNextKeyBinding();
     } else if (actionBinding.actionKey == 'PERSISTENCE') {
-      Game.switchUIMode(Game.UIMode.gamePersistence);
+      Game.switchUIMode("gamePersistence");
     }
 
     Game.refresh();
@@ -159,7 +160,7 @@ Game.UIMode.gamePlay = {
     var map = this.getMap();
     map.addEntity(this.getAvatar(), map.getRandomWalkableLocation());
     this.setCameraToAvatar();
-    for (var count = 0; count < 10; count++) {
+    for (var count = 0; count < 10; count++) { //Not consistent
        map.addEntity(Game.EntityGenerator.create('moss'), map.getRandomWalkableLocation());
        map.addEntity(Game.EntityGenerator.create('newt'), map.getRandomWalkableLocation());
     }
@@ -171,38 +172,6 @@ Game.UIMode.gamePlay = {
 
   fromJSON: function (json) {
     Game.UIMode.gamePersistence.BASE_fromJSON.call(this, json);
-  }
-}
-
-Game.UIMode.gameWin = {
-  enter: function() {
-  },
-
-  exit: function() {
-  },
-
-  render: function(display) {
-    display.drawText(5, 5, "You won!");
-  },
-
-  handleInput: function(inputType, inputData) {
-    Game.Message.clear();
-  }
-}
-
-Game.UIMode.gameLose = {
-  enter: function() {
-  },
-
-  exit: function() {
-  },
-
-  render: function(display) {
-    display.drawText(5, 5, "You lose!");
-  },
-
-  handleInput: function(inputType, inputData) {
-    Game.Message.clear();
   }
 }
 
@@ -221,9 +190,9 @@ Game.UIMode.gamePersistence = {
 
   render: function(display) {
     if (Game.isStarted()) {
-      display.drawText(5, 5, "Press S to save, L to load, N for new game, ESC to resume");
+      display.drawText(5, 5, Game.UIMode.DEFAULT_COLOR_STR + "Press S to save, L to load, N for new game, ESC to resume");
     } else {
-      display.drawText(5, 5, "Press S to save, L to load, N for new game");
+      display.drawText(5, 5, Game.UIMode.DEFAULT_COLOR_STR + "Press S to save, L to load, N for new game");
     }
   },
 
@@ -240,7 +209,7 @@ Game.UIMode.gamePersistence = {
      this.newGame();
     } else if (actionBinding.actionKey == 'CANCEL') {
       if (Game.isStarted()) {
-        Game.switchUIMode(Game.UIMode.gamePlay);
+        Game.switchUIMode("gamePlay");
       }
     }
     return false;
@@ -260,7 +229,7 @@ Game.UIMode.gamePersistence = {
       Game.DATASTORE.SCHEDULE_TIME = Game.Scheduler._queue.getTime() - 1; // offset by 1 so that when the engine is started after restore the queue state will match that as when it was saved
 
       window.localStorage.setItem(Game._PERSISTENCE_NAMESPACE, JSON.stringify(Game.DATASTORE));
-      Game.switchUIMode(Game.UIMode.gamePlay);
+      Game.switchUIMode("gamePlay");
     }
   },
 
@@ -294,7 +263,6 @@ Game.UIMode.gamePersistence = {
 
     Game.UIMode.gamePlay.attr = state_data.GAME_PLAY;
     Game.Message.attr = state_data.MESSAGE;
-    this._storedKeyBinding = state_data.KEY_BINDING_SET;
 
     Game.initTimeEngine();
       for (var schedItemId in state_data.SCHEDULE) {
@@ -307,7 +275,9 @@ Game.UIMode.gamePersistence = {
       }
       Game.Scheduler._queue._time = state_data.SCHEDULE_TIME;
 
-    Game.switchUIMode(Game.UIMode.gamePlay);
+    Game.switchUIMode("gamePlay");
+    Game.KeyBinding.setKeyBinding(state_data.KEY_BINDING_SET)
+    Game.KeyBinding.informPlayer();
   },
 
   newGame: function() {
@@ -317,7 +287,7 @@ Game.UIMode.gamePersistence = {
     Game.initTimeEngine();
     Game.setRandomSeed(5 + Math.floor(Game.TRANSIENT_RNG.getUniform() * 100000));
     Game.UIMode.gamePlay.setupNewGame();
-    Game.switchUIMode(Game.UIMode.gameStart);
+    Game.switchUIMode("gameStart");
   },
 
   localStorageAvailable: function() {
@@ -347,5 +317,73 @@ Game.UIMode.gamePersistence = {
       using_state_hash = state_hash_name;
     }
     this[using_state_hash] = JSON.parse(json);
+  }
+}
+
+Game.UIMode.gameWin = {
+  enter: function() {
+  },
+
+  exit: function() {
+  },
+
+  render: function(display) {
+    display.drawText(5, 5, Game.UIMode.DEFAULT_COLOR_STR + "You won!");
+  },
+
+  handleInput: function(inputType, inputData) {
+    Game.Message.clear();
+  }
+}
+
+Game.UIMode.gameLose = {
+  enter: function() {
+  },
+
+  exit: function() {
+  },
+
+  render: function(display) {
+    display.drawText(5, 5, Game.UIMode.DEFAULT_COLOR_STR + "You lose!");
+  },
+
+  handleInput: function(inputType, inputData) {
+    Game.Message.clear();
+  }
+}
+
+Game.UIMode.textReading = {
+  _storedKeyBinding: '',
+  _text: '',
+
+  enter: function() {
+    this._storedKeyBinding = Game.KeyBinding.getKeyBinding();
+    Game.KeyBinding.setKeyBinding('textReading');
+    Game.refresh();
+  },
+
+  exit: function() {
+    Game.KeyBinding.setKeyBinding(this._storedKeyBinding);
+    Game.refresh();
+  },
+
+  render: function(display) {
+    var dim = Game.util.getDisplayDim(display);
+    display.drawText(5, 5, Game.UIMode.DEFAULT_COLOR_STR + this._text, dim.w - 2);
+  },
+
+  handleInput: function(inputType, inputData) {
+    var actionBinding = Game.KeyBinding.getInputBinding(inputType, inputData);
+    if (!actionBinding) {
+      return false;
+    }
+  },
+
+  getText: function() {
+    return this._text;
+  },
+
+  setText: function(text) {
+    this._text = text;
   }
 }

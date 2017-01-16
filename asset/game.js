@@ -14,7 +14,7 @@ window.onload = function() {
       Game.getDisplay('message').getContainer()
     );
 
-    Game.switchUIMode(Game.UIMode.gamePersistence);
+    Game.switchUIMode("gamePersistence");
   }
 };
 
@@ -24,6 +24,7 @@ var Game = {
   _randomSeed: null,
   _DISPLAY_SPACING: 1.1,
   _curUIMode: null,
+  _UIModeNameStack: [],
   _game: null,
   DATASTORE: {},
   TRANSIENT_RNG: null,
@@ -64,8 +65,8 @@ var Game = {
 
     var bindEventToUIMode = function(eventType) {
       window.addEventListener(eventType, function(evt) {
-          if (Game._curUIMode !== null) {
-            Game._curUIMode.handleInput(eventType, evt);
+          if (Game.getCurUIMode() !== null) {
+            Game.getCurUIMode().handleInput(eventType, evt);
           }
         });
     };
@@ -105,18 +106,18 @@ var Game = {
 
   renderMain: function() {
     this.getDisplay('main').clear();
-    if (this._curUIMode) {
-      this._curUIMode.render(this.getDisplay('main'));
+    if (this.getCurUIMode()) {
+      this.getCurUIMode().render(this.getDisplay('main'));
     }
   },
 
   renderAvatar: function() {
     this.getDisplay('avatar').clear();
-    if (this._curUIMode === null) {
+    if (this.getCurUIMode() === null) {
       return;
    }
-    if (this._curUIMode.hasOwnProperty('renderAvatarInfo')) {
-      this._curUIMode.renderAvatarInfo(this.getDisplay('avatar'));
+    if (this.getCurUIMode().hasOwnProperty('renderAvatarInfo')) {
+      this.getCurUIMode().renderAvatarInfo(this.getDisplay('avatar'));
     }
   },
 
@@ -125,21 +126,9 @@ var Game = {
   },
 
   eventHandler: function(eventType, evt) {
-    if (this._curUIMode !== null) {
-      this._curUIMode.handleInput(eventType, evt);
+    if (this.getCurUIMode() !== null) {
+      this.getCurUIMode().handleInput(eventType, evt);
     }
-  },
-
-  switchUIMode: function(newUIMode) {
-    if (this._curUIMode !== null) {
-      this._curUIMode.exit();
-    }
-    this._curUIMode = newUIMode;
-    if (this._curUIMode !== null) {
-      this.clearDisplayAll();
-      this._curUIMode.enter();
-    }
-    this.renderDisplayAll();
   },
 
   refresh: function() {
@@ -157,5 +146,44 @@ var Game = {
         disp.clear();
       }
     }
+  },
+
+  switchUIMode: function(newUIModeName) {
+    var curUIMode = this.getCurUIMode();
+    if (curUIMode !== null) {
+      curUIMode.exit();
+    }
+    this._UIModeNameStack[0] = newUIModeName;
+    var newUIMode = Game.UIMode[newUIModeName];
+    if (newUIMode) {
+      newUIMode.enter();
+    }
+    this.renderDisplayAll();
+  },
+
+  getCurUIMode: function() {
+    var curUIModeName = this._UIModeNameStack[0];
+    if (curUIModeName) {
+      return Game.UIMode[curUIModeName];
+    }
+    return null;
+  },
+
+  addUIMode: function(newUIModeName) {
+    this._UIModeNameStack.unshift(newUIModeName);
+    var newUIMode = Game.UIMode[newUIModeName];
+    if (newUIMode) {
+      newUIMode.enter();
+    }
+    this.renderDisplayAll();
+  },
+
+  removeUIMode: function() {
+    var curUIMode = this.getCurUIMode();
+    if (curUIMode) {
+      curUIMode.exit();
+    }
+    this._UIModeNameStack.shift();
+    this.renderDisplayAll();
   }
 };
