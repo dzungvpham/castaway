@@ -155,6 +155,7 @@ Game.UIMode.gamePlay = {
         Game.switchUIMode("gamePersistence");
         break;
       case "HELP":
+        Game.UIMode.LAYER_textReading.setText(Game.KeyBinding.getBindingHelpText());
         Game.addUIMode("LAYER_textReading");
         break;
     }
@@ -229,9 +230,11 @@ Game.UIMode.gamePersistence = {
       case "CANCEL":
         if (Game.isStarted()) {
           Game.switchUIMode("gamePlay");
+          Game.KeyBinding.setKeyBinding(this._storedKeyBinding);
         }
         break;
       case "HELP":
+        Game.UIMode.LAYER_textReading.setText(Game.KeyBinding.getBindingHelpText());
         Game.addUIMode("LAYER_textReading");
         break;
     }
@@ -383,16 +386,17 @@ Game.UIMode.LAYER_textReading = {
     this._storedKeyBinding = Game.KeyBinding.getKeyBinding();
     Game.KeyBinding.setKeyBinding('LAYER_textReading');
     Game.refresh();
+    Game.specialMessage("[ESC] to exit, [ and ] for scrolling");
   },
 
   exit: function() {
     Game.KeyBinding.setKeyBinding(this._storedKeyBinding);
-    Game.refresh();
+    setTimeout(function() {Game.refresh();}, 1);
   },
 
   render: function(display) {
     var dim = Game.util.getDisplayDim(display);
-    display.drawText(5, 5, Game.UIMode.DEFAULT_COLOR_STR + this._text, dim.w - 2);
+    display.drawText(1, 1, Game.UIMode.DEFAULT_COLOR_STR + this._text, dim.w - 2);
   },
 
   handleInput: function(inputType, inputData) {

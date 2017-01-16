@@ -1,3 +1,10 @@
+if (!String.prototype.startsWith) {
+  String.prototype.startsWith = function(str, pos) {
+    pos = pos || 0;
+    return this.indexOf(str, pos) === pos;
+  }
+}
+
 Game.util = {
 
   ID_SEQUENCE: 0,
