@@ -120,28 +120,43 @@ Game.UIMode.gamePlay = {
       return false;
     }
     var tookTurn = false;
-    if (actionBinding.actionKey == 'MOVE_UL') {
-      tookTurn = this.moveAvatar(-1, -1);
-    } else if (actionBinding.actionKey == 'MOVE_U') {
-      tookTurn = this.moveAvatar(0 , -1);
-    } else if (actionBinding.actionKey == 'MOVE_UR') {
-      tookTurn = this.moveAvatar(1, -1);
-    } else if (actionBinding.actionKey == 'MOVE_L') {
-      tookTurn = this.moveAvatar(-1, 0);
-    } else if (actionBinding.actionKey == 'MOVE_WAIT') {
-      tookTurn = true;
-    } else if (actionBinding.actionKey == 'MOVE_R') {
-      tookTurn = this.moveAvatar(1, 0);
-    } else if (actionBinding.actionKey == 'MOVE_DL') {
-      tookTurn = this.moveAvatar(-1, 1);
-    } else if (actionBinding.actionKey == 'MOVE_D') {
-      tookTurn = this.moveAvatar(0, 1);
-    } else if (actionBinding.actionKey == 'MOVE_DR') {
-      tookTurn = this.moveAvatar(1, 1);
-    } else if (actionBinding.actionKey == 'CHANGE_BINDINGS') {
-      Game.KeyBinding.swapToNextKeyBinding();
-    } else if (actionBinding.actionKey == 'PERSISTENCE') {
-      Game.switchUIMode("gamePersistence");
+    switch (actionBinding.actionKey) {
+      case "MOVE_UL":
+        tookTurn = this.moveAvatar(-1, -1);
+        break;
+      case "MOVE_U":
+        tookTurn = this.moveAvatar(0, -1);
+        break;
+      case "MOVE_UR":
+        tookTurn = this.moveAvatar(1, -1);
+        break;
+      case "MOVE_L":
+        tookTurn = this.moveAvatar(-1, 0);
+        break;
+      case "MOVE_WAIT":
+        tookTurn = true;
+        break;
+      case "MOVE_R":
+        tookTurn = this.moveAvatar(1, 0);
+        break;
+      case "MOVE_DL":
+        tookTurn = this.moveAvatar(-1, 1);
+        break;
+      case "MOVE_D":
+        tookTurn = this.moveAvatar(0, 1);
+        break;
+      case "MOVE_DR":
+        tookTurn = this.moveAvatar(1, 1);
+        break;
+      case "CHANGE_BINDINGS":
+        Game.KeyBinding.swapToNextKeyBinding();
+        break;
+      case "PERSISTENCE":
+        Game.switchUIMode("gamePersistence");
+        break;
+      case "HELP":
+        Game.addUIMode("LAYER_textReading");
+        break;
     }
 
     Game.refresh();
@@ -201,16 +216,24 @@ Game.UIMode.gamePersistence = {
     if (!actionBinding) {
       return false;
     }
-    if (actionBinding.actionKey == 'PERSISTENCE_SAVE') {
-     this.saveGame();
-    } else if (actionBinding.actionKey == 'PERSISTENCE_LOAD') {
-     this.loadGame();
-    } else if (actionBinding.actionKey == 'PERSISTENCE_NEW') {
-     this.newGame();
-    } else if (actionBinding.actionKey == 'CANCEL') {
-      if (Game.isStarted()) {
-        Game.switchUIMode("gamePlay");
-      }
+    switch (actionBinding.actionKey) {
+      case "PERSISTENCE_SAVE":
+        this.saveGame();
+        break;
+      case "PERSISTENCE_LOAD":
+        this.loadGame();
+        break;
+      case "PERSISTENCE_NEW":
+        this.newGame();
+        break;
+      case "CANCEL":
+        if (Game.isStarted()) {
+          Game.switchUIMode("gamePlay");
+        }
+        break;
+      case "HELP":
+        Game.addUIMode("LAYER_textReading");
+        break;
     }
     return false;
   },
@@ -221,12 +244,12 @@ Game.UIMode.gamePersistence = {
       Game.DATASTORE.MESSAGE = Game.Message.attr;
       Game.DATASTORE.KEY_BINDING_SET = this._storedKeyBinding;
       Game.DATASTORE.SCHEDULE = {};
-      // NOTE: offsetting times by 1 so later restore can just drop them in and go
+      //offsetting times by 1 so later restore can just drop them in and go
       Game.DATASTORE.SCHEDULE[Game.Scheduler._current.getID()] = 1;
       for (var i = 0; i < Game.Scheduler._queue._eventTimes.length; i++) {
         Game.DATASTORE.SCHEDULE[Game.Scheduler._queue._events[i].getID()] = Game.Scheduler._queue._eventTimes[i] + 1;
       }
-      Game.DATASTORE.SCHEDULE_TIME = Game.Scheduler._queue.getTime() - 1; // offset by 1 so that when the engine is started after restore the queue state will match that as when it was saved
+      Game.DATASTORE.SCHEDULE_TIME = Game.Scheduler._queue.getTime() - 1; //offset by 1 so that when the engine is started after restore the queue state will match that as when it was saved
 
       window.localStorage.setItem(Game._PERSISTENCE_NAMESPACE, JSON.stringify(Game.DATASTORE));
       Game.switchUIMode("gamePlay");
@@ -287,7 +310,7 @@ Game.UIMode.gamePersistence = {
     Game.initTimeEngine();
     Game.setRandomSeed(5 + Math.floor(Game.TRANSIENT_RNG.getUniform() * 100000));
     Game.UIMode.gamePlay.setupNewGame();
-    Game.switchUIMode("gameStart");
+    setTimeout(function(){ Game.switchUIMode("gameStart"); }, 1);
   },
 
   localStorageAvailable: function() {
@@ -352,13 +375,13 @@ Game.UIMode.gameLose = {
   }
 }
 
-Game.UIMode.textReading = {
+Game.UIMode.LAYER_textReading = {
   _storedKeyBinding: '',
-  _text: '',
+  _text: 'default',
 
   enter: function() {
     this._storedKeyBinding = Game.KeyBinding.getKeyBinding();
-    Game.KeyBinding.setKeyBinding('textReading');
+    Game.KeyBinding.setKeyBinding('LAYER_textReading');
     Game.refresh();
   },
 
@@ -376,6 +399,9 @@ Game.UIMode.textReading = {
     var actionBinding = Game.KeyBinding.getInputBinding(inputType, inputData);
     if (!actionBinding) {
       return false;
+    }
+    if (actionBinding.actionKey == "CANCEL") {
+      Game.removeUIMode();
     }
   },
 

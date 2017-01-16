@@ -25,24 +25,23 @@ Game.KeyBinding = {
   },
 
   informPlayer: function () {
-    Game.Message.send('using '+this._curBindingKey+' key bindings');
+    Game.Message.send('using ' + this._curBindingKey + ' key bindings');
     Game.renderMessage();
   },
 
   calcBindingLookups:function () {
-    // console.log('calcBindingLookups for '+this._curBindingKey);
     this._currentBindingLookup = {
-      keydown:{
-        nometa:{},
-        ctrlshift:{},
-        shift:{},
-        ctrl:{}
+      keydown: {
+        nometa: {},
+        ctrlshift: {},
+        shift: {},
+        ctrl: {}
       },
-      keypress:{
-        nometa:{},
-        ctrlshift:{},
-        shift:{},
-        ctrl:{}
+      keypress: {
+        nometa: {},
+        ctrlshift: {},
+        shift: {},
+        ctrl: {}
       }
     };
     for (var actionLookupKey in this.Action) {
@@ -145,10 +144,13 @@ Game.KeyBinding = {
     },
 
     //HELP action definition goes here
+    HELP : {action_group:'meta' ,guid :Game.util.uniqueID() ,ordering:1 ,short:'help' ,long:'show which keys do which commands',
+      all: {label:'?'     ,inputMatch:'?'      ,inputType:'keypress' ,inputMetaShift:true ,inputMetaCtrl:false}
+    },
     CHANGE_BINDINGS : {action_group:'meta' ,guid :Game.util.uniqueID() ,ordering:1 ,short:'controls' ,long:'change which keys do which commands',
       all: {label:'\\'  ,inputMatch:ROT.VK_BACK_SLASH ,inputType:'keydown' ,inputMetaShift:false ,inputMetaCtrl:false}
     },
-    CANCEL          : {action_group:'meta' ,guid :Game.util.uniqueID() ,ordering:1 ,short:'cancel'   ,long:'cancel/close the current action/screen',
+    CANCEL: {action_group:'meta' ,guid :Game.util.uniqueID() ,ordering:1 ,short:'cancel'   ,long:'cancel/close the current action/screen',
       all: {label:'Esc' ,inputMatch:ROT.VK_ESCAPE     ,inputType:'keydown' ,inputMetaShift:false ,inputMetaCtrl:false}
     }
   }
