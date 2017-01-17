@@ -20,6 +20,72 @@ Game.EntityMixin.Sight = {
 
   setSightRadius: function(r) {
     this.attr._Sight_attr.sightRadius = r;
+  },
+
+  getVisibleCells: function() {
+    var visibleCells = {'byDistance': {}};
+    for (var i = 0; i <= this.getSightRadius(); i++) {
+      visibleCells.byDistance[i] = {};
+    }
+    this.getMap().getFOV().compute(this.getX(), this.getY(), this.getSightRadius(), function(x, y, r, v) {
+      visibleCells[x + ',' + y] = true;
+      visibleCells.byDistance[r][x + ',' + y] = true;
+    });
+    return visibleCells;
+  },
+
+  canSeeCoord: function(x_or_pos, y) {
+    var otherX = x_or_pos;
+    var otherY = y;
+    if (typeof x_or_pos == 'object') {
+      otherX = x_or_pos.x;
+      otherY = x_or_pos.y;
+    }
+    var inFOV = this.getVisibleCells();
+    return inFOV[otherX + ',' + otherY] || false;
+  },
+
+  canSeeEntity: function(entity) {
+    if (!entity || entity.getMapID() !== this.getMapID()) {
+      return false;
+    }
+    return this.canSeeCoord(entity.getPos());
+  },
+
+  canSeeCoord_delta: function(dx, dy) {
+    return this.canseeCoord(this.getX() + dx, this.getY() + dy);
+  }
+};
+
+Game.EntityMixin.MapMemory = {
+  META: {
+    mixinName: "MapMemory",
+    mixinGroup: "MapMemory",
+    stateNamespace: "_MapMemory_attr",
+    stateModel: {
+      mapHash: {}
+    },
+
+    init: function(template) {
+      this.attr._MapMemory_attr.mapHash = template.mapHash || {};
+    }
+  },
+
+  rememberCoords: function(coordSet, mapID) { //Remember seen coords
+    var mapKey = mapID || this.getMapID();
+    if (!this.attr._MapMemory_attr.mapHash[mapKey]) {
+      this.attr._MapMemory_attr.mapHash[mapKey] = {};
+    }
+    for (var coord in coordSet) {
+      if (coordSet.hasOwnProperty(coord) && coord != "byDistance") {
+        this.attr._MapMemory_attr.mapHash[mapKey][coord] = true;
+      }
+    }
+  },
+
+  getRememberedCoords: function(mapID) {
+    var mapKey = mapID || this.getMapID();
+    return this.attr._MapMemory_attr.mapHash[mapKey] || {};
   }
 };
 

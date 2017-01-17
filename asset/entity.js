@@ -99,6 +99,10 @@ Game.Entity.prototype.getMap = function() {
   return Game.DATASTORE.MAP[this.attr._mapID];
 };
 
+Game.Entity.prototype.getMapID = function() {
+  return this.attr._mapID;
+};
+
 Game.Entity.prototype.setMap = function(map) {
   this.attr._mapID = map.getID();
 };
