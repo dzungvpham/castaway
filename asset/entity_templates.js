@@ -6,7 +6,8 @@ Game.EntityGenerator.learn({
   fg: '#dda',
   maxHP: 10,
   curHP: 10,
-  mixins: ["PlayerActor", "PlayerMessager", "WalkerCorporeal", "Chronicle", "HitPoints", "MeleeAttacker"]
+  sightRadius: 3,
+  mixins: ["PlayerActor", "PlayerMessager", "Sight", "WalkerCorporeal", "Chronicle", "HitPoints", "MeleeAttacker"]
 });
 
 Game.EntityGenerator.learn({

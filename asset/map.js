@@ -9,10 +9,24 @@ Game.Map = function(mapTileSetName, presetID) {
     _width: this._tiles.length,
     _height: this._tiles[0].length,
     _entitiesByLocation: {},
-    _locationsByEntities: {}
+    _locationsByEntities: {},
+    _rememberedCoords: {}
   };
+  this._fov = null;
+  this.setUpFOV();
   Game.DATASTORE.MAP[this.attr._id] = this;
 };
+
+Game.Map.prototype.setUpFOV = function() {
+  var map = this;
+  this._fov = new ROT.FOV.PreciseShadowcasting(function(x, y) {
+    return !map.getTile(x, y).isOpaque();
+  }, {topology: 8});
+};
+
+Game.Map.prototype.getFOV = function() {
+  return this._fov;
+}
 
 Game.Map.prototype.getID = function() {
   return this.attr._id;
@@ -33,7 +47,7 @@ Game.Map.prototype.getTile = function(x_or_pos, y) {
     y = x_or_pos.y;
   }
 
-  if ((x < 0) || (x >= this.attr._width) || (y<0) || (y >= this.attr._height)) {
+  if ((x < 0) || (x >= this.attr._width) || (y < 0) || (y >= this.attr._height)) {
     return Game.Tile.nullTile;
   }
   return this._tiles[x][y] || Game.Tile.nullTile;
@@ -106,24 +120,83 @@ Game.Map.prototype.getRandomWalkableLocation = function() {
   });
 };
 
-Game.Map.prototype.renderOn = function (display, camX, camY) {
+Game.Map.prototype.rememberCoords = function(coords) { //Remember seen coords
+  for (var coord in coords) {
+    if (coords.hasOwnProperty(coord)) {
+      this.attr._rememberedCoords[coord] = true;
+    }
+  }
+};
+
+Game.Map.prototype.renderOn = function (display, camX, camY, showEntities, showTiles, maskRendered, memoryOnly) {
+  var entitiesVisible = (showEntities !== undefined) ? showEntities : true;
+  var tilesVisible = (showTiles !== undefined) ? showTiles : true;
+  var isMasked = (maskRendered !== undefined) ? maskRendered : false;
+  var filterForRemembered = (memoryOnly !== undefined) ? memoryOnly : true;
+
+  if (!entitiesVisible && !tilesVisible) {
+    return;
+  }
+
   var dim = Game.util.getDisplayDim(display);
   var xStart = camX - Math.round(dim.w/2); //camX & camY is at the center
   var yStart = camY - Math.round(dim.h/2);
+
   for (var x = 0; x < dim.w; x++) {
     for (var y = 0; y < dim.h; y++) {
+
       var mapPos = {x: x + xStart, y: y + yStart};
-      var tile = this.getTile(mapPos); //Draw tiles
-      if (tile.getName() == 'nullTile') {
-        tile = Game.Tile.wallTile;
+      if (filterForRemembered) {
+        if (!this.attr._rememberedCoords[mapPos.x + ',' + mapPos.y]) {
+          continue; //Skip this loop if current pos is not remembered
+        }
       }
-      tile.draw(display, x, y);
-      var entity = this.getEntity(mapPos);
-      if (entity) {
-        entity.draw(display, x, y);
+      if (tilesVisible) {
+        var tile = this.getTile(mapPos); //Draw tiles
+        if (tile.getName() == 'nullTile') {
+          tile = Game.Tile.wallTile;
+        }
+        tile.draw(display, x, y, isMasked);
+      }
+
+      if (entitiesVisible) {
+        var entity = this.getEntity(mapPos);
+        if (entity) {
+          entity.draw(display, x, y);
+        }
       }
     }
   }
+};
+
+Game.Map.prototype.renderFOVOn = function(display, camX, camY, radius) {
+  var dim = Game.util.getDisplayDim(display);
+  var xStart = camX - Math.round(dim.w/2); //camX & camY is at the center
+  var yStart = camY - Math.round(dim.h/2);
+
+  var inFOV = {};
+  this._fov.compute(camX, camY, radius, function(x, y, r, visibility) {
+    inFOV[x + ',' + y] = true;
+  });
+
+  for (var x = 0; x < dim.w; x++) {
+    for (var y = 0; y < dim.h; y++) {
+      var mapPos = {x: x + xStart, y: y + yStart};
+      if (inFOV[mapPos.x + ',' + mapPos.y]) {
+        var tile = this.getTile(mapPos); //Draw tiles
+        if (tile.getName() == 'nullTile') {
+          tile = Game.Tile.wallTile;
+        }
+        tile.draw(display, x, y);
+        var entity = this.getEntity(mapPos);
+        if (entity) {
+          entity.draw(display, x, y);
+        }
+      }
+    }
+  }
+
+  return inFOV;
 };
 
 Game.Map.prototype.toJSON = function() {

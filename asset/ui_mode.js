@@ -53,7 +53,8 @@ Game.UIMode.gamePlay = {
   },
 
   render: function(display) {
-    this.getMap().renderOn(display, this.attr._camX, this.attr._camY);
+    this.getMap().renderOn(display, this.attr._camX, this.attr._camY, false, true, true, true);
+    this.getMap().rememberCoords(this.getMap().renderFOVOn(display, this.attr._camX, this.attr._camY, this.getAvatar().getSightRadius()));
     this.renderAvatar(display);
     display.drawText(0, 0, Game.UIMode.DEFAULT_COLOR_STR + "Press = to save/load/start new game");
   },
@@ -431,7 +432,10 @@ Game.UIMode.LAYER_textReading = {
         }
         Game.renderMain();
         return true;
-
+      case "MISC":
+        this.setText(Game.Misc.Chi);
+        Game.renderMain();
+        return true;
     }
   },
 

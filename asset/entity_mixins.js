@@ -1,5 +1,28 @@
 Game.EntityMixin = {};
 
+Game.EntityMixin.Sight = {
+  META: {
+    mixinName: "Sight",
+    mixinGroup: "Sense",
+    stateNamespace: "_Sight_attr",
+    stateModel: {
+      sightRadius: 3
+    },
+
+    init: function(template) {
+      this.attr._Sight_attr.sightRadius = template.sightRadius || 3;
+    }
+  },
+
+  getSightRadius: function() {
+    return this.attr._Sight_attr.sightRadius;
+  },
+
+  setSightRadius: function(r) {
+    this.attr._Sight_attr.sightRadius = r;
+  }
+};
+
 Game.EntityMixin.WalkerCorporeal = {
   META: {
     mixinName: 'WalkerCorporeal',
@@ -184,18 +207,17 @@ Game.EntityMixin.PlayerMessager = {
     mixinGroup: 'playerMessager',
     listeners: {
       'walkForbidden': function(data) {
+        Game.Message.ageMessages();
         Game.Message.send("You cannot walk into the " + data.target.getName());
-        //Game.renderMessage();
       },
 
       'dealtDamage': function(data) {
+        Game.Message.ageMessages();
         Game.Message.send("You hit " + data.target.getName() + " for " + data.damageAmount);
-        //Game.renderMessage();
       },
 
       'madeKill': function(data) {
         Game.Message.send("You killed " + data.entityKilled.getName());
-        //Game.renderMessage();
       },
 
       'damagedBy': function(data) {

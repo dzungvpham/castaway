@@ -194,6 +194,9 @@ Game.KeyBinding = {
     DATA_NAV_DOWN : {action_group:'data_nav' ,guid:Game.util.uniqueID() ,ordering:4.2 ,short:'down' ,long :'scroll content down',
       LAYER_textReading: {label:'['     ,inputMatch:'['      ,inputType:'keypress' ,inputMetaShift:false ,inputMetaCtrl:false}
     },
+    MISC : {action_group:'data_nav', guid:Game.util.uniqueID() ,ordering:4.3 ,short:'down' ,long :'scroll content down',
+      LAYER_textReading: {label:'c'     ,inputMatch:'c'      ,inputType:'keypress' ,inputMetaShift:false ,inputMetaCtrl:false}
+    },
 
     HELP : {action_group:'meta' ,guid :Game.util.uniqueID() ,ordering:1 ,short:'help' ,long:'show which keys do which commands',
       all: {label:'?'     ,inputMatch:'?'      ,inputType:'keypress' ,inputMetaShift:true ,inputMetaCtrl:false}
