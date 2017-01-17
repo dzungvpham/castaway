@@ -122,6 +122,7 @@ Game.Entity.prototype.raiseEntityEvent = function(evt, data) {
 
 Game.Entity.prototype.destroy = function() {
   this.getMap().removeEntity(this);
+  Game.Scheduler.remove(this);
   delete Game.DATASTORE.ENTITY[this.getID()];
 };
 

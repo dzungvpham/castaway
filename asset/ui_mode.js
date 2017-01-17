@@ -179,6 +179,7 @@ Game.UIMode.gamePlay = {
     for (var count = 0; count < 10; count++) { //Not consistent
        map.addEntity(Game.EntityGenerator.create('moss'), map.getRandomWalkableLocation());
        map.addEntity(Game.EntityGenerator.create('newt'), map.getRandomWalkableLocation());
+       map.addEntity(Game.EntityGenerator.create('squirell'), map.getRandomWalkableLocation());
     }
   },
 

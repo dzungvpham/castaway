@@ -100,13 +100,13 @@ Game.EntityMixin.HitPoints = {
     stateNamespace: '_HitPoints_attr',
 
     stateModel:  {
-      maxHp: 1,
-      curHp: 1
+      maxHP: 1,
+      curHP: 1
     },
 
     init: function (template) {
-      this.attr._HitPoints_attr.maxHp = template.maxHp || 1;
-      this.attr._HitPoints_attr.curHp = template.curHp || this.attr._HitPoints_attr.maxHp;
+      this.attr._HitPoints_attr.maxHP = template.maxHP || 1;
+      this.attr._HitPoints_attr.curHP = template.curHP || this.attr._HitPoints_attr.maxHP;
     },
 
     listeners: {
@@ -127,27 +127,27 @@ Game.EntityMixin.HitPoints = {
   },
 
   getMaxHP: function () {
-    return this.attr._HitPoints_attr.maxHp;
+    return this.attr._HitPoints_attr.maxHP;
   },
 
   setMaxHP: function (n) {
-    this.attr._HitPoints_attr.maxHp = n;
+    this.attr._HitPoints_attr.maxHP = n;
   },
 
   getCurrentHP: function () {
-    return this.attr._HitPoints_attr.curHp;
+    return this.attr._HitPoints_attr.curHP;
   },
 
   setCurrentHP: function (n) {
-    this.attr._HitPoints_attr.curHp = n;
+    this.attr._HitPoints_attr.curHP = n;
   },
 
   takeHits: function (amt) {
-    this.attr._HitPoints_attr.curHp -= amt;
+    this.attr._HitPoints_attr.curHP -= amt;
   },
 
   recoverHits: function (amt) {
-    this.attr._HitPoints_attr.curHp = Math.min(this.attr._HitPoints_attr.curHp + amt, this.attr._HitPoints_attr.maxHp);
+    this.attr._HitPoints_attr.curHP = Math.min(this.attr._HitPoints_attr.curHP + amt, this.attr._HitPoints_attr.maxHP);
   }
 };
 
