@@ -53,6 +53,30 @@ Game.util = {
 
   getDisplayDim: function(display) {
     return {w: display._options.width, h: display._options.height};
+  },
+
+  compactBooleanArray_or: function(arr) {
+    if (!arr) {
+      return true;
+    }
+    for (var i = 0; i < arr.length; i++) {
+      if (arr[i]) {
+        return true;
+      }
+    }
+    return false;
+  },
+
+  compactBooleanArray_and: function(arr) {
+    if (!arr) {
+      return false;
+    }
+    for (var i = 0; i < arr.length; i++) {
+      if (!arr[i]) {
+        return false;
+      }
+    }
+    return true;
   }
 
 };

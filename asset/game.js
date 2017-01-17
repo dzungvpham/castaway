@@ -91,11 +91,15 @@ var Game = {
     return this._randomSeed;
   },
 
-  getDisplay: function (displayID) {
+  getDisplay: function(displayID) {
     if (this.display.hasOwnProperty(displayID)) {
       return this.display[displayID].o;
     }
     return null;
+  },
+
+  getAvatar: function() {
+    return Game.UIMode.gamePlay.getAvatar();
   },
 
   renderDisplayAll: function() {

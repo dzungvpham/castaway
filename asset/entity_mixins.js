@@ -11,6 +11,12 @@ Game.EntityMixin.Sight = {
 
     init: function(template) {
       this.attr._Sight_attr.sightRadius = template.sightRadius || 3;
+    },
+
+    listeners: {
+      'senseEntity': function(data) {
+        return {isEntitySensed: this.canSeeEntity(data.entity)};
+      }
     }
   },
 
@@ -99,9 +105,13 @@ Game.EntityMixin.WalkerCorporeal = {
         var map = this.getMap();
         var dx = data.dx;
         var dy = data.dy;
+        var targetX = this.getX() + dx;
+        var targetY = this.getY() + dy;
 
-        var targetX = Math.min(Math.max(0,this.getX() + dx), map.getWidth() - 1);
-        var targetY = Math.min(Math.max(0,this.getY() + dy), map.getHeight() - 1);
+        if ((targetX < 0) || (targetX >= map.getWidth()) || (targetY < 0) || (targetY >= map.getHeight())) {
+        this.raiseEntityEvent('walkForbidden',{target:Game.Tile.nullTile});
+          return {madeAdjacentMove:false};
+        }
 
         if (map.getEntity(targetX, targetY)) { //Cannot walk into other entities
           this.raiseEntityEvent('bumpEntity', {actor: this, recipient: map.getEntity(targetX, targetY)});
@@ -123,29 +133,6 @@ Game.EntityMixin.WalkerCorporeal = {
       }
     }
   },
-
-  tryWalk: function (map, dx, dy) {
-    var targetX = Math.min(Math.max(0,this.getX() + dx), map.getWidth() - 1);
-    var targetY = Math.min(Math.max(0,this.getY() + dy), map.getHeight() - 1);
-
-    if (map.getEntity(targetX, targetY)) { //Cannot walk into other entities
-      this.raiseEntityEvent('bumpEntity', {actor: this, recipient: map.getEntity(targetX, targetY)});
-      return false;
-    }
-
-    targetTile = map.getTile(targetX, targetY);
-    if (targetTile.isWalkable()) {
-      this.setPos(targetX, targetY);
-      var myMap = this.getMap();
-      if (myMap) { //Notify map
-        myMap.updateEntityLocation(this);
-      }
-      return true;
-    } else {
-      this.raiseEntityEvent('walkForbidden', {target: targetTile});
-      return false;
-    }
-  }
 };
 
 Game.EntityMixin.Chronicle = {
@@ -277,17 +264,20 @@ Game.EntityMixin.MeleeAttacker = {
     stateNamespace: '_MeleeAttacker_attr',
 
     stateModel: {
-        attackPower: 1
+        attackPower: 1,
+        attackActionDuration: 1000
     },
 
     init: function(template) {
       this.attr._MeleeAttacker_attr.attackPower = template.attackPower || 1;
+      this.attr._MeleeAttacker_attr.attackActionDuration = template.attackActionDuration || 1000;
     },
 
     listeners: {
       'bumpEntity': function(data) {
         data.recipient.raiseEntityEvent('attacked', {attacker: this, attackPower: this.getAttackPower()});
         this.raiseEntityEvent('actionDone');
+        this.setCurrentActionDuration(this.attr._MeleeAttacker_attr.attackActionDuration);
       }
     }
   },
@@ -404,6 +394,8 @@ Game.EntityMixin.WanderActor = {
 
     init: function (template) {
       Game.Scheduler.add(this, true, Game.util.randomInt(2, this.getBaseActionDuration()));
+      this.attr._WanderActor_attr.baseActionDuration = template.wanderActionDuration || 1000;
+      this.attr._WanderActor_attr.currentActionDuration = this.attr._WanderActor_attr.baseActionDuration;
     }
   },
 
@@ -425,6 +417,79 @@ Game.EntityMixin.WanderActor = {
 
   getMoveDelta: function () {
     return Game.util.positionsAdjacentTo({x: 0, y: 0}).random();
+  },
+
+  act: function () {
+    Game.TimeEngine.lock();
+    var move = this.getMoveDelta();
+    if (this.hasMixin('Walker')) {
+      this.raiseEntityEvent("adjacentMove", {dx: move.x, dy: move.y});
+    }
+    Game.Scheduler.setDuration(this.getCurrentActionDuration());
+    this.setCurrentActionDuration(this.getBaseActionDuration() + Game.util.randomInt(-10, 10));
+    this.raiseEntityEvent('actionDone');
+    Game.TimeEngine.unlock();
+  }
+};
+
+Game.EntityMixin.WanderChaserActor = {
+  META: {
+    mixinName: 'WanderActorChaser',
+    mixinGroup: 'Actor',
+    stateNamespace: '_WanderChaserActor_attr',
+    stateModel:  {
+      baseActionDuration: 1000,
+      currentActionDuration: 1000
+    },
+
+    init: function (template) {
+      Game.Scheduler.add(this, true, Game.util.randomInt(2, this.getBaseActionDuration()));
+      this.attr._WanderChaserActor_attr.baseActionDuration = template.wanderChaserActionDuration || 1000;
+      this.attr._WanderChaserActor_attr.currentActionDuration = this.attr._WanderChaserActor_attr.baseActionDuration;
+    }
+  },
+
+  getBaseActionDuration: function () {
+    return this.attr._WanderChaserActor_attr.baseActionDuration;
+  },
+
+  setBaseActionDuration: function (n) {
+    this.attr._WanderChaserActor_attr.baseActionDuration = n;
+  },
+
+  getCurrentActionDuration: function () {
+    return this.attr._WanderChaserActor_attr.currentActionDuration;
+  },
+
+  setCurrentActionDuration: function (n) {
+    this.attr._WanderChaserActor_attr.currentActionDuration = n;
+  },
+
+  getMoveDelta: function () {
+    var avatar = Game.getAvatar();
+    var senseResp = this.raiseEntityEvent("senseEntity", {entity: avatar});
+    if (Game.util.compactBooleanArray_or(senseResp.isEntitySensed)) {
+      var source = this;
+      var map = this.getMap();
+      var path = new ROT.Path.AStar(avatar.getX(), avatar.getY(), function(x, y) {
+        var entity = map.getEntity(x, y);
+        if (entity && entity !== avatar && entity !== source) {
+          return false;
+        }
+        return map.getTile(x, y).isWalkable();
+      }, {topology: 8});
+      var count = 0;
+      var moveDelta = {x: 0, y: 0};
+      path.compute(this.getX(), this.getY(), function(x, y) {
+        if (count == 1) { //2nd tile
+          moveDelta.x = x - source.getX();
+          moveDelta.y = y - source.getY();
+        }
+        count++;
+      });
+      return moveDelta;
+    }
+    return Game.util.positionsAdjacentTo({x: 0, y: 0}).random(); //If no entity found
   },
 
   act: function () {
