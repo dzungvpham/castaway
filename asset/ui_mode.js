@@ -98,8 +98,10 @@ Game.UIMode.gamePlay = {
     display.drawText(1, 7, "Killed: " + avatar.getKillCount());
   },
 
-  moveAvatar: function (dx,dy) {
-    if (this.getAvatar().tryWalk(this.getMap(), dx, dy)) {
+  moveAvatar: function (pdx, pdy) {
+    var moveResp = this.getAvatar().raiseEntityEvent("adjacentMove", {dx: pdx, dy: pdy});
+
+    if (moveResp.madeAdjacentMove && moveResp.madeAdjacentMove[0]) {
       this.setCameraToAvatar();
       return true;
     }

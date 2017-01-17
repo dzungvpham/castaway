@@ -92,7 +92,36 @@ Game.EntityMixin.MapMemory = {
 Game.EntityMixin.WalkerCorporeal = {
   META: {
     mixinName: 'WalkerCorporeal',
-    mixinGroup: 'Walker'
+    mixinGroup: 'Walker',
+
+    listeners: {
+      'adjacentMove': function(data) {
+        var map = this.getMap();
+        var dx = data.dx;
+        var dy = data.dy;
+
+        var targetX = Math.min(Math.max(0,this.getX() + dx), map.getWidth() - 1);
+        var targetY = Math.min(Math.max(0,this.getY() + dy), map.getHeight() - 1);
+
+        if (map.getEntity(targetX, targetY)) { //Cannot walk into other entities
+          this.raiseEntityEvent('bumpEntity', {actor: this, recipient: map.getEntity(targetX, targetY)});
+          return {madeAdjacentMove: false};
+        }
+
+        var targetTile = map.getTile(targetX, targetY);
+        if (targetTile.isWalkable()) {
+          this.setPos(targetX, targetY);
+          if (map) { //Notify map
+            map.updateEntityLocation(this);
+          }
+          return {madeAdjacentMove: true};
+        } else {
+          this.raiseEntityEvent('walkForbidden', {target: targetTile});
+          return false;
+        }
+        return {madeAdjacentMove: false};
+      }
+    }
   },
 
   tryWalk: function (map, dx, dy) {
@@ -394,15 +423,15 @@ Game.EntityMixin.WanderActor = {
     this.attr._WanderActor_attr.currentActionDuration = n;
   },
 
-  getMove: function () {
+  getMoveDelta: function () {
     return Game.util.positionsAdjacentTo({x: 0, y: 0}).random();
   },
 
   act: function () {
     Game.TimeEngine.lock();
-    var move = this.getMove();
+    var move = this.getMoveDelta();
     if (this.hasMixin('Walker')) {
-      this.tryWalk(this.getMap(),move.x, move.y);
+      this.raiseEntityEvent("adjacentMove", {dx: move.x, dy: move.y});
     }
     Game.Scheduler.setDuration(this.getCurrentActionDuration());
     this.setCurrentActionDuration(this.getBaseActionDuration() + Game.util.randomInt(-10, 10));

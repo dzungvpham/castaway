@@ -116,12 +116,22 @@ Game.Entity.prototype.hasMixin = function(mixin) {
 };
 
 Game.Entity.prototype.raiseEntityEvent = function(evt, data) {
+  var response = {};
   for (var i = 0; i < this._mixins.length; i++) {
     var mixin = this._mixins[i];
     if (mixin.META.listeners && mixin.META.listeners[evt]) {
-      mixin.META.listeners[evt].call(this, data);
+      var resp = mixin.META.listeners[evt].call(this, data);
+      for (var respKey in resp) {
+        if (resp.hasOwnProperty(respKey)) {
+          if (!response[respKey]) {
+            response[respKey] = [];
+          }
+          response[respKey].push(resp[respKey]);
+        }
+      }
     }
   }
+  return response;
 };
 
 Game.Entity.prototype.destroy = function() {
