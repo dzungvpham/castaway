@@ -320,6 +320,11 @@ Game.EntityMixin.PlayerActor = {
         this.setCurrentActionDuration(this.getBaseActionDuration() + Game.util.randomInt(-5, 5));
         Game.TimeEngine.unlock();
         setTimeout(function() {Game.TimeEngine.unlock();}, 1);
+      },
+
+      'killed': function(data) {
+        Game.TimeEngine.lock();
+        Game.switchUIMode("gameLose");
       }
     }
   },

@@ -33,5 +33,3 @@ Game.Symbol.prototype.draw = function (display, dispX, dispY, isMasked) {
     display.draw(dispX, dispY, this.attr._char, this.attr._fg, this.attr._bg);
   }
 };
-
-Game.Symbol.NULL_SYMBOL = new Game.Symbol();

@@ -363,6 +363,7 @@ Game.UIMode.gamePersistence = {
 
 Game.UIMode.gameWin = {
   enter: function() {
+    Game.TimeEngine.lock();
   },
 
   exit: function() {
@@ -379,6 +380,7 @@ Game.UIMode.gameWin = {
 
 Game.UIMode.gameLose = {
   enter: function() {
+    Game.TimeEngine.lock();
   },
 
   exit: function() {
