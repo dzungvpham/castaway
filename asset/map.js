@@ -130,13 +130,18 @@ Game.Map.prototype.getRandomWalkableLocation = function() {
 
 Game.Map.prototype.renderOn = function (display, camX, camY, renderOptions) {
   var opt = renderOptions || {};
-  var checkCellVisibility = opt.visibleCells !== undefined;
-  var visibleCells = opt.visibleCells || {};
-  var entitiesVisible = (opt.showEntities !== undefined) ? opt.showEntities : true;
-  var tilesVisible = (opt.showTiles !== undefined) ? opt.showTiles : true;
-  var isMasked = (opt.maskRendered !== undefined) ? opt.maskRendered : false;
 
-  if (!entitiesVisible && !tilesVisible) {
+  var checkCellVisible = opt.visibleCells !== undefined;
+  var visibleCells = opt.visibleCells || {};
+  var showVisibleEntities = (opt.showVisibleEntities !== undefined) ? opt.showVisibleEntities : true;
+  var showVisibleTiles = (opt.showVisibleTiles !== undefined) ? opt.showVisibleTiles : true;
+
+  var checkCellMasked = opt.maskedCells !== undefined;
+  var maskedCells = opt.maskedCells !== undefined;
+  var showMaskedEntities = (opt.showMaskedEntities !== undefined) ? opt.showMaskedEntities : true;
+  var showMaskedTiles = (opt.showMaskedTiles !== undefined) ? opt.showMaskedTiles : true;
+
+  if (!(showVisibleEntities || showVisibleTiles || showMaskedEntities || showMaskedTiles)) {
     return;
   }
 
@@ -148,58 +153,34 @@ Game.Map.prototype.renderOn = function (display, camX, camY, renderOptions) {
     for (var y = 0; y < dim.h; y++) {
 
       var mapPos = {x: x + xStart, y: y + yStart};
-      if (checkCellVisibility) {
+      var mapCoord = mapPos.x + ',' + mapPos.y;
+      if (!((checkCellVisible && visibleCells[mapCoord]) || (checkCellMasked && maskedCells[mapCoord]))) {
         if (!visibleCells[mapPos.x + ',' + mapPos.y]) {
-          continue; //Skip this loop if current pos is not remembered
+          continue; //Skip this loop if current pos is not to be shown (i.e not remembered)
         }
-      }
-      if (tilesVisible) {
-        var tile = this.getTile(mapPos); //Draw tiles
-        if (tile.getName() == 'nullTile') {
-          tile = Game.Tile.wallTile;
-        }
-        tile.draw(display, x, y, isMasked);
       }
 
-      if (entitiesVisible) {
-        var entity = this.getEntity(mapPos);
-        if (entity) {
+      var tile = this.getTile(mapPos); //Draw tiles
+      if (tile.getName() == 'nullTile') {
+        tile = Game.Tile.wallTile;
+      }
+      if (showVisibleTiles && visibleCells[mapCoord]) {
+        tile.draw(display, x, y);
+      } else if (showMaskedTiles && maskedCells[mapCoord]) {
+        tile.draw(display, x, y, true);
+      }
+
+      var entity = this.getEntity(mapPos);
+      if (entity) {
+        if (showVisibleEntities && visibleCells[mapCoord]) {
           entity.draw(display, x, y);
+        } else if (showMaskedEntities && maskedCells[mapCoord]) {
+          entity.draw(display, x, y, true);
         }
       }
     }
   }
 };
-
-// Game.Map.prototype.renderFOVOn = function(display, camX, camY, radius) {
-//   var dim = Game.util.getDisplayDim(display);
-//   var xStart = camX - Math.round(dim.w/2); //camX & camY is at the center
-//   var yStart = camY - Math.round(dim.h/2);
-//
-//   var inFOV = {};
-//   this._fov.compute(camX, camY, radius, function(x, y, r, visibility) {
-//     inFOV[x + ',' + y] = true;
-//   });
-//
-//   for (var x = 0; x < dim.w; x++) {
-//     for (var y = 0; y < dim.h; y++) {
-//       var mapPos = {x: x + xStart, y: y + yStart};
-//       if (inFOV[mapPos.x + ',' + mapPos.y]) {
-//         var tile = this.getTile(mapPos); //Draw tiles
-//         if (tile.getName() == 'nullTile') {
-//           tile = Game.Tile.wallTile;
-//         }
-//         tile.draw(display, x, y);
-//         var entity = this.getEntity(mapPos);
-//         if (entity) {
-//           entity.draw(display, x, y);
-//         }
-//       }
-//     }
-//   }
-//
-//   return inFOV;
-// };
 
 Game.Map.prototype.toJSON = function() {
   var json = Game.UIMode.gamePersistence.BASE_toJSON.call(this);

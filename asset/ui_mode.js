@@ -54,19 +54,11 @@ Game.UIMode.gamePlay = {
 
   render: function(display) {
     var renderOptions = {
-      showEntities: false,
-      showTiles: true,
-      maskRendered: true,
-      visibleCells: this.getAvatar().getRememberedCoords()
-    };
-    var renderOptionsFOV = {
-      showEntities: true,
-      showTiles: true,
-      visibleCells: this.getAvatar().getVisibleCells()
+      visibleCells: this.getAvatar().getVisibleCells(),
+      maskedCells: this.getAvatar().getRememberedCoords()
     };
     this.getMap().renderOn(display, this.attr._camX, this.attr._camY, renderOptions);
-    this.getMap().renderOn(display, this.attr._camX, this.attr._camY, renderOptionsFOV);
-    this.getAvatar().rememberCoords(renderOptionsFOV.visibleCells);
+    this.getAvatar().rememberCoords(renderOptions.visibleCells);
     this.renderAvatar(display);
     display.drawText(0, 0, Game.UIMode.DEFAULT_COLOR_STR + "Press = to save/load/start new game");
   },

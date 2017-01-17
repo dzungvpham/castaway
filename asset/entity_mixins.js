@@ -143,6 +143,7 @@ Game.EntityMixin.Chronicle = {
 
       'killed': function(data) {
         this.attr._Chronicle_attr.deathMessage = 'killed by ' + data.killedBy.getName();
+        Game.Message.send(this.attr._Chronicle_attr.deathMessage);
       }
     }
   },
@@ -318,7 +319,6 @@ Game.EntityMixin.PlayerActor = {
       'actionDone': function(data) {
         Game.Scheduler.setDuration(this.getCurrentActionDuration());
         this.setCurrentActionDuration(this.getBaseActionDuration() + Game.util.randomInt(-5, 5));
-        Game.TimeEngine.unlock();
         setTimeout(function() {Game.TimeEngine.unlock();}, 1);
       },
 
