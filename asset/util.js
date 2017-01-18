@@ -1,3 +1,10 @@
+if (!String.prototype.startsWith) {
+  String.prototype.startsWith = function(str, pos) {
+    pos = pos || 0;
+    return this.indexOf(str, pos) === pos;
+  }
+}
+
 Game.util = {
 
   ID_SEQUENCE: 0,
@@ -34,14 +41,63 @@ Game.util = {
 
   positionsAdjacentTo: function (pos) {
     var adjPos = [];
-    for (var dx = -1; dx <= 1; dx++) {
-      for (var dy = -1; dy <= 1; dy++) {
-        if (dx !== 0 && dy !== 0) {
-          adjPos.push({x:pos.x+dx,y:pos.y+dy});
-        }
+    adjPos.push(
+      {x:pos.x + 1, y: pos.y},
+      {x:pos.x - 1, y: pos.y},
+      {x:pos.x, y: pos.y + 1},
+      {x:pos.x, y: pos.y - 1}
+    );
+    return adjPos;
+  },
+
+  getDisplayDim: function(display) {
+    return {w: display._options.width, h: display._options.height};
+  },
+
+  compactBooleanArray_or: function(arr) {
+    if (!arr) {
+      return true;
+    }
+    for (var i = 0; i < arr.length; i++) {
+      if (arr[i]) {
+        return true;
       }
     }
-    return adjPos;
+    return false;
+  },
+
+  compactBooleanArray_and: function(arr) {
+    if (!arr) {
+      return false;
+    }
+    for (var i = 0; i < arr.length; i++) {
+      if (!arr[i]) {
+        return false;
+      }
+    }
+    return true;
+  },
+
+  compactNumberArray_add: function (arr) {
+    if (!arr) {
+      return 0;
+    }
+    var ret = 0;
+    for (var i = 0; i < arr.length; i++) {
+      ret += arr[i];
+    }
+    return ret;
+  },
+
+  compactNumberArray_mult: function (arr) {
+    if (!arr) {
+      return 1;
+    }
+    var ret = 1;
+    for (var i = 0; i < arr.length; i++) {
+      ret *= arr[i];
+    }
+    return ret;
   }
 
 };

@@ -4,7 +4,7 @@ Game.MapTileSets = {
     _height: 20,
 
     getMapTiles: function() {
-      var gen = new ROT.Map.Cellular(this._width, this._height);
+      var gen = new ROT.Map.Cellular(this._width, this._height, {connected: true});
       gen.randomize(0.5);
 
       var totalIterations = 3;
@@ -13,13 +13,13 @@ Game.MapTileSets = {
       }
 
       var mapTiles = Game.util.init2DArray(this._width, this._height, Game.Tile.nullTile);
-      gen.create(function(x, y, v) {
+      gen.connect(function(x, y, v) {
         if (v === 1) {
           mapTiles[x][y] = Game.Tile.floorTile;
         } else {
           mapTiles[x][y] = Game.Tile.wallTile;
         }
-      });
+      }, 1);
 
       return mapTiles;
     }

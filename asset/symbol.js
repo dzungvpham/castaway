@@ -16,18 +16,28 @@ Game.Symbol = function(properties) { //Pass in hash properties instead
 
 Game.Symbol.prototype.getChar = function() {
   return this.attr._char;
-}
+};
 
 Game.Symbol.prototype.getFg = function() {
   return this.attr._fg;
-}
+};
 
 Game.Symbol.prototype.getBg = function() {
   return this.attr._bg;
-}
-
-Game.Symbol.prototype.draw = function (display, dispX, dispY) {
-  display.draw(dispX, dispY, this.attr._char, this.attr._fg, this.attr._bg);
 };
 
-//Game.Symbol.AVATAR = new Game.Symbol({chr: '@', fg: '#dda'});
+Game.Symbol.prototype.setFg = function(color) {
+  this.attr._fg = color;
+};
+
+Game.Symbol.prototype.draw = function (display, dispX, dispY, isMasked) {
+  var char = this.attr._char;
+  if (typeof this.attr._char == 'object') {
+    char = this.attr._char[this.getDirection()];
+  }
+  if (isMasked) {
+    display.draw(dispX, dispY, char, '#444', '#000');
+  } else {
+    display.draw(dispX, dispY, char, this.attr._fg, this.attr._bg);
+  }
+};

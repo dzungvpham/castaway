@@ -14,7 +14,7 @@ window.onload = function() {
       Game.getDisplay('message').getContainer()
     );
 
-    Game.switchUIMode(Game.UIMode.gamePersistence);
+    Game.switchUIMode("gamePersistence");
   }
 };
 
@@ -24,6 +24,7 @@ var Game = {
   _randomSeed: null,
   _DISPLAY_SPACING: 1.1,
   _curUIMode: null,
+  _UIModeNameStack: [],
   _game: null,
   DATASTORE: {},
   TRANSIENT_RNG: null,
@@ -64,8 +65,8 @@ var Game = {
 
     var bindEventToUIMode = function(eventType) {
       window.addEventListener(eventType, function(evt) {
-          if (Game._curUIMode !== null) {
-            Game._curUIMode.handleInput(eventType, evt);
+          if (Game.getCurUIMode() !== null) {
+            Game.getCurUIMode().handleInput(eventType, evt);
           }
         });
     };
@@ -90,11 +91,15 @@ var Game = {
     return this._randomSeed;
   },
 
-  getDisplay: function (displayID) {
+  getDisplay: function(displayID) {
     if (this.display.hasOwnProperty(displayID)) {
       return this.display[displayID].o;
     }
     return null;
+  },
+
+  getAvatar: function() {
+    return Game.UIMode.gamePlay.getAvatar();
   },
 
   renderDisplayAll: function() {
@@ -105,18 +110,18 @@ var Game = {
 
   renderMain: function() {
     this.getDisplay('main').clear();
-    if (this._curUIMode) {
-      this._curUIMode.render(this.getDisplay('main'));
+    if (this.getCurUIMode()) {
+      this.getCurUIMode().render(this.getDisplay('main'));
     }
   },
 
   renderAvatar: function() {
     this.getDisplay('avatar').clear();
-    if (this._curUIMode === null) {
+    if (this.getCurUIMode() === null) {
       return;
    }
-    if (this._curUIMode.hasOwnProperty('renderAvatarInfo')) {
-      this._curUIMode.renderAvatarInfo(this.getDisplay('avatar'));
+    if (this.getCurUIMode().hasOwnProperty('renderAvatarInfo')) {
+      this.getCurUIMode().renderAvatarInfo(this.getDisplay('avatar'));
     }
   },
 
@@ -124,22 +129,19 @@ var Game = {
     Game.Message.render(this.getDisplay('message'));
   },
 
-  eventHandler: function(eventType, evt) {
-    if (this._curUIMode !== null) {
-      this._curUIMode.handleInput(eventType, evt);
-    }
+  hideMessage: function() {
+    this.getDisplay('message').clear();
   },
 
-  switchUIMode: function(newUIMode) {
-    if (this._curUIMode !== null) {
-      this._curUIMode.exit();
+  specialMessage: function(msg) {
+    this.display.message.o.clear();
+    this.display.message.o.drawText(1, 1, Game.UIMode.DEFAULT_COLOR_STR + msg, this.display.message.w);
+  },
+
+  eventHandler: function(eventType, evt) {
+    if (this.getCurUIMode() !== null) {
+      this.getCurUIMode().handleInput(eventType, evt);
     }
-    this._curUIMode = newUIMode;
-    if (this._curUIMode !== null) {
-      this.clearDisplayAll();
-      this._curUIMode.enter();
-    }
-    this.renderDisplayAll();
   },
 
   refresh: function() {
@@ -157,5 +159,50 @@ var Game = {
         disp.clear();
       }
     }
+  },
+
+  switchUIMode: function(newUIModeName) {
+    if (newUIModeName.startsWith("LAYER_")) {
+      console.log("Cannot switch to LAYER UImode");
+      return;
+    }
+    var curUIMode = this.getCurUIMode();
+    if (curUIMode !== null) {
+      curUIMode.exit();
+    }
+    this._UIModeNameStack[0] = newUIModeName;
+    var newUIMode = Game.UIMode[newUIModeName];
+    if (newUIMode) {
+      newUIMode.enter();
+    }
+  },
+
+  getCurUIMode: function() {
+    var curUIModeName = this._UIModeNameStack[0];
+    if (curUIModeName) {
+      return Game.UIMode[curUIModeName];
+    }
+    return null;
+  },
+
+  addUIMode: function(newUIModeLayerName) {
+    if (!newUIModeLayerName.startsWith("LAYER_")) {
+      console.log("Cannot add non-layer UIMode to stack");
+      return;
+    }
+    this._UIModeNameStack.unshift(newUIModeLayerName);
+    var newUIMode = Game.UIMode[newUIModeLayerName];
+    if (newUIMode) {
+      newUIMode.enter();
+    }
+  },
+
+  removeUIMode: function() {
+    var curUIMode = this.getCurUIMode();
+    if (curUIMode) {
+      curUIMode.exit();
+    }
+    this._UIModeNameStack.shift();
+    //this.renderDisplayAll();
   }
 };
