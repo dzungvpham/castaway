@@ -185,7 +185,7 @@ Game.UIMode.gamePlay = {
     var map = this.getMap();
     map.addEntity(this.getAvatar(), map.getRandomWalkableLocation());
     this.setCameraToAvatar();
-    for (var count = 0; count < 5; count++) { //Not consistent
+    for (var count = 0; count < 1; count++) { //Not consistent
        map.addEntity(Game.EntityGenerator.create('moss'), map.getRandomWalkableLocation());
        map.addEntity(Game.EntityGenerator.create('newt'), map.getRandomWalkableLocation());
        map.addEntity(Game.EntityGenerator.create('squirell'), map.getRandomWalkableLocation());

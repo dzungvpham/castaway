@@ -265,21 +265,31 @@ Game.EntityMixin.MeleeAttacker = {
 
     stateModel: {
         attackPower: 1,
+        hitChance: 1,
         attackActionDuration: 1000
     },
 
     init: function(template) {
-      this.attr._MeleeAttacker_attr.attackPower = template.attackPower || 1;
-      this.attr._MeleeAttacker_attr.attackActionDuration = template.attackActionDuration || 1000;
+      this.attr._MeleeAttacker_attr.attackPower = template.meleeAttackPower || 1;
+      this.attr._MeleeAttacker_attr.hitChance = template.meleeHitChance || 1;
+      this.attr._MeleeAttacker_attr.attackActionDuration = template.meleeAttackActionDuration || 1000;
     },
 
     listeners: {
       'bumpEntity': function(data) {
-        var damage = this.getAttackPower();
-        if (this.hasMixin('Elemental') && data.recipient.hasMixin("ElementalDefense")) {
-          damage = data.recipient.raiseEntityEvent('calcElemDamage', {element: this.getCurrentElement(), attackPower: damage}).damage;
+        var entity = data.recipient;
+        var flag = entity.raiseEntityEvent("calcHit", {hitChance: this.getHitChance()}).targetHit[0];
+        console.log(flag);
+        if (flag) {
+          var damage = this.getAttackPower();
+          if (this.hasMixin('Elemental') && entity.hasMixin("Defense")) {
+            damage = entity.raiseEntityEvent('calcDamage', {element: this.getCurrentElement(), attackPower: damage}).damage;
+          }
+          entity.raiseEntityEvent('attacked', {attacker: this, attackPower: damage});
+        } else {
+          this.raiseEntityEvent("attackMissed", {target: entity});
+          entity.raiseEntityEvent("attackDodged", {attacker: this});
         }
-        data.recipient.raiseEntityEvent('attacked', {attacker: this, attackPower: damage});
         this.raiseEntityEvent('actionDone');
         this.setCurrentActionDuration(this.attr._MeleeAttacker_attr.attackActionDuration);
       }
@@ -288,6 +298,18 @@ Game.EntityMixin.MeleeAttacker = {
 
   getAttackPower: function() {
     return this.attr._MeleeAttacker_attr.attackPower;
+  },
+
+  setAttackPower: function(n) {
+    this.attr._MeleeAttacker_attr.attackPower = n;
+  },
+
+  getHitChance: function() {
+    return this.attr._MeleeAttacker_attr.hitChance;
+  },
+
+  setHitChance: function(n) {
+    this.attr._MeleeAttacker_attr.hitChance = n;
   }
 };
 
@@ -299,15 +321,14 @@ Game.EntityMixin.RangedAttacker = {
 
     stateModel: {
         attackPower: 1,
-        attackAccuracy: 1,
+        hitChance: 1,
         attackActionDuration: 1000
     },
 
     init: function(template) {
-      this.attr._RangedAttacker_attr.attackPower = template.attackPower || 1;
-      this.attr._RangedAttacker_attr.attackAccuracy = template.attackAccuracy || 1;
-      this.attr._RangedAttacker_attr.attackAccuraryReduction = template.attackAccuraryReduction || 0.1;
-      this.attr._RangedAttacker_attr.attackActionDuration = template.attackActionDuration || 1000;
+      this.attr._RangedAttacker_attr.attackPower = template.rangedAttackPower || 1;
+      this.attr._RangedAttacker_attr.hitChance = template.rangedHitChance || 1;
+      this.attr._RangedAttacker_attr.attackActionDuration = template.rangedAttackActionDuration || 1000;
     },
 
     listeners: {
@@ -318,11 +339,17 @@ Game.EntityMixin.RangedAttacker = {
         } else if (hit == 'wallTile') {
           Game.Message.send("You hit the wall");
         } else {
-          var damage = this.getAttackPower();
-          if (this.hasMixin('Elemental') && hit.hasMixin("ElementalDefense")) {
-            damage = hit.raiseEntityEvent('calcElemDamage', {element: this.getCurrentElement(), attackPower: damage}).damage;
+          var flag = hit.raiseEntityEvent("calcHit", {hitChance: this.getHitChance()}).targetHit[0];
+          if (flag) {
+            var damage = this.getAttackPower();
+            if (this.hasMixin('Elemental') && hit.hasMixin("Defense")) {
+              damage = hit.raiseEntityEvent('calcDamage', {element: this.getCurrentElement(), attackPower: damage}).damage;
+            }
+            hit.raiseEntityEvent('attacked', {attacker: this, attackPower: damage});
+          } else {
+            this.raiseEntityEvent("attackMissed", {target: hit});
+            hit.raiseEntityEvent("attackDodged", {attacker: this});
           }
-          hit.raiseEntityEvent('attacked', {attacker: this, attackPower: damage});
         }
         this.raiseEntityEvent('actionDone');
         this.setCurrentActionDuration(this.attr._RangedAttacker_attr.attackActionDuration);
@@ -334,8 +361,16 @@ Game.EntityMixin.RangedAttacker = {
     return this.attr._RangedAttacker_attr.attackPower;
   },
 
-  getAttackAccuracy: function() {
-    return this.attr._RangedAttacker_attr.attackAccuracy;
+  setAttackPower: function(n) {
+    this.attr._RangedAttacker_attr.attackPower = n;
+  },
+
+  getHitChance: function() {
+    return this.attr._RangedAttacker_attr.hitChance;
+  },
+
+  setHitChance: function(n) {
+    this.attr._RangedAttacker_attr.hitChance = n;
   },
 
   checkShootPath: function() {
@@ -707,44 +742,80 @@ Game.EntityMixin.Elemental = {
   },
 };
 
-Game.EntityMixin.ElementalDefense = {
+Game.EntityMixin.Defense = {
   META: {
-    mixinName: "ElementalDefense",
+    mixinName: "Defense",
     mixinGroup: "Defense",
-    stateNamespace: "_ElementalDefense_attr",
+    stateNamespace: "_Defense_attr",
     stateModel: {
+      dodgeChance: 0.1,
       elementArmor: {fire: 0, water: 0, earth: 0, wind: 0, lightning: 0},
+      normalArmor: 1
     },
 
     init: function(template) {
-      this.attr._ElementalDefense_attr.elementArmor = template.elementArmor || {};
+      this.attr._Defense_attr.elementArmor = template.elementArmor || {};
+      this.attr._Defense_attr.normalArmor = template.normalArmor || 1;
+      this.attr._Defense_attr.dodgeChance = template.dodgeChance || 0.1;
     },
 
     listeners: {
-      'calcElemDamage': function(data) {
+      'calcDamage': function(data) {
         var elem = data.element;
-        var value = this.getElementArmor(elem);
-        if (elem && value) {
-          return {damage: data.attackPower + value};
+        var normalReduction = this.getNormalArmor();
+        var elemReduction = this.getElementArmor(elem);
+        if (elem && elemReduction) {
+          var dam = data.attackPower - elemReduction - normalReduction;
+          if (dam < 0) {
+            dam = 0;
+          }
+          return {damage: dam};
         }
-        return {damage: data.attackPower};
+        var dam = data.attackPower - normalReduction;
+        if (dam < 0) {
+          dam = 0;
+        }
+        return {damage: dam};
+      },
+
+      'calcHit': function(data) {
+        if (ROT.RNG.getUniform() <= data.hitChance && ROT.RNG.getUniform() > this.getDodgeChance()) {
+          return {targetHit: true};
+        }
+        return {targetHit: false};
       }
     }
   },
 
   getElementArmor: function(elem) {
     if (elem) {
-      if (this.attr._ElementalDefense_attr.elementArmor[elem]) {
-        return this.attr._ElementalDefense_attr.elementArmor[elem];
+      if (this.attr._Defense_attr.elementArmor[elem]) {
+        return this.attr._Defense_attr.elementArmor[elem];
       }
       return false;
     }
-    return this.attr._ElementalDefense_attr.elementArmor;
+    return this.attr._Defense_attr.elementArmor;
   },
 
   setElementArmor: function(elem, value) {
-    if (this.attr._ElementalDefense_attr.elementArmor[elem]) {
-      this.attr._ElementalDefense_attr.elementArmor[elem] = value;
+    if (this.attr._Defense_attr.elementArmor[elem]) {
+      this.attr._Defense_attr.elementArmor[elem] = value;
     }
+  },
+
+  getNormalArmor: function() {
+    return this.attr._Defense_attr.normalArmor;
+  },
+
+  setNormalArmor: function(n) {
+    this.attr._Defense_attr.normalArmor = n;
+  },
+
+  getDodgeChance: function() {
+    return this.attr._Defense_attr.dodgeChance;
+  },
+
+  setDodgeChance: function(n) {
+    this.attr._Defense_attr.dodgeChance = n;
   }
 };
