@@ -648,7 +648,7 @@ Game.EntityMixin.Elemental = {
       element: ["fire"],
       currentElement: "fire",
       currentElemIndex: 0,
-      elementColor: {fire: '#f00', water: '#00f', earth: '#940', wind: '#fff'}
+      elementColor: {fire: '#f00', water: '#00f', earth: '#940', wind: '#fff', lightning: '#ff0'}
     },
 
     init: function(template) {
@@ -713,7 +713,7 @@ Game.EntityMixin.ElementalDefense = {
     mixinGroup: "Defense",
     stateNamespace: "_ElementalDefense_attr",
     stateModel: {
-      elementArmor: {fire: 0, water: 0, earth: 0, wind: 0},
+      elementArmor: {fire: 0, water: 0, earth: 0, wind: 0, lightning: 0},
     },
 
     init: function(template) {

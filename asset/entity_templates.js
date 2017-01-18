@@ -7,7 +7,7 @@ Game.EntityGenerator.learn({
   sightRadius: 10,
   attackPower: 10,
   direction: 'north',
-  element: ["fire", "water", "earth", "wind"],
+  element: ["fire", "water", "earth", "wind", "lightning"],
   elementArmor: {fire: 5},
   mixins: ["PlayerActor", "PlayerMessager", "Sight", "Directed", "MapMemory", "WalkerCorporeal",
    "Chronicle", "HitPoints", "MeleeAttacker", "RangedAttacker", "Elemental", "ElementalDefense"]
@@ -25,17 +25,19 @@ Game.EntityGenerator.learn({
 Game.EntityGenerator.learn({
   name: 'newt',
   chr: '~',
-  fg: '#f98',
-  maxHP: 2,
-  mixins: ["HitPoints", "WanderActor", "WalkerCorporeal"]
+  maxHP: 10,
+  element: ["earth"],
+  elementArmor: {lightning: 5, water: -5},
+  mixins: ["HitPoints", "WanderActor", "WalkerCorporeal", "Elemental", "ElementalDefense"]
 });
 
 Game.EntityGenerator.learn({
   name: 'squirell',
   chr: '&',
-  fg: '#940',
-  maxHP: 3,
-  mixins: ["HitPoints", "WanderActor", "WalkerCorporeal", "MeleeAttacker"]
+  maxHP: 10,
+  element: ["lightning"],
+  elementArmor: {wind: 5, earth: -5},
+  mixins: ["HitPoints", "WanderActor", "WalkerCorporeal", "MeleeAttacker", "Elemental", "ElementalDefense"]
 });
 
 Game.EntityGenerator.learn({
