@@ -3,11 +3,11 @@ Game.EntityGenerator = new Game.Generator('entities', Game.Entity);
 Game.EntityGenerator.learn({
   name: 'avatar',
   chr: {north: '^', south: 'v', west: '<', east: '>'},
-  fg: '#dda',
   maxHP: 10,
   sightRadius: 10,
   direction: 'north',
-  mixins: ["PlayerActor", "PlayerMessager", "Sight", "Directed", "MapMemory", "WalkerCorporeal", "Chronicle", "HitPoints", "MeleeAttacker", "RangedAttacker"]
+  element: ["fire", "water", "earth", "wind"],
+  mixins: ["PlayerActor", "PlayerMessager", "Sight", "Directed", "MapMemory", "WalkerCorporeal", "Chronicle", "HitPoints", "MeleeAttacker", "RangedAttacker", "Elemental"]
 });
 
 Game.EntityGenerator.learn({

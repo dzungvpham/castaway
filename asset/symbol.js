@@ -16,15 +16,19 @@ Game.Symbol = function(properties) { //Pass in hash properties instead
 
 Game.Symbol.prototype.getChar = function() {
   return this.attr._char;
-}
+};
 
 Game.Symbol.prototype.getFg = function() {
   return this.attr._fg;
-}
+};
 
 Game.Symbol.prototype.getBg = function() {
   return this.attr._bg;
-}
+};
+
+Game.Symbol.prototype.setFg = function(color) {
+  this.attr._fg = color;
+};
 
 Game.Symbol.prototype.draw = function (display, dispX, dispY, isMasked) {
   var char = this.attr._char;

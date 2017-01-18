@@ -5,7 +5,7 @@ Game.KeyBinding = {
   _bindingHelpText: '',
 
   setKeyBinding:function (bindingSetKey) {
-    this._curBindingKey = bindingSetKey || 'numpad';
+    this._curBindingKey = bindingSetKey || 'waxd';
     this.calcBindingLookups();
   },
 
@@ -164,13 +164,21 @@ Game.KeyBinding = {
       waxd  : {label:'d' ,inputMatch:ROT.VK_D       ,inputType:'keydown' ,inputMetaShift:false ,inputMetaCtrl:false}
     },
     MOVE_D    : {action_group:'base_movement' ,guid:Game.util.uniqueID() ,ordering:3 ,short:'move' ,long :'move straight down',
-      numpad: {label:'2' ,inputMatch:ROT.VK_NUMPAD2 ,inputType:'keydown' ,inputMetaShift:false ,inputMetaCtrl:false} ,
+      numpad: {label:'5' ,inputMatch:ROT.VK_NUMPAD5 ,inputType:'keydown' ,inputMetaShift:false ,inputMetaCtrl:false} ,
       waxd  : {label:'s' ,inputMatch:ROT.VK_S       ,inputType:'keydown' ,inputMetaShift:false ,inputMetaCtrl:false}
     },
 
     SHOOT   : {action_group:'attack', guid:Game.util.uniqueID(), ordering:3, short:'shoot' ,long: 'shoot chakra ball in current direction',
       numpad: {label:'0' ,inputMatch:ROT.VK_NUMPAD0 ,inputType:'keydown' ,inputMetaShift:false ,inputMetaCtrl:false} ,
       waxd  : {label:'j' ,inputMatch:ROT.VK_J       ,inputType:'keydown' ,inputMetaShift:false ,inputMetaCtrl:false}
+    },
+    NEXT_ELEM   : {action_group:'attack', guid:Game.util.uniqueID(), ordering:3, short:'next elem' ,long: 'switch to next element available',
+      numpad: {label:'1' ,inputMatch:ROT.VK_NUMPAD1 ,inputType:'keydown' ,inputMetaShift:false ,inputMetaCtrl:false} ,
+      waxd  : {label:'l' ,inputMatch:ROT.VK_L       ,inputType:'keydown' ,inputMetaShift:false ,inputMetaCtrl:false}
+    },
+    PREV_ELEM   : {action_group:'attack', guid:Game.util.uniqueID(), ordering:3, short:'previous elem' ,long: 'switch to previous element available',
+      numpad: {label:'2' ,inputMatch:ROT.VK_NUMPAD2 ,inputType:'keydown' ,inputMetaShift:false ,inputMetaCtrl:false} ,
+      waxd  : {label:'k' ,inputMatch:ROT.VK_K       ,inputType:'keydown' ,inputMetaShift:false ,inputMetaCtrl:false}
     },
 
     DATA_NAV_UP : {action_group:'data_nav' ,guid:Game.util.uniqueID() ,ordering:4.1 ,short:'up' ,long :'scroll content up',

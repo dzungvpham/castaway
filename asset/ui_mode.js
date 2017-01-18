@@ -94,8 +94,9 @@ Game.UIMode.gamePlay = {
     display.drawText(1, 3, "Avatar y: " + avatar.getY(), fg, bg);
     display.drawText(1, 4, "Turn: " + avatar.getTurn());
     display.drawText(1, 5, "HP: " + avatar.getCurrentHP() + "/" + avatar.getMaxHP());
-    display.drawText(1, 6, "Atk: " + avatar.getAttackPower());
-    display.drawText(1, 7, "Killed: " + avatar.getKillCount());
+    display.drawText(1, 6, "ATK: " + avatar.getAttackPower());
+    display.drawText(1, 7, "Chakra: " + avatar.getCurrentElement());
+    display.drawText(1, 8, "Killed: " + avatar.getKillCount());
   },
 
   moveAvatar: function (pdx, pdy) {
@@ -150,6 +151,12 @@ Game.UIMode.gamePlay = {
       case "SHOOT":
         this.getAvatar().raiseEntityEvent("shoot");
         tookTurn = true;
+        break;
+      case "NEXT_ELEM":
+        this.getAvatar().raiseEntityEvent("nextElement");
+        break;
+      case "PREV_ELEM":
+        this.getAvatar().raiseEntityEvent("prevElement");
         break;
       case "CHANGE_BINDINGS":
         Game.KeyBinding.swapToNextKeyBinding();

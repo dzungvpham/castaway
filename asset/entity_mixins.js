@@ -296,7 +296,6 @@ Game.EntityMixin.RangedAttacker = {
     stateModel: {
         attackPower: 1,
         attackAccuracy: 1,
-        attackAccuraryReduction: 0.1,
         attackActionDuration: 1000
     },
 
@@ -345,7 +344,7 @@ Game.EntityMixin.RangedAttacker = {
           break;
         case "south":
           dx = 0;
-          dy = -1;
+          dy = 1;
           break;
         case "west":
           dx = -1;
@@ -621,3 +620,71 @@ Game.EntityMixin.WanderChaserActor = {
     Game.TimeEngine.unlock();
   }
 };
+
+Game.EntityMixin.Elemental = {
+  META: {
+    mixinName: "Elemental",
+    mixinGroup: "Elemental",
+    stateNamespace: "_Elemental_attr",
+    stateModel: {
+      element: ["fire"],
+      currentElement: "fire",
+      currentElemIndex: 0,
+      elementColor: {fire: '#f00', water: '#00f', earth: '#940', wind: '#fff'}
+    },
+
+    init: function(template) {
+      this.attr._Elemental_attr.element = template.element || ["fire"];
+      this.attr._Elemental_attr.currentElemIndex = template.currentElemIndex || 0;
+      this.attr._Elemental_attr.currentElement = this.attr._Elemental_attr.element[this.attr._Elemental_attr.currentElemIndex];
+      this.setFg(this.getElementColor());
+    },
+
+    listeners: {
+      'nextElement': function(data) {
+        this.nextCurrentElement();
+        this.setFg(this.getElementColor());
+      },
+
+      'prevElement': function(data) {
+        this.prevCurrentElement();
+        this.setFg(this.getElementColor());
+      }
+    }
+  },
+
+  getElement() {
+    return this.attr._Elemental_attr.element;
+  },
+
+  getCurrentElement() {
+    return this.attr._Elemental_attr.currentElement;
+  },
+
+  getElementColor() {
+    var color = this.attr._Elemental_attr.elementColor[this.attr._Elemental_attr.currentElement];
+    if (color != 'undefined') {
+      return color;
+    }
+  },
+
+  addElement(elem) {
+    this.attr._Elemetal_attr.element.push(elem);
+  },
+
+  nextCurrentElement() {
+    this.attr._Elemental_attr.currentElemIndex++;
+    if (this.attr._Elemental_attr.currentElemIndex >= this.attr._Elemental_attr.element.length) {
+      this.attr._Elemental_attr.currentElemIndex = 0;
+    }
+    this.attr._Elemental_attr.currentElement = this.attr._Elemental_attr.element[this.attr._Elemental_attr.currentElemIndex];
+  },
+
+  prevCurrentElement() {
+    this.attr._Elemental_attr.currentElemIndex--;
+    if (this.attr._Elemental_attr.currentElemIndex < 0) {
+      this.attr._Elemental_attr.currentElemIndex = this.attr._Elemental_attr.element.length - 1;
+    }
+    this.attr._Elemental_attr.currentElement = this.attr._Elemental_attr.element[this.attr._Elemental_attr.currentElemIndex];
+  },
+}
