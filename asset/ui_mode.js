@@ -132,28 +132,36 @@ Game.UIMode.gamePlay = {
         tookTurn = this.moveAvatar(-1, -1);
         break;
       case "MOVE_U":
+        this.getAvatar().raiseEntityEvent("changeDirection", {direction: 'north'});
         tookTurn = this.moveAvatar(0, -1);
         break;
       case "MOVE_UR":
         tookTurn = this.moveAvatar(1, -1);
         break;
       case "MOVE_L":
+        this.getAvatar().raiseEntityEvent("changeDirection", {direction: 'west'});
         tookTurn = this.moveAvatar(-1, 0);
         break;
       case "MOVE_WAIT":
         tookTurn = true;
         break;
       case "MOVE_R":
+        this.getAvatar().raiseEntityEvent("changeDirection", {direction: 'east'});
         tookTurn = this.moveAvatar(1, 0);
         break;
       case "MOVE_DL":
         tookTurn = this.moveAvatar(-1, 1);
         break;
       case "MOVE_D":
+        this.getAvatar().raiseEntityEvent("changeDirection", {direction: 'south'});
         tookTurn = this.moveAvatar(0, 1);
         break;
       case "MOVE_DR":
         tookTurn = this.moveAvatar(1, 1);
+        break;
+      case "SHOOT":
+        this.getAvatar().raiseEntityEvent("shoot");
+        tookTurn = true;
         break;
       case "CHANGE_BINDINGS":
         Game.KeyBinding.swapToNextKeyBinding();
@@ -170,7 +178,6 @@ Game.UIMode.gamePlay = {
     Game.refresh();
     if (tookTurn) {
       this.getAvatar().raiseEntityEvent('actionDone');
-      Game.Message.ageMessages();
       return true;
     }
     return false;

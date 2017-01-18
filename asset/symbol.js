@@ -27,9 +27,13 @@ Game.Symbol.prototype.getBg = function() {
 }
 
 Game.Symbol.prototype.draw = function (display, dispX, dispY, isMasked) {
+  var char = this.attr._char;
+  if (typeof this.attr._char == 'object') {
+    char = this.attr._char[this.getDirection()];
+  }
   if (isMasked) {
-    display.draw(dispX, dispY, this.attr._char, '#444', '#000');
+    display.draw(dispX, dispY, char, '#444', '#000');
   } else {
-    display.draw(dispX, dispY, this.attr._char, this.attr._fg, this.attr._bg);
+    display.draw(dispX, dispY, char, this.attr._fg, this.attr._bg);
   }
 };

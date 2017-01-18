@@ -287,6 +287,122 @@ Game.EntityMixin.MeleeAttacker = {
   }
 };
 
+Game.EntityMixin.RangedAttacker = {
+  META: {
+    mixinName: 'rangedAttacker',
+    mixinGroup: 'attacker',
+    stateNamespace: '_RangedAttacker_attr',
+
+    stateModel: {
+        attackPower: 1,
+        attackAccuracy: 1,
+        attackAccuraryReduction: 0.1,
+        attackActionDuration: 1000
+    },
+
+    init: function(template) {
+      this.attr._RangedAttacker_attr.attackPower = template.attackPower || 1;
+      this.attr._RangedAttacker_attr.attackAccuracy = template.attackAccuracy || 1;
+      this.attr._RangedAttacker_attr.attackAccuraryReduction = template.attackAccuraryReduction || 0.1;
+      this.attr._RangedAttacker_attr.attackActionDuration = template.attackActionDuration || 1000;
+    },
+
+    listeners: {
+      'shoot': function(data) {
+        var hit = this.checkShootPath();
+        if (!hit) {
+          return false;
+        } else if (hit == 'wallTile') {
+          Game.Message.send("You hit the wall");
+        } else {
+          hit.raiseEntityEvent('attacked', {attacker: this, attackPower: this.getAttackPower()});
+        }
+        this.raiseEntityEvent('actionDone');
+        this.setCurrentActionDuration(this.attr._RangedAttacker_attr.attackActionDuration);
+      }
+    }
+  },
+
+  getAttackPower: function() {
+    return this.attr._RangedAttacker_attr.attackPower;
+  },
+
+  getAttackAccuracy: function() {
+    return this.attr._RangedAttacker_attr.attackAccuracy;
+  },
+
+  checkShootPath: function() {
+    if (this.hasMixin("Directed")) {
+      var dir = this.getDirection();
+      var dx = 0;
+      var dy = 0;
+      var targetX = this.getX();
+      var targetY = this.getY();
+      switch (dir) {
+        case "north":
+          dx = 0;
+          dy = -1;
+          break;
+        case "south":
+          dx = 0;
+          dy = -1;
+          break;
+        case "west":
+          dx = -1;
+          dy = 0;
+          break;
+        case "east":
+          dx = 1;
+          dy = 0;
+          break;
+        default:
+          return false;
+      }
+      while (true) {
+        targetX += dx;
+        targetY += dy;
+        var tile = this.getMap().getTile(targetX, targetY);
+        if (tile.getName() == 'nullTile') {
+          return false;
+        } else if (tile.getName() == 'wallTile') {
+          return 'wallTile';
+        }
+        var entity = this.getMap().getEntity(targetX, targetY);
+        if (entity) {
+          return entity;
+        }
+      }
+    }
+    return false;
+  }
+};
+
+Game.EntityMixin.Directed = {
+  META: {
+    mixinName: 'Directed',
+    mixinGroup: 'Directed',
+    stateNamespace: '_Directed_attr',
+
+    stateModel: {
+        direction: 'north'
+    },
+
+    init: function(template) {
+      this.attr._Directed_attr.direction = template.direction || 'north';
+    },
+
+    listeners: {
+      'changeDirection': function(data) {
+        this.attr._Directed_attr.direction = data.direction;
+      }
+    }
+  },
+
+  getDirection: function() {
+    return this.attr._Directed_attr.direction;
+  }
+};
+
 Game.EntityMixin.PlayerMessager = {
   META: {
     mixinName: 'playerMessager',
@@ -303,17 +419,18 @@ Game.EntityMixin.PlayerMessager = {
       },
 
       'madeKill': function(data) {
+        Game.Message.ageMessages();
         Game.Message.send("You killed " + data.entityKilled.getName());
       },
 
       'damagedBy': function(data) {
+        Game.Message.ageMessages();
         Game.Message.send(data.damager.getName() + " hit you for " + data.damageAmount);
-        //Game.renderMessage();
       },
 
       'killed': function(data) {
+        Game.Message.ageMessages();
         Game.Message.send("You were killed by " + data.killedBy.getName());
-        //Game.renderMessage();
       }
     },
   }

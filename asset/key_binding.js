@@ -188,6 +188,11 @@ Game.KeyBinding = {
       waxd  : {label:'c' ,inputMatch:ROT.VK_C       ,inputType:'keydown' ,inputMetaShift:false ,inputMetaCtrl:false}
     },
 
+    SHOOT   : {action_group:'attack', guid:Game.util.uniqueID(), ordering:3, short:'shoot' ,long: 'shoot chakra ball in current direction',
+      numpad: {label:'0' ,inputMatch:ROT.VK_NUMPAD0 ,inputType:'keydown' ,inputMetaShift:false ,inputMetaCtrl:false} ,
+      waxd  : {label:'j' ,inputMatch:ROT.VK_J       ,inputType:'keydown' ,inputMetaShift:false ,inputMetaCtrl:false}
+    },
+
     DATA_NAV_UP : {action_group:'data_nav' ,guid:Game.util.uniqueID() ,ordering:4.1 ,short:'up' ,long :'scroll content up',
       LAYER_textReading: {label:']'     ,inputMatch:']'      ,inputType:'keypress' ,inputMetaShift:false ,inputMetaCtrl:false}
     },
