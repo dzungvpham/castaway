@@ -95,16 +95,12 @@ Game.KeyBinding = {
         }
       }
     if (hasBaseMovements) {
-      var movementHelpTemplate = "-------\n|mUL mU mUR|\n| \\|/ |\n|mL-mW-mR|\n| /|\\ |\n|mDL mD mDR|\n-------";
-      movementHelpTemplate = movementHelpTemplate.replace('mUL',Game.KeyBinding.Action.MOVE_UL[this._curBindingKey].label);
+      var movementHelpTemplate = "-------\n|  mU  |\n|  |  |\n|mL-mW-mR|\n|  |  |\n|  mD  |\n-------";
       movementHelpTemplate = movementHelpTemplate.replace('mU',Game.KeyBinding.Action.MOVE_U[this._curBindingKey].label);
-      movementHelpTemplate = movementHelpTemplate.replace('mUR',Game.KeyBinding.Action.MOVE_UR[this._curBindingKey].label);
       movementHelpTemplate = movementHelpTemplate.replace('mL',Game.KeyBinding.Action.MOVE_L[this._curBindingKey].label);
       movementHelpTemplate = movementHelpTemplate.replace('mW',Game.KeyBinding.Action.MOVE_WAIT[this._curBindingKey].label);
       movementHelpTemplate = movementHelpTemplate.replace('mR',Game.KeyBinding.Action.MOVE_R[this._curBindingKey].label);
-      movementHelpTemplate = movementHelpTemplate.replace('mDL',Game.KeyBinding.Action.MOVE_DL[this._curBindingKey].label);
       movementHelpTemplate = movementHelpTemplate.replace('mD',Game.KeyBinding.Action.MOVE_D[this._curBindingKey].label);
-      movementHelpTemplate = movementHelpTemplate.replace('mDR',Game.KeyBinding.Action.MOVE_DR[this._curBindingKey].label);
       this._bindingHelpText = "Movement\n"+movementHelpTemplate + "\n"+ this._bindingHelpText;
     }
   },
@@ -151,17 +147,9 @@ Game.KeyBinding = {
       persist: {label:'n' ,inputMatch:ROT.VK_N ,inputType:'keydown'  ,inputMetaShift:false  ,inputMetaCtrl:false}
     },
 
-    MOVE_UL   : {action_group:'base_movement' ,guid:Game.util.uniqueID() ,ordering:3 ,short:'move' ,long :'move diagonally up and to the left',
-      numpad: {label:'7' ,inputMatch:ROT.VK_NUMPAD7 ,inputType:'keydown' ,inputMetaShift:false ,inputMetaCtrl:false} ,
-      waxd  : {label:'q' ,inputMatch:ROT.VK_Q       ,inputType:'keydown' ,inputMetaShift:false ,inputMetaCtrl:false}
-    },
     MOVE_U    : {action_group:'base_movement' ,guid:Game.util.uniqueID() ,ordering:3 ,short:'move' ,long :'move straight up',
       numpad: {label:'8' ,inputMatch:ROT.VK_NUMPAD8 ,inputType:'keydown' ,inputMetaShift:false ,inputMetaCtrl:false} ,
       waxd  : {label:'w' ,inputMatch:ROT.VK_W       ,inputType:'keydown' ,inputMetaShift:false ,inputMetaCtrl:false}
-    },
-    MOVE_UR   : {action_group:'base_movement' ,guid:Game.util.uniqueID() ,ordering:3 ,short:'move' ,long :'move diagonally up and to the right',
-      numpad: {label:'9' ,inputMatch:ROT.VK_NUMPAD9 ,inputType:'keydown' ,inputMetaShift:false ,inputMetaCtrl:false} ,
-      waxd  : {label:'e' ,inputMatch:ROT.VK_E       ,inputType:'keydown' ,inputMetaShift:false ,inputMetaCtrl:false}
     },
     MOVE_L    : {action_group:'base_movement' ,guid:Game.util.uniqueID() ,ordering:3 ,short:'move' ,long :'move straight left',
       numpad: {label:'4' ,inputMatch:ROT.VK_NUMPAD4 ,inputType:'keydown' ,inputMetaShift:false ,inputMetaCtrl:false} ,
@@ -175,17 +163,9 @@ Game.KeyBinding = {
       numpad: {label:'6' ,inputMatch:ROT.VK_NUMPAD6 ,inputType:'keydown' ,inputMetaShift:false ,inputMetaCtrl:false} ,
       waxd  : {label:'d' ,inputMatch:ROT.VK_D       ,inputType:'keydown' ,inputMetaShift:false ,inputMetaCtrl:false}
     },
-    MOVE_DL   : {action_group:'base_movement' ,guid:Game.util.uniqueID() ,ordering:3 ,short:'move' ,long :'move diagonally down and to the left',
-      numpad: {label:'1' ,inputMatch:ROT.VK_NUMPAD1 ,inputType:'keydown' ,inputMetaShift:false ,inputMetaCtrl:false} ,
-      waxd  : {label:'z' ,inputMatch:ROT.VK_Z       ,inputType:'keydown' ,inputMetaShift:false ,inputMetaCtrl:false}
-    },
     MOVE_D    : {action_group:'base_movement' ,guid:Game.util.uniqueID() ,ordering:3 ,short:'move' ,long :'move straight down',
       numpad: {label:'2' ,inputMatch:ROT.VK_NUMPAD2 ,inputType:'keydown' ,inputMetaShift:false ,inputMetaCtrl:false} ,
-      waxd  : {label:'x' ,inputMatch:ROT.VK_X       ,inputType:'keydown' ,inputMetaShift:false ,inputMetaCtrl:false}
-    },
-    MOVE_DR   : {action_group:'base_movement' ,guid:Game.util.uniqueID() ,ordering:3 ,short:'move' ,long :'move diagonally down and to the right',
-      numpad: {label:'3' ,inputMatch:ROT.VK_NUMPAD3 ,inputType:'keydown' ,inputMetaShift:false ,inputMetaCtrl:false} ,
-      waxd  : {label:'c' ,inputMatch:ROT.VK_C       ,inputType:'keydown' ,inputMetaShift:false ,inputMetaCtrl:false}
+      waxd  : {label:'s' ,inputMatch:ROT.VK_S       ,inputType:'keydown' ,inputMetaShift:false ,inputMetaCtrl:false}
     },
 
     SHOOT   : {action_group:'attack', guid:Game.util.uniqueID(), ordering:3, short:'shoot' ,long: 'shoot chakra ball in current direction',

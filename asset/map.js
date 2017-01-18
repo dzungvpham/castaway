@@ -120,14 +120,6 @@ Game.Map.prototype.getRandomWalkableLocation = function() {
   });
 };
 
-// Game.Map.prototype.rememberCoords = function(coords) { //Remember seen coords
-//   for (var coord in coords) {
-//     if (coords.hasOwnProperty(coord)) {
-//       this.attr._rememberedCoords[coord] = true;
-//     }
-//   }
-// };
-
 Game.Map.prototype.renderOn = function (display, camX, camY, renderOptions) {
   var opt = renderOptions || {};
 
@@ -137,7 +129,7 @@ Game.Map.prototype.renderOn = function (display, camX, camY, renderOptions) {
   var showVisibleTiles = (opt.showVisibleTiles !== undefined) ? opt.showVisibleTiles : true;
 
   var checkCellMasked = opt.maskedCells !== undefined;
-  var maskedCells = opt.maskedCells !== undefined;
+  var maskedCells = opt.maskedCells || {};
   var showMaskedEntities = (opt.showMaskedEntities !== undefined) ? opt.showMaskedEntities : true;
   var showMaskedTiles = (opt.showMaskedTiles !== undefined) ? opt.showMaskedTiles : true;
 

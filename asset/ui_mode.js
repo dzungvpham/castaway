@@ -128,15 +128,9 @@ Game.UIMode.gamePlay = {
     }
     var tookTurn = false;
     switch (actionBinding.actionKey) {
-      case "MOVE_UL":
-        tookTurn = this.moveAvatar(-1, -1);
-        break;
       case "MOVE_U":
         this.getAvatar().raiseEntityEvent("changeDirection", {direction: 'north'});
         tookTurn = this.moveAvatar(0, -1);
-        break;
-      case "MOVE_UR":
-        tookTurn = this.moveAvatar(1, -1);
         break;
       case "MOVE_L":
         this.getAvatar().raiseEntityEvent("changeDirection", {direction: 'west'});
@@ -149,15 +143,9 @@ Game.UIMode.gamePlay = {
         this.getAvatar().raiseEntityEvent("changeDirection", {direction: 'east'});
         tookTurn = this.moveAvatar(1, 0);
         break;
-      case "MOVE_DL":
-        tookTurn = this.moveAvatar(-1, 1);
-        break;
       case "MOVE_D":
         this.getAvatar().raiseEntityEvent("changeDirection", {direction: 'south'});
         tookTurn = this.moveAvatar(0, 1);
-        break;
-      case "MOVE_DR":
-        tookTurn = this.moveAvatar(1, 1);
         break;
       case "SHOOT":
         this.getAvatar().raiseEntityEvent("shoot");

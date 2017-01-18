@@ -41,13 +41,12 @@ Game.util = {
 
   positionsAdjacentTo: function (pos) {
     var adjPos = [];
-    for (var dx = -1; dx <= 1; dx++) {
-      for (var dy = -1; dy <= 1; dy++) {
-        if (dx !== 0 && dy !== 0) {
-          adjPos.push({x:pos.x+dx,y:pos.y+dy});
-        }
-      }
-    }
+    adjPos.push(
+      {x:pos.x + 1, y: pos.y},
+      {x:pos.x - 1, y: pos.y},
+      {x:pos.x, y: pos.y + 1},
+      {x:pos.x, y: pos.y - 1}
+    );
     return adjPos;
   },
 
