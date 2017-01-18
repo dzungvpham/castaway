@@ -158,7 +158,7 @@ Game.EntityMixin.Chronicle = {
       },
 
       'killed': function(data) {
-        this.attr._Chronicle_attr.deathMessage = 'killed by ' + data.killedBy.getName();
+        this.attr._Chronicle_attr.deathMessage = 'You were killed by ' + data.killedBy.getName();
         Game.Message.send(this.attr._Chronicle_attr.deathMessage);
       }
     }
@@ -275,7 +275,11 @@ Game.EntityMixin.MeleeAttacker = {
 
     listeners: {
       'bumpEntity': function(data) {
-        data.recipient.raiseEntityEvent('attacked', {attacker: this, attackPower: this.getAttackPower()});
+        var damage = this.getAttackPower();
+        if (this.hasMixin('Elemental') && data.recipient.hasMixin("ElementalDefense")) {
+          damage = data.recipient.raiseEntityEvent('calcElemDamage', {element: this.getCurrentElement(), attackPower: damage}).damage;
+        }
+        data.recipient.raiseEntityEvent('attacked', {attacker: this, attackPower: damage});
         this.raiseEntityEvent('actionDone');
         this.setCurrentActionDuration(this.attr._MeleeAttacker_attr.attackActionDuration);
       }
@@ -314,7 +318,11 @@ Game.EntityMixin.RangedAttacker = {
         } else if (hit == 'wallTile') {
           Game.Message.send("You hit the wall");
         } else {
-          hit.raiseEntityEvent('attacked', {attacker: this, attackPower: this.getAttackPower()});
+          var damage = this.getAttackPower();
+          if (this.hasMixin('Elemental') && hit.hasMixin("ElementalDefense")) {
+            damage = hit.raiseEntityEvent('calcElemDamage', {element: this.getCurrentElement(), attackPower: damage}).damage;
+          }
+          hit.raiseEntityEvent('attacked', {attacker: this, attackPower: damage});
         }
         this.raiseEntityEvent('actionDone');
         this.setCurrentActionDuration(this.attr._RangedAttacker_attr.attackActionDuration);
@@ -417,6 +425,11 @@ Game.EntityMixin.PlayerMessager = {
         Game.Message.send("You hit " + data.target.getName() + " for " + data.damageAmount);
       },
 
+      'attackMissed': function(data) {
+        Game.Message.ageMessages();
+        Game.Message.send("You missed " + data.target.getName());
+      },
+
       'madeKill': function(data) {
         Game.Message.ageMessages();
         Game.Message.send("You killed " + data.entityKilled.getName());
@@ -425,6 +438,11 @@ Game.EntityMixin.PlayerMessager = {
       'damagedBy': function(data) {
         Game.Message.ageMessages();
         Game.Message.send(data.damager.getName() + " hit you for " + data.damageAmount);
+      },
+
+      'attackDodged': function(data) {
+        Game.Message.ageMessages();
+        Game.Message.send("You dodged " + data.attacker.getName());
       },
 
       'killed': function(data) {
@@ -687,4 +705,46 @@ Game.EntityMixin.Elemental = {
     }
     this.attr._Elemental_attr.currentElement = this.attr._Elemental_attr.element[this.attr._Elemental_attr.currentElemIndex];
   },
-}
+};
+
+Game.EntityMixin.ElementalDefense = {
+  META: {
+    mixinName: "ElementalDefense",
+    mixinGroup: "Defense",
+    stateNamespace: "_ElementalDefense_attr",
+    stateModel: {
+      elementArmor: {fire: 0, water: 0, earth: 0, wind: 0},
+    },
+
+    init: function(template) {
+      this.attr._ElementalDefense_attr.elementArmor = template.elementArmor || {};
+    },
+
+    listeners: {
+      'calcElemDamage': function(data) {
+        var elem = data.element;
+        var value = this.getElementArmor(elem);
+        if (elem && value) {
+          return {damage: data.attackPower + value};
+        }
+        return {damage: data.attackPower};
+      }
+    }
+  },
+
+  getElementArmor: function(elem) {
+    if (elem) {
+      if (this.attr._ElementalDefense_attr.elementArmor[elem]) {
+        return this.attr._ElementalDefense_attr.elementArmor[elem];
+      }
+      return false;
+    }
+    return this.attr._ElementalDefense_attr.elementArmor;
+  },
+
+  setElementArmor: function(elem, value) {
+    if (this.attr._ElementalDefense_attr.elementArmor[elem]) {
+      this.attr._ElementalDefense_attr.elementArmor[elem] = value;
+    }
+  }
+};

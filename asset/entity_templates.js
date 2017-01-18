@@ -3,19 +3,23 @@ Game.EntityGenerator = new Game.Generator('entities', Game.Entity);
 Game.EntityGenerator.learn({
   name: 'avatar',
   chr: {north: '^', south: 'v', west: '<', east: '>'},
-  maxHP: 10,
+  maxHP: 100,
   sightRadius: 10,
+  attackPower: 10,
   direction: 'north',
   element: ["fire", "water", "earth", "wind"],
-  mixins: ["PlayerActor", "PlayerMessager", "Sight", "Directed", "MapMemory", "WalkerCorporeal", "Chronicle", "HitPoints", "MeleeAttacker", "RangedAttacker", "Elemental"]
+  elementArmor: {fire: 5},
+  mixins: ["PlayerActor", "PlayerMessager", "Sight", "Directed", "MapMemory", "WalkerCorporeal",
+   "Chronicle", "HitPoints", "MeleeAttacker", "RangedAttacker", "Elemental", "ElementalDefense"]
 });
 
 Game.EntityGenerator.learn({
   name: 'moss',
   chr: '%',
-  fg: '#0f0',
-  maxHP: 1,
-  mixins: ["HitPoints"]
+  maxHP: 10,
+  element: ["water"],
+  elementArmor: {fire: -5, earth: 5},
+  mixins: ["HitPoints", "Elemental", "ElementalDefense"]
 });
 
 Game.EntityGenerator.learn({
@@ -37,11 +41,12 @@ Game.EntityGenerator.learn({
 Game.EntityGenerator.learn({
   name: 'slug',
   chr: '~',
-  fg: '#ff9',
-  maxHP: 5,
+  maxHP: 30,
   sightRadius: 5,
-  attackPower: 1,
+  attackPower: 10,
+  element: ["fire"],
+  elementArmor: {wind: -5, water: 5},
   attackActionDuration: 3000,
   wanderChaserActionDuration: 1200,
-  mixins: ["HitPoints", "Sight", "WalkerCorporeal", "MeleeAttacker", "WanderChaserActor"]
+  mixins: ["HitPoints", "Sight", "WalkerCorporeal", "MeleeAttacker", "WanderChaserActor", "Elemental", "ElementalDefense"]
 });

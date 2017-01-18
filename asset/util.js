@@ -76,6 +76,28 @@ Game.util = {
       }
     }
     return true;
+  },
+
+  compactNumberArray_add: function (arr) {
+    if (!arr) {
+      return 0;
+    }
+    var ret = 0;
+    for (var i = 0; i < arr.length; i++) {
+      ret += arr[i];
+    }
+    return ret;
+  },
+
+  compactNumberArray_mult: function (arr) {
+    if (!arr) {
+      return 1;
+    }
+    var ret = 1;
+    for (var i = 0; i < arr.length; i++) {
+      ret *= arr[i];
+    }
+    return ret;
   }
 
 };
