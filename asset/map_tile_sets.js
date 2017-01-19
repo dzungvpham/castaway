@@ -22,6 +22,7 @@ Game.MapTileSets = {
       }, 1);
 
       Game.MapTileSetsTool.spawnSpecialTerrain(mapTiles, Game.Tile.lavaTile, 1, 10);
+      Game.MapTileSetsTool.spawnSpecialTerrain(mapTiles, Game.Tile.herbTile, 1, 10);
 
       return mapTiles;
     }

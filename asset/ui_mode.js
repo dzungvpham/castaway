@@ -141,6 +141,7 @@ Game.UIMode.gamePlay = {
         tookTurn = this.moveAvatar(-1, 0);
         break;
       case "MOVE_WAIT":
+        this.getAvatar().raiseEntityEvent("specialTerrain", {tile: this.getMap().getTile(this.getAvatar().getPos())});
         tookTurn = true;
         break;
       case "MOVE_R":

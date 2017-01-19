@@ -109,8 +109,8 @@ Game.EntityMixin.WalkerCorporeal = {
         var targetY = this.getY() + dy;
 
         if ((targetX < 0) || (targetX >= map.getWidth()) || (targetY < 0) || (targetY >= map.getHeight())) {
-        this.raiseEntityEvent('walkForbidden',{target:Game.Tile.nullTile});
-          return {madeAdjacentMove:false};
+        this.raiseEntityEvent('walkForbidden', {target: Game.Tile.nullTile});
+          return {madeAdjacentMove: false};
         }
 
         if (map.getEntity(targetX, targetY)) { //Cannot walk into other entities
@@ -124,12 +124,44 @@ Game.EntityMixin.WalkerCorporeal = {
           if (map) { //Notify map
             map.updateEntityLocation(this);
           }
+          this.raiseEntityEvent("specialTerrain", {tile: targetTile});
           return {madeAdjacentMove: true};
         } else {
           this.raiseEntityEvent('walkForbidden', {target: targetTile});
           return false;
         }
         return {madeAdjacentMove: false};
+      },
+
+      'specialTerrain': function(data) {
+        if (data.tile.isSpecial()) {
+          if (this.hasMixin("Elemental") && data.tile.getElement() != false) {
+            if (this.getCurrentElement() == data.tile.getElement()) {
+              return;
+            }
+          }
+          if (this.hasMixin("HitPoints")) {
+            var damage = data.tile.getDamage(); //'damage' here can be either heal or real damage
+            if (damage >= 0) {
+              this.takeHits(damage);
+              this.raiseEntityEvent('damagedBy', {damager: data.tile, damageAmount: damage});
+              if (this.getCurrentHP() <= 0) {
+                this.raiseEntityEvent('killed', {killedBy: data.tile});
+              }
+            } else {
+              var diff = this.getCurrentHP() - this.getMaxHP();
+              if (diff < 0) {
+                if (diff <= damage) {
+                  this.takeHits(damage);
+                  this.raiseEntityEvent("healedBy", {healAmount: -1*damage});
+                } else {
+                  this.takeHits(diff);
+                  this.raiseEntityEvent("healedBy", {healAmount: -1*diff});
+                }
+              }
+            }
+          }
+        }
       }
     }
   },
@@ -471,7 +503,12 @@ Game.EntityMixin.PlayerMessager = {
 
       'damagedBy': function(data) {
         Game.Message.ageMessages();
-        Game.Message.send(data.damager.getName() + " hit you for " + data.damageAmount);
+        Game.Message.send("You took " + data.damageAmount + " damage from " + data.damager.getName());
+      },
+
+      'healedBy': function(data) {
+        Game.Message.ageMessages();
+        Game.Message.send("You were healed by " + data.healAmount + " HP");
       },
 
       'attackDodged': function(data) {
@@ -680,15 +717,13 @@ Game.EntityMixin.Elemental = {
     stateNamespace: "_Elemental_attr",
     stateModel: {
       element: ["fire"],
-      currentElement: "fire",
       currentElemIndex: 0,
       elementColor: {fire: '#f00', water: '#00f', earth: '#940', wind: '#fff', lightning: '#ff0'}
     },
 
     init: function(template) {
-      this.attr._Elemental_attr.element = template.element || ["fire"];
+      this.attr._Elemental_attr.element = template.element || [];
       this.attr._Elemental_attr.currentElemIndex = template.currentElemIndex || 0;
-      this.attr._Elemental_attr.currentElement = this.attr._Elemental_attr.element[this.attr._Elemental_attr.currentElemIndex];
       this.setFg(this.getElementColor());
     },
 
@@ -710,11 +745,11 @@ Game.EntityMixin.Elemental = {
   },
 
   getCurrentElement() {
-    return this.attr._Elemental_attr.currentElement;
+    return this.attr._Elemental_attr.element[this.attr._Elemental_attr.currentElemIndex];
   },
 
   getElementColor() {
-    var color = this.attr._Elemental_attr.elementColor[this.attr._Elemental_attr.currentElement];
+    var color = this.attr._Elemental_attr.elementColor[this.getCurrentElement()];
     if (color != 'undefined') {
       return color;
     }
@@ -729,7 +764,6 @@ Game.EntityMixin.Elemental = {
     if (this.attr._Elemental_attr.currentElemIndex >= this.attr._Elemental_attr.element.length) {
       this.attr._Elemental_attr.currentElemIndex = 0;
     }
-    this.attr._Elemental_attr.currentElement = this.attr._Elemental_attr.element[this.attr._Elemental_attr.currentElemIndex];
   },
 
   prevCurrentElement() {
@@ -737,7 +771,6 @@ Game.EntityMixin.Elemental = {
     if (this.attr._Elemental_attr.currentElemIndex < 0) {
       this.attr._Elemental_attr.currentElemIndex = this.attr._Elemental_attr.element.length - 1;
     }
-    this.attr._Elemental_attr.currentElement = this.attr._Elemental_attr.element[this.attr._Elemental_attr.currentElemIndex];
   },
 };
 
