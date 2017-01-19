@@ -1,7 +1,7 @@
 Game.MapTileSets = {
   caves1: {
-    _width: 10,
-    _height: 10,
+    _width: 20,
+    _height: 20,
 
     getMapTiles: function() {
       var gen = new ROT.Map.Cellular(this._width, this._height, {connected: true});
@@ -20,6 +20,8 @@ Game.MapTileSets = {
           mapTiles[x][y] = Game.Tile.wallTile;
         }
       }, 1);
+
+      Game.MapTileSetsTool.spawnSpecialTerrain(mapTiles, Game.Tile.lavaTile, 1, 5);
 
       return mapTiles;
     }

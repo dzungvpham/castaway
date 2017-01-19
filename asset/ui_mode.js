@@ -82,8 +82,10 @@ Game.UIMode.gamePlay = {
   renderAvatar: function(display) {
     //Calculate position of avatar based on starting coords
     var avatar = this.getAvatar();
-    avatar.draw(display, avatar.getX() - this.attr._camX + display._options.width/2,
-      avatar.getY() - this.attr._camY + display._options.height/2);
+    var targetX = avatar.getX() - this.attr._camX + display._options.width/2;
+    var targetY = avatar.getY() - this.attr._camY + display._options.height/2;
+    avatar.setBg(this.getMap().getTile(avatar.getX(), avatar.getY()).getBg());
+    avatar.draw(display, targetX, targetY);
   },
 
   renderAvatarInfo: function (display) {

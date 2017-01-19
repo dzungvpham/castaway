@@ -50,6 +50,18 @@ Game.util = {
     return adjPos;
   },
 
+  positions8AdjacentTo: function (pos) {
+    var adjPos = [];
+    for (var dx = -1; dx <= 1; dx++) {
+      for (var dy = -1; dy <= 1; dy++) {
+        if (!(dx == 0 && dy == 0)) {
+          adjPos.push({x: pos.x + dx, y: pos.y + dy});
+        }
+      }
+    }
+    return adjPos;
+  },
+
   getDisplayDim: function(display) {
     return {w: display._options.width, h: display._options.height};
   },

@@ -279,7 +279,6 @@ Game.EntityMixin.MeleeAttacker = {
       'bumpEntity': function(data) {
         var entity = data.recipient;
         var flag = entity.raiseEntityEvent("calcHit", {hitChance: this.getHitChance()}).targetHit[0];
-        console.log(flag);
         if (flag) {
           var damage = this.getAttackPower();
           if (this.hasMixin('Elemental') && entity.hasMixin("Defense")) {

@@ -8,7 +8,7 @@ Game.Symbol = function(properties) { //Pass in hash properties instead
   }
 
   this.attr = {
-    _char: properties.chr || ' ',
+    _char: properties.chr || '',
     _fg: properties.fg || Game.UIMode.DEFAULT_FG,
     _bg: properties.bg || Game.UIMode.DEFAULT_BG
   };
@@ -28,6 +28,10 @@ Game.Symbol.prototype.getBg = function() {
 
 Game.Symbol.prototype.setFg = function(color) {
   this.attr._fg = color;
+};
+
+Game.Symbol.prototype.setBg = function(color) {
+  this.attr._bg = color;
 };
 
 Game.Symbol.prototype.draw = function (display, dispX, dispY, isMasked) {
