@@ -109,12 +109,12 @@ Game.EntityMixin.WalkerCorporeal = {
         var targetY = this.getY() + dy;
 
         if ((targetX < 0) || (targetX >= map.getWidth()) || (targetY < 0) || (targetY >= map.getHeight())) {
-        this.raiseEntityEvent('walkForbidden', {target: Game.Tile.nullTile});
+        this.raiseSymbolActiveEvent('walkForbidden', {target: Game.Tile.nullTile});
           return {madeAdjacentMove: false};
         }
 
         if (map.getEntity(targetX, targetY)) { //Cannot walk into other entities
-          this.raiseEntityEvent('bumpEntity', {actor: this, recipient: map.getEntity(targetX, targetY)});
+          this.raiseSymbolActiveEvent('bumpEntity', {actor: this, recipient: map.getEntity(targetX, targetY)});
           return {madeAdjacentMove: false};
         }
 
@@ -124,10 +124,10 @@ Game.EntityMixin.WalkerCorporeal = {
           if (map) { //Notify map
             map.updateEntityLocation(this);
           }
-          this.raiseEntityEvent("specialTerrain", {tile: targetTile});
+          this.raiseSymbolActiveEvent("specialTerrain", {tile: targetTile});
           return {madeAdjacentMove: true};
         } else {
-          this.raiseEntityEvent('walkForbidden', {target: targetTile});
+          this.raiseSymbolActiveEvent('walkForbidden', {target: targetTile});
           return false;
         }
         return {madeAdjacentMove: false};
@@ -144,19 +144,19 @@ Game.EntityMixin.WalkerCorporeal = {
             var damage = data.tile.getDamage(); //'damage' here can be either heal or real damage
             if (damage >= 0) {
               this.takeHits(damage);
-              this.raiseEntityEvent('damagedBy', {damager: data.tile, damageAmount: damage});
+              this.raiseSymbolActiveEvent('damagedBy', {damager: data.tile, damageAmount: damage});
               if (this.getCurrentHP() <= 0) {
-                this.raiseEntityEvent('killed', {killedBy: data.tile});
+                this.raiseSymbolActiveEvent('killed', {killedBy: data.tile});
               }
             } else {
               var diff = this.getCurrentHP() - this.getMaxHP();
               if (diff < 0) {
                 if (diff <= damage) {
                   this.takeHits(damage);
-                  this.raiseEntityEvent("healedBy", {healAmount: -1*damage});
+                  this.raiseSymbolActiveEvent("healedBy", {healAmount: -1*damage});
                 } else {
                   this.takeHits(diff);
-                  this.raiseEntityEvent("healedBy", {healAmount: -1*diff});
+                  this.raiseSymbolActiveEvent("healedBy", {healAmount: -1*diff});
                 }
               }
             }
@@ -250,11 +250,11 @@ Game.EntityMixin.HitPoints = {
     listeners: {
       'attacked': function(data) {
         this.takeHits(data.attackPower);
-        this.raiseEntityEvent('damagedBy', {damager: data.attacker, damageAmount: data.attackPower});
-        data.attacker.raiseEntityEvent('dealtDamage', {target: this, damageAmount: data.attackPower});
+        this.raiseSymbolActiveEvent('damagedBy', {damager: data.attacker, damageAmount: data.attackPower});
+        data.attacker.raiseSymbolActiveEvent('dealtDamage', {target: this, damageAmount: data.attackPower});
         if (this.getCurrentHP() <= 0) {
-          data.attacker.raiseEntityEvent('madeKill', {entityKilled: this});
-          this.raiseEntityEvent('killed', {killedBy: data.attacker});
+          data.attacker.raiseSymbolActiveEvent('madeKill', {entityKilled: this});
+          this.raiseSymbolActiveEvent('killed', {killedBy: data.attacker});
         }
       },
 
@@ -310,18 +310,18 @@ Game.EntityMixin.MeleeAttacker = {
     listeners: {
       'bumpEntity': function(data) {
         var entity = data.recipient;
-        var flag = entity.raiseEntityEvent("calcHit", {hitChance: this.getHitChance()}).targetHit[0];
+        var flag = entity.raiseSymbolActiveEvent("calcHit", {hitChance: this.getHitChance()}).targetHit[0];
         if (flag) {
           var damage = this.getAttackPower();
           if (this.hasMixin('Elemental') && entity.hasMixin("Defense")) {
-            damage = entity.raiseEntityEvent('calcDamage', {element: this.getCurrentElement(), attackPower: damage}).damage;
+            damage = entity.raiseSymbolActiveEvent('calcDamage', {element: this.getCurrentElement(), attackPower: damage}).damage;
           }
-          entity.raiseEntityEvent('attacked', {attacker: this, attackPower: damage});
+          entity.raiseSymbolActiveEvent('attacked', {attacker: this, attackPower: damage});
         } else {
-          this.raiseEntityEvent("attackMissed", {target: entity});
-          entity.raiseEntityEvent("attackDodged", {attacker: this});
+          this.raiseSymbolActiveEvent("attackMissed", {target: entity});
+          entity.raiseSymbolActiveEvent("attackDodged", {attacker: this});
         }
-        this.raiseEntityEvent('actionDone');
+        this.raiseSymbolActiveEvent('actionDone');
         this.setCurrentActionDuration(this.attr._MeleeAttacker_attr.attackActionDuration);
       }
     }
@@ -370,19 +370,19 @@ Game.EntityMixin.RangedAttacker = {
         } else if (hit == 'wallTile') {
           Game.Message.send("You hit the wall");
         } else {
-          var flag = hit.raiseEntityEvent("calcHit", {hitChance: this.getHitChance()}).targetHit[0];
+          var flag = hit.raiseSymbolActiveEvent("calcHit", {hitChance: this.getHitChance()}).targetHit[0];
           if (flag) {
             var damage = this.getAttackPower();
             if (this.hasMixin('Elemental') && hit.hasMixin("Defense")) {
-              damage = hit.raiseEntityEvent('calcDamage', {element: this.getCurrentElement(), attackPower: damage}).damage;
+              damage = hit.raiseSymbolActiveEvent('calcDamage', {element: this.getCurrentElement(), attackPower: damage}).damage;
             }
-            hit.raiseEntityEvent('attacked', {attacker: this, attackPower: damage});
+            hit.raiseSymbolActiveEvent('attacked', {attacker: this, attackPower: damage});
           } else {
-            this.raiseEntityEvent("attackMissed", {target: hit});
-            hit.raiseEntityEvent("attackDodged", {attacker: this});
+            this.raiseSymbolActiveEvent("attackMissed", {target: hit});
+            hit.raiseSymbolActiveEvent("attackDodged", {attacker: this});
           }
         }
-        this.raiseEntityEvent('actionDone');
+        this.raiseSymbolActiveEvent('actionDone');
         this.setCurrentActionDuration(this.attr._RangedAttacker_attr.attackActionDuration);
       }
     }
@@ -628,11 +628,11 @@ Game.EntityMixin.WanderActor = {
     Game.TimeEngine.lock();
     var move = this.getMoveDelta();
     if (this.hasMixin('Walker')) {
-      this.raiseEntityEvent("adjacentMove", {dx: move.x, dy: move.y});
+      this.raiseSymbolActiveEvent("adjacentMove", {dx: move.x, dy: move.y});
     }
     Game.Scheduler.setDuration(this.getCurrentActionDuration());
     this.setCurrentActionDuration(this.getBaseActionDuration() + Game.util.randomInt(-10, 10));
-    this.raiseEntityEvent('actionDone');
+    this.raiseSymbolActiveEvent('actionDone');
     Game.TimeEngine.unlock();
   }
 };
@@ -672,7 +672,7 @@ Game.EntityMixin.WanderChaserActor = {
 
   getMoveDelta: function () {
     var avatar = Game.getAvatar();
-    var senseResp = this.raiseEntityEvent("senseEntity", {entity: avatar});
+    var senseResp = this.raiseSymbolActiveEvent("senseEntity", {entity: avatar});
     if (Game.util.compactBooleanArray_or(senseResp.isEntitySensed)) {
       var source = this;
       var map = this.getMap();
@@ -701,11 +701,11 @@ Game.EntityMixin.WanderChaserActor = {
     Game.TimeEngine.lock();
     var move = this.getMoveDelta();
     if (this.hasMixin('Walker')) {
-      this.raiseEntityEvent("adjacentMove", {dx: move.x, dy: move.y});
+      this.raiseSymbolActiveEvent("adjacentMove", {dx: move.x, dy: move.y});
     }
     Game.Scheduler.setDuration(this.getCurrentActionDuration());
     this.setCurrentActionDuration(this.getBaseActionDuration() + Game.util.randomInt(-10, 10));
-    this.raiseEntityEvent('actionDone');
+    this.raiseSymbolActiveEvent('actionDone');
     Game.TimeEngine.unlock();
   }
 };

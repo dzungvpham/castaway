@@ -43,7 +43,7 @@ Game.UIMode.gamePlay = {
       this.setCameraToAvatar();
     }
 
-    Game.TimeEngine.unlock();
+    setTimeout(function() {Game.TimeEngine.unlock();}, 1);
     Game.refresh();
   },
 
@@ -103,7 +103,7 @@ Game.UIMode.gamePlay = {
   },
 
   moveAvatar: function (pdx, pdy) {
-    var moveResp = this.getAvatar().raiseEntityEvent("adjacentMove", {dx: pdx, dy: pdy});
+    var moveResp = this.getAvatar().raiseSymbolActiveEvent("adjacentMove", {dx: pdx, dy: pdy});
 
     if (moveResp.madeAdjacentMove && moveResp.madeAdjacentMove[0]) {
       this.setCameraToAvatar();
@@ -133,34 +133,34 @@ Game.UIMode.gamePlay = {
     var tookTurn = false;
     switch (actionBinding.actionKey) {
       case "MOVE_U":
-        this.getAvatar().raiseEntityEvent("changeDirection", {direction: 'north'});
+        this.getAvatar().raiseSymbolActiveEvent("changeDirection", {direction: 'north'});
         tookTurn = this.moveAvatar(0, -1);
         break;
       case "MOVE_L":
-        this.getAvatar().raiseEntityEvent("changeDirection", {direction: 'west'});
+        this.getAvatar().raiseSymbolActiveEvent("changeDirection", {direction: 'west'});
         tookTurn = this.moveAvatar(-1, 0);
         break;
       case "MOVE_WAIT":
-        this.getAvatar().raiseEntityEvent("specialTerrain", {tile: this.getMap().getTile(this.getAvatar().getPos())});
+        this.getAvatar().raiseSymbolActiveEvent("specialTerrain", {tile: this.getMap().getTile(this.getAvatar().getPos())});
         tookTurn = true;
         break;
       case "MOVE_R":
-        this.getAvatar().raiseEntityEvent("changeDirection", {direction: 'east'});
+        this.getAvatar().raiseSymbolActiveEvent("changeDirection", {direction: 'east'});
         tookTurn = this.moveAvatar(1, 0);
         break;
       case "MOVE_D":
-        this.getAvatar().raiseEntityEvent("changeDirection", {direction: 'south'});
+        this.getAvatar().raiseSymbolActiveEvent("changeDirection", {direction: 'south'});
         tookTurn = this.moveAvatar(0, 1);
         break;
       case "SHOOT":
-        this.getAvatar().raiseEntityEvent("shoot");
+        this.getAvatar().raiseSymbolActiveEvent("shoot");
         tookTurn = true;
         break;
       case "NEXT_ELEM":
-        this.getAvatar().raiseEntityEvent("nextElement");
+        this.getAvatar().raiseSymbolActiveEvent("nextElement");
         break;
       case "PREV_ELEM":
-        this.getAvatar().raiseEntityEvent("prevElement");
+        this.getAvatar().raiseSymbolActiveEvent("prevElement");
         break;
       case "CHANGE_BINDINGS":
         Game.KeyBinding.swapToNextKeyBinding();
@@ -176,7 +176,7 @@ Game.UIMode.gamePlay = {
 
     Game.refresh();
     if (tookTurn) {
-      this.getAvatar().raiseEntityEvent('actionDone');
+      this.getAvatar().raiseSymbolActiveEvent('actionDone');
       return true;
     }
     return false;
@@ -189,11 +189,13 @@ Game.UIMode.gamePlay = {
     var map = this.getMap();
     map.addEntity(this.getAvatar(), map.getRandomWalkableLocation());
     this.setCameraToAvatar();
+    var test = Game.ItemGenerator.create('rock');
     for (var count = 0; count < 1; count++) { //Not consistent
        map.addEntity(Game.EntityGenerator.create('moss'), map.getRandomWalkableLocation());
        map.addEntity(Game.EntityGenerator.create('newt'), map.getRandomWalkableLocation());
        map.addEntity(Game.EntityGenerator.create('squirell'), map.getRandomWalkableLocation());
        map.addEntity(Game.EntityGenerator.create('slug'), map.getRandomWalkableLocation());
+       map.addItem(Game.ItemGenerator.create("rock"), map.getRandomWalkableLocation());
     }
   },
 
@@ -271,6 +273,7 @@ Game.UIMode.gamePersistence = {
       Game.DATASTORE.SCHEDULE_TIME = Game.Scheduler._queue.getTime() - 1; //offset by 1 so that when the engine is started after restore the queue state will match that as when it was saved
 
       window.localStorage.setItem(Game._PERSISTENCE_NAMESPACE, JSON.stringify(Game.DATASTORE));
+      Game.KeyBinding.setKeyBinding(this._storedKeyBinding);
       Game.switchUIMode("gamePlay");
     }
   },
@@ -279,11 +282,9 @@ Game.UIMode.gamePersistence = {
     var json_state_data = window.localStorage.getItem(Game._PERSISTENCE_NAMESPACE);
     var state_data = JSON.parse(json_state_data);
 
-    Game.setRandomSeed(state_data[this.RANDOM_SEED_KEY]);
+    this.resetDatastore();
 
-    Game.DATASTORE = {};
-    Game.DATASTORE.MAP = {};
-    Game.DATASTORE.ENTITY = {};
+    Game.setRandomSeed(state_data[this.RANDOM_SEED_KEY]);
 
     for (var mapID in state_data.MAP) {
       if (state_data.MAP.hasOwnProperty(mapID)) {
@@ -303,6 +304,15 @@ Game.UIMode.gamePersistence = {
       }
     }
 
+    for (var itemID in state_data.ITEM) {
+      if (state_data.ITEM.hasOwnProperty(itemID)) {
+        var itemAttr = JSON.parse(state_data.ITEM[itemID]);
+        var newItem = Game.ItemGenerator.create(itemAttr._generator_template_key, itemAttr._id);
+        Game.DATASTORE.ITEM[itemID] = newItem;
+        Game.DATASTORE.ITEM[itemID].fromJSON(state_data.ITEM[itemID]);
+      }
+    }
+
     Game.UIMode.gamePlay.attr = state_data.GAME_PLAY;
     Game.Message.attr = state_data.MESSAGE;
 
@@ -318,15 +328,12 @@ Game.UIMode.gamePersistence = {
       Game.Scheduler._queue._time = state_data.SCHEDULE_TIME;
 
     Game.switchUIMode("gamePlay");
-    Game.KeyBinding.setKeyBinding(state_data.KEY_BINDING_SET)
+    Game.KeyBinding.setKeyBinding(state_data.KEY_BINDING_SET);
     Game.KeyBinding.informPlayer();
   },
 
   newGame: function() {
-    Game.DATASTORE = {};
-    Game.DATASTORE.MAP = {};
-    Game.DATASTORE.ENTITY = {};
-    Game.initTimeEngine();
+    this.resetDatastore();
     Game.setRandomSeed(5 + Math.floor(Game.TRANSIENT_RNG.getUniform() * 100000));
     Game.UIMode.gamePlay.setupNewGame();
     setTimeout(function(){ Game.switchUIMode("gameStart"); }, 1);
@@ -342,6 +349,14 @@ Game.UIMode.gamePersistence = {
       Game.Message.send("No local data storage is available for this browser");
       return false;
     }
+  },
+
+  resetDatastore: function() {
+    Game.DATASTORE = {};
+    Game.DATASTORE.MAP = {};
+    Game.DATASTORE.ENTITY = {};
+    Game.DATASTORE.ITEM = {};
+    Game.initTimeEngine();
   },
 
   BASE_toJSON: function(state_hash_name) {
