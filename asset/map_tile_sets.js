@@ -21,7 +21,7 @@ Game.MapTileSets = {
         }
       }, 1);
 
-      Game.MapTileSetsTool.spawnSpecialTerrain(mapTiles, Game.Tile.lavaTile, 1, 5);
+      Game.MapTileSetsTool.spawnSpecialTerrain(mapTiles, Game.Tile.lavaTile, 1, 10);
 
       return mapTiles;
     }

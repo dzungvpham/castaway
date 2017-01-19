@@ -55,7 +55,8 @@ Game.UIMode.gamePlay = {
   render: function(display) {
     var renderOptions = {
       visibleCells: this.getAvatar().getVisibleCells(),
-      maskedCells: this.getAvatar().getRememberedCoords()
+      maskedCells: this.getAvatar().getRememberedCoords(),
+      showMaskedEntities: false
     };
     this.getMap().renderOn(display, this.attr._camX, this.attr._camY, renderOptions);
     this.getAvatar().rememberCoords(renderOptions.visibleCells);
