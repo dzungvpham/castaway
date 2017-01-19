@@ -165,8 +165,10 @@ Game.Map.prototype.renderOn = function (display, camX, camY, renderOptions) {
       var entity = this.getEntity(mapPos);
       if (entity) {
         if (showVisibleEntities && visibleCells[mapCoord]) {
+          entity.setBg(tile.getBg());
           entity.draw(display, x, y);
         } else if (showMaskedEntities && maskedCells[mapCoord]) {
+          entity.setBg(tile.getBg());
           entity.draw(display, x, y, true);
         }
       }

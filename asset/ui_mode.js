@@ -55,7 +55,8 @@ Game.UIMode.gamePlay = {
   render: function(display) {
     var renderOptions = {
       visibleCells: this.getAvatar().getVisibleCells(),
-      maskedCells: this.getAvatar().getRememberedCoords()
+      maskedCells: this.getAvatar().getRememberedCoords(),
+      showMaskedEntities: false
     };
     this.getMap().renderOn(display, this.attr._camX, this.attr._camY, renderOptions);
     this.getAvatar().rememberCoords(renderOptions.visibleCells);
@@ -82,8 +83,10 @@ Game.UIMode.gamePlay = {
   renderAvatar: function(display) {
     //Calculate position of avatar based on starting coords
     var avatar = this.getAvatar();
-    avatar.draw(display, avatar.getX() - this.attr._camX + display._options.width/2,
-      avatar.getY() - this.attr._camY + display._options.height/2);
+    var targetX = avatar.getX() - this.attr._camX + display._options.width/2;
+    var targetY = avatar.getY() - this.attr._camY + display._options.height/2;
+    avatar.setBg(this.getMap().getTile(avatar.getX(), avatar.getY()).getBg());
+    avatar.draw(display, targetX, targetY);
   },
 
   renderAvatarInfo: function (display) {
@@ -138,6 +141,7 @@ Game.UIMode.gamePlay = {
         tookTurn = this.moveAvatar(-1, 0);
         break;
       case "MOVE_WAIT":
+        this.getAvatar().raiseEntityEvent("specialTerrain", {tile: this.getMap().getTile(this.getAvatar().getPos())});
         tookTurn = true;
         break;
       case "MOVE_R":
@@ -185,7 +189,7 @@ Game.UIMode.gamePlay = {
     var map = this.getMap();
     map.addEntity(this.getAvatar(), map.getRandomWalkableLocation());
     this.setCameraToAvatar();
-    for (var count = 0; count < 5; count++) { //Not consistent
+    for (var count = 0; count < 1; count++) { //Not consistent
        map.addEntity(Game.EntityGenerator.create('moss'), map.getRandomWalkableLocation());
        map.addEntity(Game.EntityGenerator.create('newt'), map.getRandomWalkableLocation());
        map.addEntity(Game.EntityGenerator.create('squirell'), map.getRandomWalkableLocation());

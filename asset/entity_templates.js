@@ -5,12 +5,16 @@ Game.EntityGenerator.learn({
   chr: {north: '^', south: 'v', west: '<', east: '>'},
   maxHP: 100,
   sightRadius: 10,
-  attackPower: 10,
+  meleeAttackPower: 5,
+  meleeHitChance: 0.9,
+  rangedAttackPower: 10,
+  rangedHitChance: 0.8,
+  dodgeChance: 0.3,
   direction: 'north',
   element: ["fire", "water", "earth", "wind", "lightning"],
   elementArmor: {fire: 5},
   mixins: ["PlayerActor", "PlayerMessager", "Sight", "Directed", "MapMemory", "WalkerCorporeal",
-   "Chronicle", "HitPoints", "MeleeAttacker", "RangedAttacker", "Elemental", "ElementalDefense"]
+   "Chronicle", "HitPoints", "MeleeAttacker", "RangedAttacker", "Elemental", "Defense"]
 });
 
 Game.EntityGenerator.learn({
@@ -18,8 +22,8 @@ Game.EntityGenerator.learn({
   chr: '%',
   maxHP: 10,
   element: ["water"],
-  elementArmor: {fire: -5, earth: 5},
-  mixins: ["HitPoints", "Elemental", "ElementalDefense"]
+  elementArmor: {fire: 5, earth: -5},
+  mixins: ["HitPoints", "Elemental", "Defense"]
 });
 
 Game.EntityGenerator.learn({
@@ -27,8 +31,8 @@ Game.EntityGenerator.learn({
   chr: '~',
   maxHP: 10,
   element: ["earth"],
-  elementArmor: {lightning: 5, water: -5},
-  mixins: ["HitPoints", "WanderActor", "WalkerCorporeal", "Elemental", "ElementalDefense"]
+  elementArmor: {lightning: -5, water: 5},
+  mixins: ["HitPoints", "WanderActor", "WalkerCorporeal", "Elemental", "Defense"]
 });
 
 Game.EntityGenerator.learn({
@@ -36,8 +40,8 @@ Game.EntityGenerator.learn({
   chr: '&',
   maxHP: 10,
   element: ["lightning"],
-  elementArmor: {wind: 5, earth: -5},
-  mixins: ["HitPoints", "WanderActor", "WalkerCorporeal", "MeleeAttacker", "Elemental", "ElementalDefense"]
+  elementArmor: {wind: -5, earth: 5},
+  mixins: ["HitPoints", "WanderActor", "WalkerCorporeal", "MeleeAttacker", "Elemental", "Defense"]
 });
 
 Game.EntityGenerator.learn({
@@ -45,10 +49,10 @@ Game.EntityGenerator.learn({
   chr: '~',
   maxHP: 30,
   sightRadius: 5,
-  attackPower: 10,
+  meleeAttackPower: 10,
   element: ["fire"],
-  elementArmor: {wind: -5, water: 5},
-  attackActionDuration: 3000,
+  elementArmor: {wind: 5, water: -5},
+  meleeAttackActionDuration: 3000,
   wanderChaserActionDuration: 1200,
-  mixins: ["HitPoints", "Sight", "WalkerCorporeal", "MeleeAttacker", "WanderChaserActor", "Elemental", "ElementalDefense"]
+  mixins: ["HitPoints", "Sight", "WalkerCorporeal", "MeleeAttacker", "WanderChaserActor", "Elemental", "Defense"]
 });

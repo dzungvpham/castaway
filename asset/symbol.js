@@ -8,7 +8,7 @@ Game.Symbol = function(properties) { //Pass in hash properties instead
   }
 
   this.attr = {
-    _char: properties.chr || ' ',
+    _char: properties.chr || '',
     _fg: properties.fg || Game.UIMode.DEFAULT_FG,
     _bg: properties.bg || Game.UIMode.DEFAULT_BG
   };
@@ -30,13 +30,17 @@ Game.Symbol.prototype.setFg = function(color) {
   this.attr._fg = color;
 };
 
+Game.Symbol.prototype.setBg = function(color) {
+  this.attr._bg = color;
+};
+
 Game.Symbol.prototype.draw = function (display, dispX, dispY, isMasked) {
   var char = this.attr._char;
   if (typeof this.attr._char == 'object') {
     char = this.attr._char[this.getDirection()];
   }
   if (isMasked) {
-    display.draw(dispX, dispY, char, '#444', '#000');
+    display.draw(dispX, dispY, char, Game.util.changeColorLuminance(this.attr._fg, -0.5), Game.util.changeColorLuminance(this.attr._bg, -0.5));
   } else {
     display.draw(dispX, dispY, char, this.attr._fg, this.attr._bg);
   }

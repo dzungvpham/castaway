@@ -1,6 +1,6 @@
 Game.MapTileSets = {
   caves1: {
-    _width: 30,
+    _width: 20,
     _height: 20,
 
     getMapTiles: function() {
@@ -20,6 +20,9 @@ Game.MapTileSets = {
           mapTiles[x][y] = Game.Tile.wallTile;
         }
       }, 1);
+
+      Game.MapTileSetsTool.spawnSpecialTerrain(mapTiles, Game.Tile.lavaTile, 1, 10);
+      Game.MapTileSetsTool.spawnSpecialTerrain(mapTiles, Game.Tile.herbTile, 1, 10);
 
       return mapTiles;
     }
