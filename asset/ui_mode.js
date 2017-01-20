@@ -162,6 +162,14 @@ Game.UIMode.gamePlay = {
       case "PREV_ELEM":
         this.getAvatar().raiseSymbolActiveEvent("prevElement");
         break;
+      case "PICKUP":
+        var pickupRes = this.getAvatar().pickupItems(Game.util.objectArrayToIDArray(this.getAvatar().getMap().getItems(this.getAvatar().getPos())));
+        tookTurn = pickupRes.numItemsPickedUp > 0;
+        break;
+      case "DROP":
+        var dropRes = this.getAvatar().dropItems(this.getAvatar().getInventoryItemIDs());
+        tookTurn = dropRes.numItemsDropped > 0;
+        break;
       case "CHANGE_BINDINGS":
         Game.KeyBinding.swapToNextKeyBinding();
         break;
@@ -190,7 +198,7 @@ Game.UIMode.gamePlay = {
     map.addEntity(this.getAvatar(), map.getRandomWalkableLocation());
     this.setCameraToAvatar();
     var test = Game.ItemGenerator.create('rock');
-    for (var count = 0; count < 1; count++) { //Not consistent
+    for (var count = 0; count < 2; count++) { //Not consistent
        map.addEntity(Game.EntityGenerator.create('moss'), map.getRandomWalkableLocation());
        map.addEntity(Game.EntityGenerator.create('newt'), map.getRandomWalkableLocation());
        map.addEntity(Game.EntityGenerator.create('squirell'), map.getRandomWalkableLocation());
@@ -422,7 +430,7 @@ Game.UIMode.LAYER_textReading = {
     this._storedKeyBinding = Game.KeyBinding.getKeyBinding();
     Game.KeyBinding.setKeyBinding('LAYER_textReading');
     Game.refresh();
-    Game.specialMessage("[ESC] to exit, [ and ] for scrolling");
+    setTimeout(function() {Game.specialMessage("[ESC] to exit, [ and ] for scrolling")}, 1);
   },
 
   exit: function() {
