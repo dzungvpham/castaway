@@ -34,6 +34,15 @@ Game.Symbol.prototype.setBg = function(color) {
   this.attr._bg = color;
 };
 
+Game.Symbol.prototype.getColorDesignator = function(){
+  return '%c{' + this.attr._fg + '}%b{' + this.attr._bg + '}';
+};
+
+Game.Symbol.prototype.getRepresentation = function() {
+  return '%c{' + this.attr._fg + '}%b{' + this.attr._bg + '}' + this.attr._char;
+};
+
+
 Game.Symbol.prototype.draw = function (display, dispX, dispY, isMasked) {
   var char = this.attr._char;
   if (typeof this.attr._char == 'object') {

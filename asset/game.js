@@ -98,6 +98,20 @@ var Game = {
     return null;
   },
 
+  getDisplayHeight: function (displayID) {
+    if (this.display.hasOwnProperty(displayID)) {
+      return this.display[displayID].h;
+    }
+    return null;
+  },
+
+ getDisplayWidth: function (displayID) {
+    if (this.display.hasOwnProperty(displayID)) {
+      return this.display[displayID].w;
+    }
+    return null;
+  },
+
   getAvatar: function() {
     return Game.UIMode.gamePlay.getAvatar();
   },
@@ -110,7 +124,7 @@ var Game = {
 
   renderMain: function() {
     this.getDisplay('main').clear();
-    if (this.getCurUIMode()) {
+    if (this.getCurUIMode() && 'render' in this.getCurUIMode()) {
       this.getCurUIMode().render(this.getDisplay('main'));
     }
   },
@@ -120,7 +134,7 @@ var Game = {
     if (this.getCurUIMode() === null) {
       return;
    }
-    if (this.getCurUIMode().hasOwnProperty('renderAvatarInfo')) {
+    if ('renderAvatarInfo' in this.getCurUIMode()) {
       this.getCurUIMode().renderAvatarInfo(this.getDisplay('avatar'));
     }
   },

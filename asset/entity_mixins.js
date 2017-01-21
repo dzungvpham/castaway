@@ -310,9 +310,9 @@ Game.EntityMixin.MeleeAttacker = {
     listeners: {
       'bumpEntity': function(data) {
         var entity = data.recipient;
-        var flag = entity.raiseSymbolActiveEvent("calcHit", {hitChance: this.getHitChance()}).targetHit[0];
+        var flag = entity.raiseSymbolActiveEvent("calcHit", {hitChance: this.getMeleeHitChance()}).targetHit[0];
         if (flag) {
-          var damage = this.getAttackPower();
+          var damage = this.getMeleeAttackPower();
           if (this.hasMixin('Elemental') && entity.hasMixin("Defense")) {
             damage = entity.raiseSymbolActiveEvent('calcDamage', {element: this.getCurrentElement(), attackPower: damage}).damage;
           }
@@ -327,19 +327,19 @@ Game.EntityMixin.MeleeAttacker = {
     }
   },
 
-  getAttackPower: function() {
+  getMeleeAttackPower: function() {
     return this.attr._MeleeAttacker_attr.attackPower;
   },
 
-  setAttackPower: function(n) {
+  setMeleeAttackPower: function(n) {
     this.attr._MeleeAttacker_attr.attackPower = n;
   },
 
-  getHitChance: function() {
+  getMeleeHitChance: function() {
     return this.attr._MeleeAttacker_attr.hitChance;
   },
 
-  setHitChance: function(n) {
+  setMeleeHitChance: function(n) {
     this.attr._MeleeAttacker_attr.hitChance = n;
   }
 };
@@ -370,9 +370,9 @@ Game.EntityMixin.RangedAttacker = {
         } else if (hit == 'wallTile') {
           Game.Message.send("You hit the wall");
         } else {
-          var flag = hit.raiseSymbolActiveEvent("calcHit", {hitChance: this.getHitChance()}).targetHit[0];
+          var flag = hit.raiseSymbolActiveEvent("calcHit", {hitChance: this.getRangedHitChance()}).targetHit[0];
           if (flag) {
-            var damage = this.getAttackPower();
+            var damage = this.getRangedAttackPower();
             if (this.hasMixin('Elemental') && hit.hasMixin("Defense")) {
               damage = hit.raiseSymbolActiveEvent('calcDamage', {element: this.getCurrentElement(), attackPower: damage}).damage;
             }
@@ -388,19 +388,19 @@ Game.EntityMixin.RangedAttacker = {
     }
   },
 
-  getAttackPower: function() {
+  getRangedAttackPower: function() {
     return this.attr._RangedAttacker_attr.attackPower;
   },
 
-  setAttackPower: function(n) {
+  setRangedAttackPower: function(n) {
     this.attr._RangedAttacker_attr.attackPower = n;
   },
 
-  getHitChance: function() {
+  getRangedHitChance: function() {
     return this.attr._RangedAttacker_attr.hitChance;
   },
 
-  setHitChance: function(n) {
+  setRangedHitChance: function(n) {
     this.attr._RangedAttacker_attr.hitChance = n;
   },
 
@@ -869,7 +869,7 @@ Game.EntityMixin.Defense = {
       if (this.attr._Defense_attr.elementArmor[elem]) {
         return this.attr._Defense_attr.elementArmor[elem];
       }
-      return false;
+      return 0;
     }
     return this.attr._Defense_attr.elementArmor;
   },

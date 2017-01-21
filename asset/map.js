@@ -219,19 +219,27 @@ Game.Map.prototype.renderOn = function (display, camX, camY, renderOptions) {
       var items = this.getItems(mapPos);
       if (items.length == 1) {
         if (showVisibleItems && visibleCells[mapCoord]) {
+          var origBg = items[0].getBg();
           items[0].setBg(tile.getBg());
           items[0].draw(display, x, y);
+          items[0].setBg(origBg);
         } else if (showMaskedItems && maskedCells[mapCoord]) {
+          var origBg = items[0].getBg();
           items[0].setBg(tile.getBg());
           items[0].draw(display, x, y, true);
+          items[0].setBg(origBg);
         }
       } else if (items.length > 1) {
         if (showVisibleItems && visibleCells[mapCoord]) {
+          var origBg = Game.Symbol.ITEM_PILE.getBg();
           Game.Symbol.ITEM_PILE.setBg(tile.getBg());
           Game.Symbol.ITEM_PILE.draw(display, x, y);
+          Game.Symbol.ITEM_PILE.setBg(origBg);
         } else if (showMaskedItems && maskedCells[mapCoord]) {
+          var origBg = Game.Symbol.ITEM_PILE.getBg();
           Game.Symbol.ITEM_PILE.setBg(tile.getBg());
           Game.Symbol.ITEM_PILE.draw(display, x, y, true);
+          Game.Symbol.ITEM_PILE.setBg(origBg);
         }
       }
 
