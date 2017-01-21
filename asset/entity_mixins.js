@@ -344,13 +344,13 @@ Game.EntityMixin.MeleeAttacker = {
 
     stateModel: {
         attackPower: 1,
-        hitChance: 1,
+        hitChance: 10,
         attackActionDuration: 1000
     },
 
     init: function(template) {
       this.attr._MeleeAttacker_attr.attackPower = template.meleeAttackPower || 1;
-      this.attr._MeleeAttacker_attr.hitChance = template.meleeHitChance || 1;
+      this.attr._MeleeAttacker_attr.hitChance = template.meleeHitChance || 10;
       this.attr._MeleeAttacker_attr.attackActionDuration = template.meleeAttackActionDuration || 1000;
     },
 
@@ -393,19 +393,19 @@ Game.EntityMixin.MeleeAttacker = {
 
 Game.EntityMixin.RangedAttacker = {
   META: {
-    mixinName: 'rangedAttacker',
+    mixinName: 'RangedAttacker',
     mixinGroup: 'attacker',
     stateNamespace: '_RangedAttacker_attr',
 
     stateModel: {
         attackPower: 1,
-        hitChance: 1,
+        hitChance: 10,
         attackActionDuration: 1000
     },
 
     init: function(template) {
       this.attr._RangedAttacker_attr.attackPower = template.rangedAttackPower || 1;
-      this.attr._RangedAttacker_attr.hitChance = template.rangedHitChance || 1;
+      this.attr._RangedAttacker_attr.hitChance = template.rangedHitChance || 10;
       this.attr._RangedAttacker_attr.attackActionDuration = template.rangedAttackActionDuration || 1000;
     },
 
@@ -872,7 +872,7 @@ Game.EntityMixin.Defense = {
     mixinGroup: "Defense",
     stateNamespace: "_Defense_attr",
     stateModel: {
-      dodgeChance: 0.1,
+      dodgeChance: 10,
       elementArmor: {fire: 0, water: 0, earth: 0, wind: 0, lightning: 0},
       normalArmor: 1
     },
@@ -880,7 +880,7 @@ Game.EntityMixin.Defense = {
     init: function(template) {
       this.attr._Defense_attr.elementArmor = template.elementArmor || {};
       this.attr._Defense_attr.normalArmor = template.normalArmor || 1;
-      this.attr._Defense_attr.dodgeChance = template.dodgeChance || 0.1;
+      this.attr._Defense_attr.dodgeChance = template.dodgeChance || 10;
     },
 
     listeners: {
@@ -903,7 +903,7 @@ Game.EntityMixin.Defense = {
       },
 
       'calcHit': function(data) {
-        if (ROT.RNG.getUniform() <= data.hitChance && ROT.RNG.getUniform() > this.getDodgeChance()) {
+        if (ROT.RNG.getUniform()*100 <= data.hitChance && ROT.RNG.getUniform()*100 > this.getDodgeChance()) {
           return {targetHit: true};
         }
         return {targetHit: false};
@@ -922,9 +922,7 @@ Game.EntityMixin.Defense = {
   },
 
   setElementArmor: function(elem, value) {
-    if (this.attr._Defense_attr.elementArmor[elem]) {
-      this.attr._Defense_attr.elementArmor[elem] = value;
-    }
+    this.attr._Defense_attr.elementArmor[elem] = value;
   },
 
   getNormalArmor: function() {
@@ -1022,6 +1020,9 @@ Game.EntityMixin.InventoryHolder = {
     }
 
     var addResult = this.getContainer().addItems(itemsToAdd);
+    for (var i = 0; i < itemsToAdd.length; i++) {
+      itemsToAdd[i].raiseSymbolActiveEvent("pickedUp", {picker: this});
+    }
     pickupResult.numItemsPickedUp = addResult.numItemsAdded;
     pickupResult.numItemsNotPickedUp = addResult.numItemsNotAdded;
     var lastItemFromMap = '';
@@ -1044,8 +1045,12 @@ Game.EntityMixin.InventoryHolder = {
     var dropResult = {numItemsDropped: 0};
 
     if (itemsToDrop.length < 1) {
-      this.raiseSymbolActiveEvent('inventoryEmpty');
+      this.raiseSymbolActiveEvent("inventoryEmpty");
       return dropResult;
+    }
+
+    for (var i = 0; i < itemsToDrop.length; i++) {
+      itemsToDrop[i].raiseSymbolActiveEvent("dropped", {dropper: this});
     }
 
     var lastItemDropped = '';

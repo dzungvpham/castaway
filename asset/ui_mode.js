@@ -97,10 +97,11 @@ Game.UIMode.gamePlay = {
     var avatar = this.getAvatar();
     display.drawText(1, 1, "HP: " + avatar.getCurrentHP() + "/" + avatar.getMaxHP());
     display.drawText(1, 2, "Base Damage: " + avatar.getRangedAttackPower());
-    display.drawText(1, 3, "Accuracy: " + avatar.getRangedHitChance()*100 + "%");
-    display.drawText(1, 4, "Evasion: " + avatar.getDodgeChance()*100 + "%");
-    display.drawText(1, 5, "Chakra: " + avatar.getCurrentElement());
-    display.drawText(1, 6, "Killed: " + avatar.getKillCount());
+    display.drawText(1, 3, "Accuracy: " + avatar.getRangedHitChance() + "%");
+    display.drawText(1, 4, "Evasion: " + avatar.getDodgeChance() + "%");
+    display.drawText(1, 5, "Sight: " + avatar.getSightRadius());
+    display.drawText(1, 6, "Chakra: " + avatar.getCurrentElement());
+    display.drawText(1, 7, "Killed: " + avatar.getKillCount());
     // display.drawText(1, 7, "Physical Armor: " + avatar.getNormalArmor());
     // display.drawText(1, 8, "Fire Armor: " + avatar.getElementArmor("fire"));
     // display.drawText(1, 9, "Water Armor: " + avatar.getElementArmor("water"));
@@ -219,7 +220,7 @@ Game.UIMode.gamePlay = {
        map.addEntity(Game.EntityGenerator.create('newt'), map.getRandomWalkableLocation());
        map.addEntity(Game.EntityGenerator.create('squirell'), map.getRandomWalkableLocation());
        map.addEntity(Game.EntityGenerator.create('slug'), map.getRandomWalkableLocation());
-       map.addItem(Game.ItemGenerator.create("rock"), map.getRandomWalkableLocation());
+       map.addItem(Game.ItemGenerator.create("chakra shard"), map.getRandomWalkableLocation());
     }
   },
 
@@ -767,8 +768,8 @@ Game.UIMode.LAYER_itemListing.prototype.handleInput = function (inputType, input
         if (this._displayItemsStartIndex > 0) {
           numItemsShown--;
         }
-        var lastSelectionLetter = (String.fromCharCode(ROT.VK_A + this._numItemsShown - 1)).toLowerCase();
-        helpText += "a-" + lastSelectionLetter + "   select the indicated item\n";
+        //var lastSelectionLetter = (String.fromCharCode(ROT.VK_A + this._numItemsShown - 1)).toLowerCase();
+        helpText += "a-z" + "   select the indicated item\n";
       }
       helpText += Game.KeyBinding.getBindingHelpText();
       Game.UIMode.LAYER_textReading.setText(helpText);
