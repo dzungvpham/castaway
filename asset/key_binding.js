@@ -227,10 +227,9 @@ Game.KeyBinding = {
     DROP   : {action_group:'inventory' ,guid:Game.util.uniqueID() ,ordering:5.3, short:'drop' ,long :'drop one or more items in the current space'         ,
       LAYER_inventoryListing: {label:'D' ,inputMatch:ROT.VK_D ,inputType:'keydown' ,inputMetaShift:true  ,inputMetaCtrl:false}
     },
-    EXAMINE : {action_group:'inventory' ,guid:Game.util.uniqueID() ,ordering:5.4 ,short:'examine' ,long :'get details about a carried item',
-      numpad: {label:'x' ,inputMatch:ROT.VK_X ,inputType:'keydown' ,inputMetaShift:false  ,inputMetaCtrl:false} ,
-      waxd  : {label:'X' ,inputMatch:ROT.VK_X ,inputType:'keydown' ,inputMetaShift:true  ,inputMetaCtrl:false},
-      LAYER_inventoryListing: {label:'X' ,inputMatch:ROT.VK_X ,inputType:'keydown' ,inputMetaShift:true  ,inputMetaCtrl:false}
+    EXAMINE : {action_group:'inventory' ,guid:Game.util.uniqueID() ,ordering:5.4 ,short:'examine' ,long :'examine the position right in front of you',
+      numpad: {label:'r' ,inputMatch:ROT.VK_R ,inputType:'keydown' ,inputMetaShift:false  ,inputMetaCtrl:false} ,
+      waxd  : {label:'r' ,inputMatch:ROT.VK_R ,inputType:'keydown' ,inputMetaShift:false  ,inputMetaCtrl:false}
     },
 
     DATA_NAV_UP : {action_group:'data_nav' ,guid:Game.util.uniqueID() ,ordering:8.1 ,short:'down' ,long :'scroll content down',

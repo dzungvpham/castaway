@@ -16,6 +16,53 @@ Game.EntityMixin.Sight = {
     listeners: {
       'senseEntity': function(data) {
         return {isEntitySensed: this.canSeeEntity(data.entity)};
+      },
+
+      'examine': function(data) {
+        if (this.hasMixin("Directed")) {
+          var dir = this.getDirection();
+          var dx = 0;
+          var dy = 0;
+          switch (dir) {
+            case "north":
+              dx = 0;
+              dy = -1;
+              break;
+            case "south":
+              dx = 0;
+              dy = 1;
+              break;
+            case "west":
+              dx = -1;
+              dy = 0;
+              break;
+            case "east":
+              dx = 1;
+              dy = 0;
+              break;
+            default:
+              return false;
+          }
+          var targetX = this.getX() + dx;
+          var targetY = this.getY() + dy;
+          var map = this.getMap();
+          var entity = map.getEntity(targetX, targetY);
+          Game.Message.ageMessages();
+          if (entity) {
+            Game.Message.send(entity.getDetailedDescription());
+            return;
+          }
+          var item = map.getItems(targetX, targetY);
+          if (item.length == 1) {
+            Game.Message.send(item[0].getDetailedDescription());
+            return;
+          } else if (item.length > 1) {
+            Game.Message.send("A pile of items");
+            return;
+          }
+          Game.Message.send(map.getTile(targetX, targetY).getDescription());
+          return;
+        }
       }
     }
   },

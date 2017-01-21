@@ -2,7 +2,7 @@ Game.SymbolActive = function(template) {
   template = template || {};
   Game.Symbol.call(this, template);
   this.attr._name = template.name || '';
-  this.attr._description = template.description || 'Completely Uninteresting';
+  this.attr._description = template.description || 'Completely uninteresting';
   this.attr._ID = template.presetID || Game.util.uniqueID();
 
   this._mixinsName = template.mixins || [];
@@ -62,7 +62,7 @@ Game.SymbolActive.prototype.getDescription = function() {
 };
 
 Game.SymbolActive.prototype.getDetailedDescription = function () {
-  var descr = this.getRepresentation() + ' ' + Game.UIMode.DEFAULT_COLOR_STR + this.getName() + ' - ' + this.getDescription();  
+  var descr = this.getRepresentation() + ' ' + Game.UIMode.DEFAULT_COLOR_STR + this.getName() + ': ' + this.getDescription();
   return descr;
 };
 

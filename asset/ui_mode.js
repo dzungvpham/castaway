@@ -96,19 +96,17 @@ Game.UIMode.gamePlay = {
     var bg = Game.UIMode.DEFAULT_BG;
     var avatar = this.getAvatar();
     display.drawText(1, 1, "HP: " + avatar.getCurrentHP() + "/" + avatar.getMaxHP());
-    display.drawText(1, 2, "Melee Damage: " + avatar.getMeleeAttackPower());
-    display.drawText(1, 3, "Ranged Damage: " + avatar.getRangedAttackPower());
-    display.drawText(1, 4, "Melee Accuracy: " + avatar.getMeleeHitChance()*100 + "%");
-    display.drawText(1, 5, "Ranged Accuracy: " + avatar.getRangedHitChance()*100 + "%");
-    display.drawText(1, 6, "Evasion: " + avatar.getDodgeChance()*100 + "%");
-    display.drawText(1, 7, "Chakra: " + avatar.getCurrentElement());
-    display.drawText(1, 8, "Killed: " + avatar.getKillCount());
-    display.drawText(1, 9, "Physical Armor: " + avatar.getNormalArmor());
-    display.drawText(1, 10, "Fire Armor: " + avatar.getElementArmor("fire"));
-    display.drawText(1, 11, "Water Armor: " + avatar.getElementArmor("water"));
-    display.drawText(1, 12, "Earth Armor: " + avatar.getElementArmor("earth"));
-    display.drawText(1, 13, "Wind Armor: " + avatar.getElementArmor("wind"));
-    display.drawText(1, 14, "Lightning Armor: " + avatar.getElementArmor("lightning"));
+    display.drawText(1, 2, "Base Damage: " + avatar.getRangedAttackPower());
+    display.drawText(1, 3, "Accuracy: " + avatar.getRangedHitChance()*100 + "%");
+    display.drawText(1, 4, "Evasion: " + avatar.getDodgeChance()*100 + "%");
+    display.drawText(1, 5, "Chakra: " + avatar.getCurrentElement());
+    display.drawText(1, 6, "Killed: " + avatar.getKillCount());
+    // display.drawText(1, 7, "Physical Armor: " + avatar.getNormalArmor());
+    // display.drawText(1, 8, "Fire Armor: " + avatar.getElementArmor("fire"));
+    // display.drawText(1, 9, "Water Armor: " + avatar.getElementArmor("water"));
+    // display.drawText(1, 10, "Earth Armor: " + avatar.getElementArmor("earth"));
+    // display.drawText(1, 11, "Wind Armor: " + avatar.getElementArmor("wind"));
+    // display.drawText(1, 12, "Lightning Armor: " + avatar.getElementArmor("lightning"));
   },
 
   moveAvatar: function (pdx, pdy) {
@@ -184,6 +182,9 @@ Game.UIMode.gamePlay = {
           Game.addUIMode('LAYER_inventoryPickup');
           Game.getCurUIMode().doSetup();
         }
+        break;
+      case "EXAMINE":
+        this.getAvatar().raiseSymbolActiveEvent("examine");
         break;
       case "CHANGE_BINDINGS":
         Game.KeyBinding.swapToNextKeyBinding();
@@ -505,6 +506,7 @@ Game.UIMode.LAYER_itemListing = function(template) {
   template = template ? template : {};
 
   this._caption = template.caption || 'Items';
+  this._helpText = template.helpText || "[Enter] to execute, [Esc] to exit, [ and ] for scrolling";
   this._processingFunction = template.processingFunction;
   this._autoProcess = template.autoProcess || false;
   this._filterListedItemsOnFunction = template.filterListedItemsOn || function(x) {
@@ -538,7 +540,6 @@ Game.UIMode.LAYER_itemListing.prototype.enter = function () {
   this._storedKeyBinding = Game.KeyBinding.getKeyBinding();
   Game.KeyBinding.setKeyBinding(this._keyBindingName);
   Game.refresh();
-  setTimeout(function() {Game.specialMessage("[Enter] to execute, [Esc] to exit, [ and ] for scrolling");}, 1);
 };
 
 Game.UIMode.LAYER_itemListing.prototype.exit = function () {
@@ -638,8 +639,9 @@ Game.UIMode.LAYER_itemListing.prototype.render = function(display) {
   var selectionLetters = 'abcdefghijklmnopqrstuvwxyz';
 
   display.drawText(0, 0, Game.UIMode.DEFAULT_COLOR_STR + this.getCaptionText());
+  display.drawText(0, 1, Game.UIMode.DEFAULT_COLOR_STR + this._helpText);
 
-  var row = 0;
+  var row = 2;
   if (this._hasNoItemOption) {
     display.drawText(0, 1, Game.UIMode.DEFAULT_COLOR_STR + '0 - no item');
     row++;
@@ -779,6 +781,7 @@ Game.UIMode.LAYER_itemListing.prototype.handleInput = function (inputType, input
 
 Game.UIMode.LAYER_inventoryListing = new Game.UIMode.LAYER_itemListing({
     caption: 'Inventory',
+    helpText: "a-z to choose item, Shift + D to drop, [Esc] to exit, [ and ] for scrolling",
     canSelect: true,
     canSelectMultipleItems: false,
     keyBindingName: 'LAYER_inventoryListing',
@@ -831,6 +834,7 @@ Game.UIMode.LAYER_inventoryListing.execute = function() {
 
 Game.UIMode.LAYER_inventoryPickup = new Game.UIMode.LAYER_itemListing({
   caption: 'Pick Up',
+  helpText: "a-z to choose item, [Enter] to pick up chosen items, [Esc] to exit, [ and ] for scrolling",
   canSelect: true,
   canSelectMultipleItems: true,
   keyBindingName: 'LAYER_inventoryPickup',

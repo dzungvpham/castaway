@@ -15,7 +15,7 @@ Game.EntityGenerator.learn({
   elementArmor: {fire: 5},
   inventoryCapacity: 3,
   mixins: ["PlayerActor", "PlayerMessager", "Sight", "Directed", "MapMemory", "WalkerCorporeal",
-   "Chronicle", "HitPoints", "MeleeAttacker", "RangedAttacker", "Elemental", "Defense", "InventoryHolder"]
+   "Chronicle", "HitPoints", "RangedAttacker", "Elemental", "Defense", "InventoryHolder"]
 });
 
 Game.EntityGenerator.learn({
