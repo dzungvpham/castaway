@@ -13,8 +13,9 @@ Game.EntityGenerator.learn({
   direction: 'north',
   element: ["fire", "water", "earth", "wind", "lightning"],
   elementArmor: {fire: 5},
+  inventoryCapacity: 3,
   mixins: ["PlayerActor", "PlayerMessager", "Sight", "Directed", "MapMemory", "WalkerCorporeal",
-   "Chronicle", "HitPoints", "MeleeAttacker", "RangedAttacker", "Elemental", "Defense"]
+   "Chronicle", "HitPoints", "MeleeAttacker", "RangedAttacker", "Elemental", "Defense", "InventoryHolder"]
 });
 
 Game.EntityGenerator.learn({

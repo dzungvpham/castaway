@@ -43,7 +43,7 @@ Game.UIMode.gamePlay = {
       this.setCameraToAvatar();
     }
 
-    Game.TimeEngine.unlock();
+    setTimeout(function() {Game.TimeEngine.unlock();}, 1);
     Game.refresh();
   },
 
@@ -85,25 +85,34 @@ Game.UIMode.gamePlay = {
     var avatar = this.getAvatar();
     var targetX = avatar.getX() - this.attr._camX + display._options.width/2;
     var targetY = avatar.getY() - this.attr._camY + display._options.height/2;
+    var origBg = avatar.getBg();
     avatar.setBg(this.getMap().getTile(avatar.getX(), avatar.getY()).getBg());
     avatar.draw(display, targetX, targetY);
+    avatar.setBg(origBg);
   },
 
   renderAvatarInfo: function (display) {
     var fg = Game.UIMode.DEFAULT_FG;
     var bg = Game.UIMode.DEFAULT_BG;
     var avatar = this.getAvatar();
-    display.drawText(1, 2, "Avatar x: " + avatar.getX(), fg, bg);
-    display.drawText(1, 3, "Avatar y: " + avatar.getY(), fg, bg);
-    display.drawText(1, 4, "Turn: " + avatar.getTurn());
-    display.drawText(1, 5, "HP: " + avatar.getCurrentHP() + "/" + avatar.getMaxHP());
-    display.drawText(1, 6, "ATK: " + avatar.getAttackPower());
+    display.drawText(1, 1, "HP: " + avatar.getCurrentHP() + "/" + avatar.getMaxHP());
+    display.drawText(1, 2, "Melee Damage: " + avatar.getMeleeAttackPower());
+    display.drawText(1, 3, "Ranged Damage: " + avatar.getRangedAttackPower());
+    display.drawText(1, 4, "Melee Accuracy: " + avatar.getMeleeHitChance()*100 + "%");
+    display.drawText(1, 5, "Ranged Accuracy: " + avatar.getRangedHitChance()*100 + "%");
+    display.drawText(1, 6, "Evasion: " + avatar.getDodgeChance()*100 + "%");
     display.drawText(1, 7, "Chakra: " + avatar.getCurrentElement());
     display.drawText(1, 8, "Killed: " + avatar.getKillCount());
+    display.drawText(1, 9, "Physical Armor: " + avatar.getNormalArmor());
+    display.drawText(1, 10, "Fire Armor: " + avatar.getElementArmor("fire"));
+    display.drawText(1, 11, "Water Armor: " + avatar.getElementArmor("water"));
+    display.drawText(1, 12, "Earth Armor: " + avatar.getElementArmor("earth"));
+    display.drawText(1, 13, "Wind Armor: " + avatar.getElementArmor("wind"));
+    display.drawText(1, 14, "Lightning Armor: " + avatar.getElementArmor("lightning"));
   },
 
   moveAvatar: function (pdx, pdy) {
-    var moveResp = this.getAvatar().raiseEntityEvent("adjacentMove", {dx: pdx, dy: pdy});
+    var moveResp = this.getAvatar().raiseSymbolActiveEvent("adjacentMove", {dx: pdx, dy: pdy});
 
     if (moveResp.madeAdjacentMove && moveResp.madeAdjacentMove[0]) {
       this.setCameraToAvatar();
@@ -133,34 +142,54 @@ Game.UIMode.gamePlay = {
     var tookTurn = false;
     switch (actionBinding.actionKey) {
       case "MOVE_U":
-        this.getAvatar().raiseEntityEvent("changeDirection", {direction: 'north'});
+        this.getAvatar().raiseSymbolActiveEvent("changeDirection", {direction: 'north'});
         tookTurn = this.moveAvatar(0, -1);
         break;
       case "MOVE_L":
-        this.getAvatar().raiseEntityEvent("changeDirection", {direction: 'west'});
+        this.getAvatar().raiseSymbolActiveEvent("changeDirection", {direction: 'west'});
         tookTurn = this.moveAvatar(-1, 0);
         break;
       case "MOVE_WAIT":
-        this.getAvatar().raiseEntityEvent("specialTerrain", {tile: this.getMap().getTile(this.getAvatar().getPos())});
+        this.getAvatar().raiseSymbolActiveEvent("specialTerrain", {tile: this.getMap().getTile(this.getAvatar().getPos())});
         tookTurn = true;
         break;
       case "MOVE_R":
-        this.getAvatar().raiseEntityEvent("changeDirection", {direction: 'east'});
+        this.getAvatar().raiseSymbolActiveEvent("changeDirection", {direction: 'east'});
         tookTurn = this.moveAvatar(1, 0);
         break;
       case "MOVE_D":
-        this.getAvatar().raiseEntityEvent("changeDirection", {direction: 'south'});
+        this.getAvatar().raiseSymbolActiveEvent("changeDirection", {direction: 'south'});
         tookTurn = this.moveAvatar(0, 1);
         break;
       case "SHOOT":
-        this.getAvatar().raiseEntityEvent("shoot");
+        this.getAvatar().raiseSymbolActiveEvent("shoot");
         tookTurn = true;
         break;
       case "NEXT_ELEM":
-        this.getAvatar().raiseEntityEvent("nextElement");
+        this.getAvatar().raiseSymbolActiveEvent("nextElement");
         break;
       case "PREV_ELEM":
-        this.getAvatar().raiseEntityEvent("prevElement");
+        this.getAvatar().raiseSymbolActiveEvent("prevElement");
+        break;
+      case "INVENTORY":
+        Game.addUIMode("LAYER_inventoryListing");
+        Game.getCurUIMode().doSetup();
+        break;
+      case "PICKUP":
+        var pickUpList = Game.util.objectArrayToIDArray(this.getAvatar().getMap().getItems(this.getAvatar().getPos()));
+        if (pickUpList.length <= 1) {
+          var pickupRes = this.getAvatar().pickupItems(pickUpList);
+          tookTurn = pickupRes.numItemsPickedUp > 0;
+        } else {
+          Game.addUIMode('LAYER_inventoryPickup');
+          Game.getCurUIMode().doSetup();
+        }
+        break;
+      case "DROP":
+        // var dropRes = this.getAvatar().dropItems(this.getAvatar().getInventoryItemIDs());
+        // tookTurn = dropRes.numItemsDropped > 0;
+        Game.addUIMode('LAYER_inventoryDrop');
+        Game.getCurUIMode().doSetup();
         break;
       case "CHANGE_BINDINGS":
         Game.KeyBinding.swapToNextKeyBinding();
@@ -176,7 +205,7 @@ Game.UIMode.gamePlay = {
 
     Game.refresh();
     if (tookTurn) {
-      this.getAvatar().raiseEntityEvent('actionDone');
+      this.getAvatar().raiseSymbolActiveEvent('actionDone');
       return true;
     }
     return false;
@@ -189,11 +218,13 @@ Game.UIMode.gamePlay = {
     var map = this.getMap();
     map.addEntity(this.getAvatar(), map.getRandomWalkableLocation());
     this.setCameraToAvatar();
-    for (var count = 0; count < 1; count++) { //Not consistent
+    var test = Game.ItemGenerator.create('rock');
+    for (var count = 0; count < 4; count++) { //Not consistent
        map.addEntity(Game.EntityGenerator.create('moss'), map.getRandomWalkableLocation());
        map.addEntity(Game.EntityGenerator.create('newt'), map.getRandomWalkableLocation());
        map.addEntity(Game.EntityGenerator.create('squirell'), map.getRandomWalkableLocation());
        map.addEntity(Game.EntityGenerator.create('slug'), map.getRandomWalkableLocation());
+       map.addItem(Game.ItemGenerator.create("rock"), map.getRandomWalkableLocation());
     }
   },
 
@@ -271,6 +302,7 @@ Game.UIMode.gamePersistence = {
       Game.DATASTORE.SCHEDULE_TIME = Game.Scheduler._queue.getTime() - 1; //offset by 1 so that when the engine is started after restore the queue state will match that as when it was saved
 
       window.localStorage.setItem(Game._PERSISTENCE_NAMESPACE, JSON.stringify(Game.DATASTORE));
+      Game.KeyBinding.setKeyBinding(this._storedKeyBinding);
       Game.switchUIMode("gamePlay");
     }
   },
@@ -279,11 +311,9 @@ Game.UIMode.gamePersistence = {
     var json_state_data = window.localStorage.getItem(Game._PERSISTENCE_NAMESPACE);
     var state_data = JSON.parse(json_state_data);
 
-    Game.setRandomSeed(state_data[this.RANDOM_SEED_KEY]);
+    this.resetDatastore();
 
-    Game.DATASTORE = {};
-    Game.DATASTORE.MAP = {};
-    Game.DATASTORE.ENTITY = {};
+    Game.setRandomSeed(state_data[this.RANDOM_SEED_KEY]);
 
     for (var mapID in state_data.MAP) {
       if (state_data.MAP.hasOwnProperty(mapID)) {
@@ -303,6 +333,15 @@ Game.UIMode.gamePersistence = {
       }
     }
 
+    for (var itemID in state_data.ITEM) {
+      if (state_data.ITEM.hasOwnProperty(itemID)) {
+        var itemAttr = JSON.parse(state_data.ITEM[itemID]);
+        var newItem = Game.ItemGenerator.create(itemAttr._generator_template_key, itemAttr._id);
+        Game.DATASTORE.ITEM[itemID] = newItem;
+        Game.DATASTORE.ITEM[itemID].fromJSON(state_data.ITEM[itemID]);
+      }
+    }
+
     Game.UIMode.gamePlay.attr = state_data.GAME_PLAY;
     Game.Message.attr = state_data.MESSAGE;
 
@@ -318,15 +357,12 @@ Game.UIMode.gamePersistence = {
       Game.Scheduler._queue._time = state_data.SCHEDULE_TIME;
 
     Game.switchUIMode("gamePlay");
-    Game.KeyBinding.setKeyBinding(state_data.KEY_BINDING_SET)
+    Game.KeyBinding.setKeyBinding(state_data.KEY_BINDING_SET);
     Game.KeyBinding.informPlayer();
   },
 
   newGame: function() {
-    Game.DATASTORE = {};
-    Game.DATASTORE.MAP = {};
-    Game.DATASTORE.ENTITY = {};
-    Game.initTimeEngine();
+    this.resetDatastore();
     Game.setRandomSeed(5 + Math.floor(Game.TRANSIENT_RNG.getUniform() * 100000));
     Game.UIMode.gamePlay.setupNewGame();
     setTimeout(function(){ Game.switchUIMode("gameStart"); }, 1);
@@ -342,6 +378,14 @@ Game.UIMode.gamePersistence = {
       Game.Message.send("No local data storage is available for this browser");
       return false;
     }
+  },
+
+  resetDatastore: function() {
+    Game.DATASTORE = {};
+    Game.DATASTORE.MAP = {};
+    Game.DATASTORE.ENTITY = {};
+    Game.DATASTORE.ITEM = {};
+    Game.initTimeEngine();
   },
 
   BASE_toJSON: function(state_hash_name) {
@@ -407,7 +451,7 @@ Game.UIMode.LAYER_textReading = {
     this._storedKeyBinding = Game.KeyBinding.getKeyBinding();
     Game.KeyBinding.setKeyBinding('LAYER_textReading');
     Game.refresh();
-    Game.specialMessage("[ESC] to exit, [ and ] for scrolling");
+    setTimeout(function() {Game.specialMessage("[ESC] to exit, [ and ] for scrolling")}, 1);
   },
 
   exit: function() {
@@ -462,3 +506,306 @@ Game.UIMode.LAYER_textReading = {
     this._text = text;
   }
 }
+
+Game.UIMode.LAYER_itemListing = function(template) {
+  template = template ? template : {};
+
+  this._caption = template.caption || 'Items';
+  this._processingFunction = template.processingFunction;
+  this._filterListedItemsOnFunction = template.filterListedItemsOn || function(x) {
+      return x;
+  };
+  this._canSelectItem = template.canSelect || false;
+  this._canSelectMultipleItems = template.canSelectMultipleItems || false;
+  this._hasNoItemOption = template.hasNoItemOption || false;
+  this._origItemIdList= template.itemIdList ? JSON.parse(JSON.stringify(template.itemIdList)) : [];
+  this._itemIdList = [];
+  this._runFilterOnItemIdList();
+  this._keyBindingName= template.keyBindingName || 'LAYER_itemListing';
+
+  this._selectedItemIdxs= [];
+  this._displayItemsStartIndex = 0;
+  this._displayItems = [];
+  this._displayMaxNum = Game.getDisplayHeight("main") - 3;
+  this._numItemsShown = 0;
+};
+
+Game.UIMode.LAYER_itemListing.prototype._runFilterOnItemIdList = function () {
+  this._itemIdList = [];
+  for (var i = 0; i < this._origItemIdList.length; i++) {
+    if (this._filterListedItemsOnFunction(this._origItemIdList[i])) {
+      this._itemIdList.push(this._origItemIdList[i]);
+    }
+  }
+};
+
+Game.UIMode.LAYER_itemListing.prototype.enter = function () {
+  this._storedKeyBinding = Game.KeyBinding.getKeyBinding();
+  Game.KeyBinding.setKeyBinding(this._keyBindingName);
+  Game.refresh();
+  setTimeout(function() {Game.specialMessage("[Enter] to execute, [Esc] to exit, [ and ] for scrolling");}, 1);
+};
+
+Game.UIMode.LAYER_itemListing.prototype.exit = function () {
+  Game.KeyBinding.setKeyBinding(this._storedKeyBinding);
+  setTimeout(function(){
+     Game.refresh();
+  }, 1);
+};
+
+Game.UIMode.LAYER_itemListing.prototype.setup = function(setupParams) {
+  setupParams = setupParams ? setupParams : {};
+
+  if (setupParams.hasOwnProperty('caption')) {
+    this._caption = setupParams.caption;
+  }
+  if (setupParams.hasOwnProperty('processingFunction')) {
+    this._processingFunction = setupParams.processingFunction;
+  }
+  if (setupParams.hasOwnProperty('filterListedItemsOn')) {
+    this._filterListedItemsOnFunction = setupParams.filterListedItemsOn;
+    this._runFilterOnItemIdList();
+  }
+  if (setupParams.hasOwnProperty('canSelect')) {
+    this._canSelectItem = setupParams.canSelect;
+  }
+  if (setupParams.hasOwnProperty('canSelectMultipleItems')) {
+    this._canSelectMultipleItems = setupParams.canSelectMultipleItems;
+  }
+  if (setupParams.hasOwnProperty('hasNoItemOption')) {
+    this._hasNoItemOption = setupParams.hasNoItemOption;
+  }
+  if (setupParams.hasOwnProperty('itemIdList')) {
+    this._origItemIdList = JSON.parse(JSON.stringify(setupParams.itemIdList));
+    this._runFilterOnItemIdList();
+  }
+  if (setupParams.hasOwnProperty('keyBindingName')) {
+    this._keyBindingName = setupParams.keyBindingName;
+  }
+
+  this._selectedItemIdxs= [];
+  this._displayItemsStartIndex = 0;
+  this._displayItems = [];
+  this._numItemsShown = 0;
+  this.determineDisplayItems();
+};
+
+Game.UIMode.LAYER_itemListing.prototype.getItemList = function () {
+  return this._itemIdList;
+};
+
+Game.UIMode.LAYER_itemListing.prototype.setItemList = function (itemList) {
+  this._itemIdList = itemList;
+};
+
+Game.UIMode.LAYER_itemListing.prototype.determineDisplayItems = function() {
+    this._displayItems = this._itemIdList.slice(this._displayItemsStartIndex, this._displayItemsStartIndex + this._displayMaxNum).map(function(itemId) { return Game.DATASTORE.ITEM[itemId]; });
+};
+
+Game.UIMode.LAYER_itemListing.prototype.handlePageUp = function() {
+    this._displayItemsStartIndex -= this._displayMaxNum;
+    if (this._displayItemsStartIndex < 0) {
+        this._displayItemsStartIndex = 0;
+    }
+    this.determineDisplayItems();
+    Game.renderMain();
+};
+
+Game.UIMode.LAYER_itemListing.prototype.handlePageDown = function() {
+    var numUnseenItems = this._itemIdList.length - (this._displayItemsStartIndex + this._displayItems.length);
+    this._displayItemsStartIndex += this._displayMaxNum;
+    if (this._displayItemsStartIndex > this._itemIdList.length) {
+        this._displayItemsStartIndex -= this._displayMaxNum;
+    }
+    this.determineDisplayItems();
+    Game.renderMain();
+};
+
+Game.UIMode.LAYER_itemListing.prototype.getKeyBindingName = function () {
+  return this._keyBindingName;
+};
+
+Game.UIMode.LAYER_itemListing.prototype.setKeyBindingName = function (keyBindingName) {
+  this._keyBindingName = keyBindingName;
+};
+
+Game.UIMode.LAYER_itemListing.prototype.getCaptionText = function () {
+  var captionText = 'Items';
+  if (typeof this._caption == 'function') {
+    captionText = this._caption();
+  } else {
+    captionText = this._caption;
+  }
+  return captionText;
+};
+
+Game.UIMode.LAYER_itemListing.prototype.render = function(display) {
+  var selectionLetters = 'abcdefghijklmnopqrstuvwxyz';
+
+  display.drawText(0, 0, Game.UIMode.DEFAULT_COLOR_STR + this.getCaptionText());
+
+  var row = 0;
+  if (this._hasNoItemOption) {
+    display.drawText(0, 1, Game.UIMode.DEFAULT_COLOR_STR + '0 - no item');
+    row++;
+  }
+  if (this._displayItemsStartIndex > 0) {
+    display.drawText(0, 1 + row, '%c{black}%b{yellow}] for more');
+    row++;
+  }
+
+  this._numItemsShown = 0;
+  for (var i = 0; i < this._displayItems.length; i++) {
+    var trueItemIndex = this._displayItemsStartIndex + i;
+    if (this._displayItems[i]) {
+      var selectionLetter = selectionLetters.substring(i, i + 1);
+
+      // If we have selected an item, show a +, else show a space between the selectionLetter and the item's name.
+      var selectionState = (this._canSelectItem && this._canSelectMultipleItems && this._selectedItemIdxs[trueItemIndex]) ? '+' : ' ';
+
+      var item_symbol = this._displayItems[i].getRepresentation() + Game.UIMode.DEFAULT_COLOR_STR;
+      display.drawText(0, 1 + row, Game.UIMode.DEFAULT_COLOR_STR + selectionLetter + ' ' + selectionState + ' ' + item_symbol + ' ' + this._displayItems[i].getName());
+      row++;
+      this._numItemsShown++;
+    }
+  }
+  if ((this._displayItemsStartIndex + this._displayItems.length) < this._itemIdList.length) {
+    display.drawText(0, 1 + row, '%c{black}%b{yellow}] for more');
+    row++;
+  }
+};
+
+Game.UIMode.LAYER_itemListing.prototype.executeProcessingFunction = function() {
+  // Gather the selected item ids
+  var selectedItemIds = [];
+  for (var selectionIndex in this._selectedItemIdxs) {
+    if (this._selectedItemIdxs.hasOwnProperty(selectionIndex)) {
+      selectedItemIds.push(this._itemIdList[selectionIndex]);
+    }
+  }
+  Game.removeUIMode();
+  // Call the processing function and end the player's turn if it returns true.
+  if (this._processingFunction(selectedItemIds)) {
+    Game.getAvatar().raiseSymbolActiveEvent('actionDone');
+    setTimeout(function() {
+       Game.Message.ageMessages();
+    }, 1);
+  }
+};
+
+Game.UIMode.LAYER_itemListing.prototype.handleInput = function (inputType, inputData) {
+  var actionBinding = Game.KeyBinding.getInputBinding(inputType, inputData);
+  if (!actionBinding) {
+    if ((inputType === 'keydown') && this._canSelectItem && inputData.keyCode >= ROT.VK_A && inputData.keyCode <= ROT.VK_Z) {
+
+      var index = inputData.keyCode - ROT.VK_A;
+      if (index > this._numItemsShown) {
+        return false;
+      }
+      var trueItemIndex = this._displayItemsStartIndex + index;
+
+      if (this._itemIdList[trueItemIndex]) {
+        // If multiple selection is allowed, toggle the selection status, else select the item and exit the screen
+        if (this._canSelectMultipleItems) {
+            if (this._selectedItemIdxs[trueItemIndex]) {
+              delete this._selectedItemIdxs[trueItemIndex];
+            } else {
+              this._selectedItemIdxs[trueItemIndex] = true;
+            }
+            Game.refresh();
+        } else {
+          this._selectedItemIdxs[trueItemIndex] = true;
+          this.executeProcessingFunction();
+        }
+      } else {
+       return false;
+      }
+    }
+    return false;
+  }
+
+  switch (actionBinding.actionKey) {
+    case "PROCESS_SELECTIONS":
+      this.executeProcessingFunction();
+      break;
+    case "CANCEL":
+      Game.removeUIMode();
+      break;
+    case "DATA_NAV_UP":
+      this.handlePageUp();
+      break;
+    case "DATA_NAV_DOWN":
+      this.handlePageDown();
+      break;
+    case "SELECT_NOTHING":
+      if (this._canSelectItem && this._hasNoItemOption) {
+        this._selectedItemIdxs = {};
+      }
+      break;
+    case "HELP":
+      var helpText = this.getCaptionText() + "\n";
+      if (this._canSelectItem || this._canSelectMultipleItems) {
+        var numItemsShown = this._displayMaxNum;
+        if (this._hasNoItemOption) {
+          numItemsShown--;
+        }
+        if ((this._displayItemsStartIndex + this._displayItems.length) < this._itemIdList.length) {
+          numItemsShown--;
+        }
+        if (this._displayItemsStartIndex > 0) {
+          numItemsShown--;
+        }
+        var lastSelectionLetter = (String.fromCharCode(ROT.VK_A + this._numItemsShown - 1)).toLowerCase();
+        helpText += "a-" + lastSelectionLetter + "   select the indicated item\n";
+      }
+      helpText += Game.KeyBinding.getBindingHelpText();
+      Game.UIMode.LAYER_textReading.setText(helpText);
+      Game.addUIMode('LAYER_textReading');
+      break;
+  }
+
+  return false;
+};
+
+Game.UIMode.LAYER_inventoryListing = new Game.UIMode.LAYER_itemListing({
+    caption: 'Inventory',
+    canSelect: false,
+    keyBindingName: 'LAYER_inventoryListing'
+});
+
+Game.UIMode.LAYER_inventoryListing.doSetup = function() {
+  this.setup({itemIdList: Game.getAvatar().getInventoryItemIDs()});
+};
+
+Game.UIMode.LAYER_inventoryDrop = new Game.UIMode.LAYER_itemListing({
+    caption: 'Drop',
+    canSelect: true,
+    canSelectMultipleItems: true,
+    keyBindingName: 'LAYER_inventoryDrop',
+    processingFunction: function (selectedItemIds) {
+      if (selectedItemIds.length < 1) {
+        return false;
+      }
+      var dropResult = Game.getAvatar().dropItems(selectedItemIds);
+      return dropResult.numItemsDropped > 0;
+    }
+});
+
+Game.UIMode.LAYER_inventoryDrop.doSetup = function () {
+  this.setup({itemIdList: Game.getAvatar().getInventoryItemIDs()});
+};
+
+Game.UIMode.LAYER_inventoryPickup = new Game.UIMode.LAYER_itemListing({
+  caption: 'Pick Up',
+  canSelect: true,
+  canSelectMultipleItems: true,
+  keyBindingName: 'LAYER_inventoryPickup',
+  processingFunction: function (selectedItemIds) {
+    var pickupResult = Game.getAvatar().pickupItems(selectedItemIds);
+    return pickupResult.numItemsPickedUp > 0;
+  }
+});
+
+Game.UIMode.LAYER_inventoryPickup.doSetup = function () {
+  this.setup({itemIdList: Game.util.objectArrayToIDArray(Game.getAvatar().getMap().getItems(Game.getAvatar().getPos()))});
+};

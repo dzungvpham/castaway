@@ -109,12 +109,12 @@ Game.EntityMixin.WalkerCorporeal = {
         var targetY = this.getY() + dy;
 
         if ((targetX < 0) || (targetX >= map.getWidth()) || (targetY < 0) || (targetY >= map.getHeight())) {
-        this.raiseEntityEvent('walkForbidden', {target: Game.Tile.nullTile});
+        this.raiseSymbolActiveEvent('walkForbidden', {target: Game.Tile.nullTile});
           return {madeAdjacentMove: false};
         }
 
         if (map.getEntity(targetX, targetY)) { //Cannot walk into other entities
-          this.raiseEntityEvent('bumpEntity', {actor: this, recipient: map.getEntity(targetX, targetY)});
+          this.raiseSymbolActiveEvent('bumpEntity', {actor: this, recipient: map.getEntity(targetX, targetY)});
           return {madeAdjacentMove: false};
         }
 
@@ -124,10 +124,10 @@ Game.EntityMixin.WalkerCorporeal = {
           if (map) { //Notify map
             map.updateEntityLocation(this);
           }
-          this.raiseEntityEvent("specialTerrain", {tile: targetTile});
+          this.raiseSymbolActiveEvent("specialTerrain", {tile: targetTile});
           return {madeAdjacentMove: true};
         } else {
-          this.raiseEntityEvent('walkForbidden', {target: targetTile});
+          this.raiseSymbolActiveEvent('walkForbidden', {target: targetTile});
           return false;
         }
         return {madeAdjacentMove: false};
@@ -144,19 +144,19 @@ Game.EntityMixin.WalkerCorporeal = {
             var damage = data.tile.getDamage(); //'damage' here can be either heal or real damage
             if (damage >= 0) {
               this.takeHits(damage);
-              this.raiseEntityEvent('damagedBy', {damager: data.tile, damageAmount: damage});
+              this.raiseSymbolActiveEvent('damagedBy', {damager: data.tile, damageAmount: damage});
               if (this.getCurrentHP() <= 0) {
-                this.raiseEntityEvent('killed', {killedBy: data.tile});
+                this.raiseSymbolActiveEvent('killed', {killedBy: data.tile});
               }
             } else {
               var diff = this.getCurrentHP() - this.getMaxHP();
               if (diff < 0) {
                 if (diff <= damage) {
                   this.takeHits(damage);
-                  this.raiseEntityEvent("healedBy", {healAmount: -1*damage});
+                  this.raiseSymbolActiveEvent("healedBy", {healAmount: -1*damage});
                 } else {
                   this.takeHits(diff);
-                  this.raiseEntityEvent("healedBy", {healAmount: -1*diff});
+                  this.raiseSymbolActiveEvent("healedBy", {healAmount: -1*diff});
                 }
               }
             }
@@ -250,11 +250,11 @@ Game.EntityMixin.HitPoints = {
     listeners: {
       'attacked': function(data) {
         this.takeHits(data.attackPower);
-        this.raiseEntityEvent('damagedBy', {damager: data.attacker, damageAmount: data.attackPower});
-        data.attacker.raiseEntityEvent('dealtDamage', {target: this, damageAmount: data.attackPower});
+        this.raiseSymbolActiveEvent('damagedBy', {damager: data.attacker, damageAmount: data.attackPower});
+        data.attacker.raiseSymbolActiveEvent('dealtDamage', {target: this, damageAmount: data.attackPower});
         if (this.getCurrentHP() <= 0) {
-          data.attacker.raiseEntityEvent('madeKill', {entityKilled: this});
-          this.raiseEntityEvent('killed', {killedBy: data.attacker});
+          data.attacker.raiseSymbolActiveEvent('madeKill', {entityKilled: this});
+          this.raiseSymbolActiveEvent('killed', {killedBy: data.attacker});
         }
       },
 
@@ -310,36 +310,36 @@ Game.EntityMixin.MeleeAttacker = {
     listeners: {
       'bumpEntity': function(data) {
         var entity = data.recipient;
-        var flag = entity.raiseEntityEvent("calcHit", {hitChance: this.getHitChance()}).targetHit[0];
+        var flag = entity.raiseSymbolActiveEvent("calcHit", {hitChance: this.getMeleeHitChance()}).targetHit[0];
         if (flag) {
-          var damage = this.getAttackPower();
+          var damage = this.getMeleeAttackPower();
           if (this.hasMixin('Elemental') && entity.hasMixin("Defense")) {
-            damage = entity.raiseEntityEvent('calcDamage', {element: this.getCurrentElement(), attackPower: damage}).damage;
+            damage = entity.raiseSymbolActiveEvent('calcDamage', {element: this.getCurrentElement(), attackPower: damage}).damage;
           }
-          entity.raiseEntityEvent('attacked', {attacker: this, attackPower: damage});
+          entity.raiseSymbolActiveEvent('attacked', {attacker: this, attackPower: damage});
         } else {
-          this.raiseEntityEvent("attackMissed", {target: entity});
-          entity.raiseEntityEvent("attackDodged", {attacker: this});
+          this.raiseSymbolActiveEvent("attackMissed", {target: entity});
+          entity.raiseSymbolActiveEvent("attackDodged", {attacker: this});
         }
-        this.raiseEntityEvent('actionDone');
+        this.raiseSymbolActiveEvent('actionDone');
         this.setCurrentActionDuration(this.attr._MeleeAttacker_attr.attackActionDuration);
       }
     }
   },
 
-  getAttackPower: function() {
+  getMeleeAttackPower: function() {
     return this.attr._MeleeAttacker_attr.attackPower;
   },
 
-  setAttackPower: function(n) {
+  setMeleeAttackPower: function(n) {
     this.attr._MeleeAttacker_attr.attackPower = n;
   },
 
-  getHitChance: function() {
+  getMeleeHitChance: function() {
     return this.attr._MeleeAttacker_attr.hitChance;
   },
 
-  setHitChance: function(n) {
+  setMeleeHitChance: function(n) {
     this.attr._MeleeAttacker_attr.hitChance = n;
   }
 };
@@ -370,37 +370,37 @@ Game.EntityMixin.RangedAttacker = {
         } else if (hit == 'wallTile') {
           Game.Message.send("You hit the wall");
         } else {
-          var flag = hit.raiseEntityEvent("calcHit", {hitChance: this.getHitChance()}).targetHit[0];
+          var flag = hit.raiseSymbolActiveEvent("calcHit", {hitChance: this.getRangedHitChance()}).targetHit[0];
           if (flag) {
-            var damage = this.getAttackPower();
+            var damage = this.getRangedAttackPower();
             if (this.hasMixin('Elemental') && hit.hasMixin("Defense")) {
-              damage = hit.raiseEntityEvent('calcDamage', {element: this.getCurrentElement(), attackPower: damage}).damage;
+              damage = hit.raiseSymbolActiveEvent('calcDamage', {element: this.getCurrentElement(), attackPower: damage}).damage;
             }
-            hit.raiseEntityEvent('attacked', {attacker: this, attackPower: damage});
+            hit.raiseSymbolActiveEvent('attacked', {attacker: this, attackPower: damage});
           } else {
-            this.raiseEntityEvent("attackMissed", {target: hit});
-            hit.raiseEntityEvent("attackDodged", {attacker: this});
+            this.raiseSymbolActiveEvent("attackMissed", {target: hit});
+            hit.raiseSymbolActiveEvent("attackDodged", {attacker: this});
           }
         }
-        this.raiseEntityEvent('actionDone');
+        this.raiseSymbolActiveEvent('actionDone');
         this.setCurrentActionDuration(this.attr._RangedAttacker_attr.attackActionDuration);
       }
     }
   },
 
-  getAttackPower: function() {
+  getRangedAttackPower: function() {
     return this.attr._RangedAttacker_attr.attackPower;
   },
 
-  setAttackPower: function(n) {
+  setRangedAttackPower: function(n) {
     this.attr._RangedAttacker_attr.attackPower = n;
   },
 
-  getHitChance: function() {
+  getRangedHitChance: function() {
     return this.attr._RangedAttacker_attr.hitChance;
   },
 
-  setHitChance: function(n) {
+  setRangedHitChance: function(n) {
     this.attr._RangedAttacker_attr.hitChance = n;
   },
 
@@ -519,6 +519,51 @@ Game.EntityMixin.PlayerMessager = {
       'killed': function(data) {
         Game.Message.ageMessages();
         Game.Message.send("You were killed by " + data.killedBy.getName());
+      },
+
+      'noItemsToPickup': function(data) {
+        Game.Message.ageMessages();
+        Game.Message.send('There is nothing to pickup');
+      },
+
+      'inventoryFull': function(data) {
+        Game.Message.ageMessages();
+        Game.Message.send('Your inventory is full');
+      },
+
+      'inventoryEmpty': function(data) {
+        Game.Message.ageMessages();
+        Game.Message.send('You are not carrying anything');
+      },
+
+      'noItemsPickedUp': function(data) {
+        Game.Message.ageMessages();
+        Game.Message.send('You could not pick up any items');
+      },
+
+      'someItemsPickedUp': function(data) {
+        Game.Message.ageMessages();
+        Game.Message.send('You picked up '+ data.numItemsPickedUp + ' of the items, leaving ' + data.numItemsNotPickedUp + ' of them');
+      },
+
+      'allItemsPickedUp': function(data) {
+        Game.Message.ageMessages();
+        if (data.numItemsPickedUp > 2) {
+          Game.Message.send('You picked up all ' + data.numItemsPickedUp + ' items');
+        } else if (data.numItemsPickedUp == 2) {
+            Game.Message.send('You picked up both items');
+        } else {
+          Game.Message.send('You picked up ' + data.lastItemPickedUpName);
+        }
+      },
+
+      'itemsDropped': function(data) {
+        Game.Message.ageMessages();
+        if (data.numItemsDropped > 1) {
+          Game.Message.send('You dropped ' + data.numItemsDropped + ' items');
+        } else {
+          Game.Message.send('You dropped ' + data.lastItemDroppedName);
+        }
       }
     },
   }
@@ -628,11 +673,11 @@ Game.EntityMixin.WanderActor = {
     Game.TimeEngine.lock();
     var move = this.getMoveDelta();
     if (this.hasMixin('Walker')) {
-      this.raiseEntityEvent("adjacentMove", {dx: move.x, dy: move.y});
+      this.raiseSymbolActiveEvent("adjacentMove", {dx: move.x, dy: move.y});
     }
     Game.Scheduler.setDuration(this.getCurrentActionDuration());
     this.setCurrentActionDuration(this.getBaseActionDuration() + Game.util.randomInt(-10, 10));
-    this.raiseEntityEvent('actionDone');
+    this.raiseSymbolActiveEvent('actionDone');
     Game.TimeEngine.unlock();
   }
 };
@@ -672,7 +717,7 @@ Game.EntityMixin.WanderChaserActor = {
 
   getMoveDelta: function () {
     var avatar = Game.getAvatar();
-    var senseResp = this.raiseEntityEvent("senseEntity", {entity: avatar});
+    var senseResp = this.raiseSymbolActiveEvent("senseEntity", {entity: avatar});
     if (Game.util.compactBooleanArray_or(senseResp.isEntitySensed)) {
       var source = this;
       var map = this.getMap();
@@ -701,11 +746,11 @@ Game.EntityMixin.WanderChaserActor = {
     Game.TimeEngine.lock();
     var move = this.getMoveDelta();
     if (this.hasMixin('Walker')) {
-      this.raiseEntityEvent("adjacentMove", {dx: move.x, dy: move.y});
+      this.raiseSymbolActiveEvent("adjacentMove", {dx: move.x, dy: move.y});
     }
     Game.Scheduler.setDuration(this.getCurrentActionDuration());
     this.setCurrentActionDuration(this.getBaseActionDuration() + Game.util.randomInt(-10, 10));
-    this.raiseEntityEvent('actionDone');
+    this.raiseSymbolActiveEvent('actionDone');
     Game.TimeEngine.unlock();
   }
 };
@@ -824,7 +869,7 @@ Game.EntityMixin.Defense = {
       if (this.attr._Defense_attr.elementArmor[elem]) {
         return this.attr._Defense_attr.elementArmor[elem];
       }
-      return false;
+      return 0;
     }
     return this.attr._Defense_attr.elementArmor;
   },
@@ -849,5 +894,124 @@ Game.EntityMixin.Defense = {
 
   setDodgeChance: function(n) {
     this.attr._Defense_attr.dodgeChance = n;
+  }
+};
+
+Game.EntityMixin.InventoryHolder = {
+  META: {
+    mixinName: 'InventoryHolder',
+    mixinGroup: 'InventoryHolder',
+    stateNamespace: '_InventoryHolder_attr',
+    stateModel:  {
+      containerID: '',
+      inventoryCapacity: 5
+    },
+
+    init: function (template) {
+      this.attr._InventoryHolder_attr.inventoryCapacity = template.inventoryCapacity || 5;
+      if (template.containerID) {
+        this.attr._InventoryHolder_attr.containerID = template.containerID;
+      } else {
+        var container = Game.ItemGenerator.create('_inventoryContainer');
+        container.setCapacity(this.attr._InventoryHolder_attr.inventoryCapacity);
+        this.attr._InventoryHolder_attr.containerID = container.getID();
+      }
+    },
+
+    listeners: {
+      'pickupItems': function(data) {
+        return {addedAnyItems: this.pickupItems(data.itemSet)};
+      },
+
+      'dropItems': function(data) {
+        return {droppedItems: this.dropItems(data.itemSet)};
+      }
+    }
+  },
+
+  getContainer: function () {
+    return Game.DATASTORE.ITEM[this.attr._InventoryHolder_attr.containerID];
+  },
+
+  hasInventorySpace: function () {
+    return this.getContainer().hasSpace();
+  },
+
+  addInventoryItems: function (items_or_ids) {
+    return this.getContainer().addItems(items_or_ids);
+  },
+
+  getInventoryItemIDs: function () {
+    return this.getContainer().getItemIDs();
+  },
+
+  extractInventoryItems: function (ids_or_idxs) {
+    return this.getContainer().extractItems(ids_or_idxs);
+  },
+
+  pickupItems: function (ids_or_idxs) {
+    var itemsToAdd = [];
+    var fromPile = this.getMap().getItems(this.getPos());
+    var pickupResult = {
+      numItemsPickedUp:0,
+      numItemsNotPickedUp:ids_or_idxs.length
+    };
+
+    if (fromPile.length < 1) {
+      this.raiseSymbolActiveEvent('noItemsToPickup');
+      return pickupResult;
+    }
+
+    if (!this.getContainer().hasSpace()) {
+      this.raiseSymbolActiveEvent('inventoryFull');
+      this.raiseSymbolActiveEvent('noItemsPickedUp');
+      return pickupResult;
+    }
+
+    for (var i = 0; i < fromPile.length; i++) {
+      if ((ids_or_idxs.indexOf(i) > -1) || (ids_or_idxs.indexOf(fromPile[i].getID()) > -1)) {
+          itemsToAdd.push(fromPile[i]);
+      }
+    }
+
+    var addResult = this.getContainer().addItems(itemsToAdd);
+    pickupResult.numItemsPickedUp = addResult.numItemsAdded;
+    pickupResult.numItemsNotPickedUp = addResult.numItemsNotAdded;
+    var lastItemFromMap = '';
+    for (var j = 0; j < pickupResult.numItemsPickedUp; j++) {
+      lastItemFromMap = this.getMap().removeItemAt(itemsToAdd[j], this.getPos());
+    }
+
+    pickupResult.lastItemPickedUpName = lastItemFromMap.getName();
+    if (pickupResult.numItemsNotPickedUp > 0) {
+      this.raiseSymbolActiveEvent('someItemsPickedUp', pickupResult);
+    } else {
+      this.raiseSymbolActiveEvent('allItemsPickedUp', pickupResult);
+    }
+
+    return pickupResult;
+  },
+
+  dropItems: function (ids_or_idxs) {
+    var itemsToDrop = this.getContainer().extractItems(ids_or_idxs);
+    var dropResult = {numItemsDropped: 0};
+
+    if (itemsToDrop.length < 1) {
+      this.raiseSymbolActiveEvent('inventoryEmpty');
+      return dropResult;
+    }
+
+    var lastItemDropped = '';
+    for (var i = 0; i < itemsToDrop.length; i++) {
+      if (itemsToDrop[i]) {
+        lastItemDropped = itemsToDrop[i];
+        this.getMap().addItem(itemsToDrop[i], this.getPos());
+        dropResult.numItemsDropped++;
+      }
+    }
+
+    dropResult.lastItemDroppedName = lastItemDropped.getName();
+    this.raiseSymbolActiveEvent('itemsDropped', dropResult);
+    return dropResult;
   }
 };

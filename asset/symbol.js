@@ -1,6 +1,6 @@
-Game.Symbol = function(properties) { //Pass in hash properties instead
-  if (!properties) {
-    properties = {};
+Game.Symbol = function(template) { //Pass in hash template instead
+  if (!template) {
+    template = {};
   }
 
   if (!('attr' in this)) {
@@ -8,9 +8,9 @@ Game.Symbol = function(properties) { //Pass in hash properties instead
   }
 
   this.attr = {
-    _char: properties.chr || '',
-    _fg: properties.fg || Game.UIMode.DEFAULT_FG,
-    _bg: properties.bg || Game.UIMode.DEFAULT_BG
+    _char: template.chr || '',
+    _fg: template.fg || Game.UIMode.DEFAULT_FG,
+    _bg: template.bg || Game.UIMode.DEFAULT_BG
   };
 };
 
@@ -34,6 +34,15 @@ Game.Symbol.prototype.setBg = function(color) {
   this.attr._bg = color;
 };
 
+Game.Symbol.prototype.getColorDesignator = function(){
+  return '%c{' + this.attr._fg + '}%b{' + this.attr._bg + '}';
+};
+
+Game.Symbol.prototype.getRepresentation = function() {
+  return '%c{' + this.attr._fg + '}%b{' + this.attr._bg + '}' + this.attr._char;
+};
+
+
 Game.Symbol.prototype.draw = function (display, dispX, dispY, isMasked) {
   var char = this.attr._char;
   if (typeof this.attr._char == 'object') {
@@ -45,3 +54,5 @@ Game.Symbol.prototype.draw = function (display, dispX, dispY, isMasked) {
     display.draw(dispX, dispY, char, this.attr._fg, this.attr._bg);
   }
 };
+
+Game.Symbol.ITEM_PILE = new Game.Symbol({chr: "*", fg: "#dcc"});

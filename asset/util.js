@@ -66,6 +66,12 @@ Game.util = {
     return {w: display._options.width, h: display._options.height};
   },
 
+  objectArrayToIDArray: function (arr) {
+    return arr.map(function (elt) {
+      return elt.getID();
+    });
+  },
+
   compactBooleanArray_or: function(arr) {
     if (!arr) {
       return true;
