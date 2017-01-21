@@ -214,17 +214,23 @@ Game.KeyBinding = {
       numpad: {label:'i' ,inputMatch:ROT.VK_I ,inputType:'keydown' ,inputMetaShift:false ,inputMetaCtrl:false} ,
       waxd  : {label:'i' ,inputMatch:ROT.VK_I ,inputType:'keydown' ,inputMetaShift:false ,inputMetaCtrl:false}
     },
-    PROCESS_SELECTIONS  : {action_group:'inventory' ,guid:Game.util.uniqueID() ,ordering:5.01 ,short:'act on' ,long :'take action with/on selected items'         ,
+    PROCESS_SELECTIONS  : {action_group:'inventory' ,guid:Game.util.uniqueID() ,ordering:5.1 ,short:'act on' ,long :'take action with/on selected items'         ,
+      LAYER_inventoryListing: {label:'[Enter]' ,inputMatch:ROT.VK_RETURN ,inputType:'keydown' ,inputMetaShift:false  ,inputMetaCtrl:false},
       LAYER_inventoryDrop: {label:'[Enter]' ,inputMatch:ROT.VK_RETURN ,inputType:'keydown' ,inputMetaShift:false  ,inputMetaCtrl:false},
-      LAYER_inventoryPickup: {label:'[Enter]' ,inputMatch:ROT.VK_RETURN ,inputType:'keydown' ,inputMetaShift:false  ,inputMetaCtrl:false}
+      LAYER_inventoryPickup: {label:'[Enter]' ,inputMatch:ROT.VK_RETURN ,inputType:'keydown' ,inputMetaShift:false  ,inputMetaCtrl:false},
+      LAYER_inventoryExamine: {label:'[Enter]' ,inputMatch:ROT.VK_RETURN ,inputType:'keydown' ,inputMetaShift:false  ,inputMetaCtrl:false}
     },
-    PICKUP : {action_group:'inventory' ,guid:Game.util.uniqueID() ,ordering:5.1, short:'pickup'  ,long :'pick up one or more items in the current space' ,
+    PICKUP : {action_group:'inventory' ,guid:Game.util.uniqueID() ,ordering:5.2, short:'pickup'  ,long :'pick up one or more items in the current space' ,
       numpad: {label:'e' ,inputMatch:ROT.VK_E ,inputType:'keydown' ,inputMetaShift:false ,inputMetaCtrl:false} ,
       waxd  : {label:'e' ,inputMatch:ROT.VK_E ,inputType:'keydown' ,inputMetaShift:false ,inputMetaCtrl:false}
     },
-    DROP   : {action_group:'inventory' ,guid:Game.util.uniqueID() ,ordering:5.2, short:'drop' ,long :'drop one or more items in the current space'         ,
-      numpad: {label:'r' ,inputMatch:ROT.VK_R ,inputType:'keydown' ,inputMetaShift:false  ,inputMetaCtrl:false} ,
-      waxd  : {label:'r' ,inputMatch:ROT.VK_R ,inputType:'keydown' ,inputMetaShift:false  ,inputMetaCtrl:false}
+    DROP   : {action_group:'inventory' ,guid:Game.util.uniqueID() ,ordering:5.3, short:'drop' ,long :'drop one or more items in the current space'         ,
+      LAYER_inventoryListing: {label:'D' ,inputMatch:ROT.VK_D ,inputType:'keydown' ,inputMetaShift:true  ,inputMetaCtrl:false}
+    },
+    EXAMINE : {action_group:'inventory' ,guid:Game.util.uniqueID() ,ordering:5.4 ,short:'examine' ,long :'get details about a carried item',
+      numpad: {label:'x' ,inputMatch:ROT.VK_X ,inputType:'keydown' ,inputMetaShift:false  ,inputMetaCtrl:false} ,
+      waxd  : {label:'X' ,inputMatch:ROT.VK_X ,inputType:'keydown' ,inputMetaShift:true  ,inputMetaCtrl:false},
+      LAYER_inventoryListing: {label:'X' ,inputMatch:ROT.VK_X ,inputType:'keydown' ,inputMetaShift:true  ,inputMetaCtrl:false}
     },
 
     DATA_NAV_UP : {action_group:'data_nav' ,guid:Game.util.uniqueID() ,ordering:8.1 ,short:'down' ,long :'scroll content down',
