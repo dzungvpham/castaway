@@ -2,6 +2,7 @@ Game.SymbolActive = function(template) {
   template = template || {};
   Game.Symbol.call(this, template);
   this.attr._name = template.name || '';
+  this.attr._description = template.description || 'Completely uninteresting';
   this.attr._ID = template.presetID || Game.util.uniqueID();
 
   this._mixinsName = template.mixins || [];
@@ -49,11 +50,24 @@ Game.SymbolActive.prototype.getID = function() {
 }
 
 Game.SymbolActive.prototype.getName = function() {
-    return this.attr._name;
+  return this.attr._name;
 };
 
 Game.SymbolActive.prototype.setName = function(name) {
-    this.attr._name = name;
+  this.attr._name = name;
+};
+
+Game.SymbolActive.prototype.getDescription = function() {
+  return this.attr._description;
+};
+
+Game.SymbolActive.prototype.getDetailedDescription = function () {
+  var descr = this.getRepresentation() + ' ' + Game.UIMode.DEFAULT_COLOR_STR + this.getName() + ': ' + this.getDescription();
+  return descr;
+};
+
+Game.SymbolActive.prototype.setDescription = function(descr) {
+    this.attr._description = descr;
 };
 
 Game.SymbolActive.prototype.hasMixin = function(mixin) {

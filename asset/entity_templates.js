@@ -8,14 +8,14 @@ Game.EntityGenerator.learn({
   meleeAttackPower: 5,
   meleeHitChance: 0.9,
   rangedAttackPower: 10,
-  rangedHitChance: 0.8,
-  dodgeChance: 0.3,
+  rangedHitChance: 80,
+  dodgeChance: 20,
   direction: 'north',
   element: ["fire", "water", "earth", "wind", "lightning"],
   elementArmor: {fire: 5},
   inventoryCapacity: 3,
   mixins: ["PlayerActor", "PlayerMessager", "Sight", "Directed", "MapMemory", "WalkerCorporeal",
-   "Chronicle", "HitPoints", "MeleeAttacker", "RangedAttacker", "Elemental", "Defense", "InventoryHolder"]
+   "Chronicle", "HitPoints", "RangedAttacker", "Elemental", "Defense", "InventoryHolder"]
 });
 
 Game.EntityGenerator.learn({

@@ -39,12 +39,8 @@ Game.ItemMixin.Container = {
     }
 
     for (var i = 0; i < items_or_ids.length; i++) {
-      if (! this.hasSpace()) {
-        if (i === 0) {
-          return addItemStatus;
-        } else {
-          return addItemStatus;
-        }
+      if (!this.hasSpace()) {
+        return addItemStatus;
       }
 
       var itemID = items_or_ids[i];
@@ -61,7 +57,6 @@ Game.ItemMixin.Container = {
   },
 
   _forceAddItemID: function (itemID) {
-    // NOTE: early dev stuff here! simple placeholder functionality....
     this.attr._Container_attr.itemIDs.push(itemID);
   },
 
@@ -90,3 +85,104 @@ Game.ItemMixin.Container = {
     return ret;
   }
 };
+
+Game.ItemMixin.PassiveBuff = {
+  META: {
+    mixinName: "PassiveBuff",
+    mixinGroup: "Buff",
+    stateNamespace: "_PassiveBuff_attr",
+    stateModel: {
+      hp: 0,
+      meleeHitChance: 0,
+      rangedHitChance: 0,
+      dodgeChance: 0,
+      normalArmor: 0,
+      elementArmor: {fire: 0, water: 0, earth: 0, wind: 0, lightning: 0},
+      sight: 0
+    },
+
+    init: function(template) {
+      this.attr._PassiveBuff_attr.hp = template.hp || 0;
+      this.attr._PassiveBuff_attr.meleeHitChance = template.meleeHitChance || 0;
+      this.attr._PassiveBuff_attr.rangedHitChance = template.rangedHitChance || 0;
+      this.attr._PassiveBuff_attr.dodgeChance = template.dodgeChance || 0;
+      this.attr._PassiveBuff_attr.normalArmor = template.normalArmor || 0;
+      this.attr._PassiveBuff_attr.elementArmor = template.elementArmor || {fire: 0, water: 0, earth: 0, wind: 0, lightning: 0};
+      this.attr._PassiveBuff_attr.sight = template.sight || 0;
+    },
+
+    listeners: {
+      'pickedUp': function(data) {
+        if (data.picker.hasMixin("HitPoints")) {
+          data.picker.setMaxHP(data.picker.getMaxHP() + this.getMaxHP());
+        }
+        if (data.picker.hasMixin("MeleeAttacker")) {
+          data.picker.setMeleeHitChance(data.picker.getMeleeHitChance() + this.getMeleeHitChance());
+        }
+        if (data.picker.hasMixin("RangedAttacker")) {
+          data.picker.setRangedHitChance(data.picker.getRangedHitChance() + this.getRangedHitChance());
+        }
+        if (data.picker.hasMixin("Defense")) {
+          data.picker.setDodgeChance(data.picker.getDodgeChance() + this.getDodgeChance());
+          data.picker.setNormalArmor(data.picker.getNormalArmor() + this.getNormalArmor());
+          for (element in this.getElementArmor()) {
+            data.picker.setElementArmor(element, data.picker.getElementArmor(element) + this.getElementArmor()[element]);
+          }
+        }
+        if (data.picker.hasMixin("Sight")) {
+          data.picker.setSightRadius(data.picker.getSightRadius() + this.getSight());
+        }
+      },
+
+      'dropped': function(data) {
+        if (data.dropper.hasMixin("HitPoints")) {
+          data.dropper.setMaxHP(data.dropper.getMaxHP() - this.getMaxHP());
+        }
+        if (data.dropper.hasMixin("MeleeAttacker")) {
+          data.dropper.setMeleeHitChance(data.dropper.getMeleeHitChance() - this.getMeleeHitChance());
+        }
+        if (data.dropper.hasMixin("RangedAttacker")) {
+          data.dropper.setRangedHitChance(data.dropper.getRangedHitChance() - this.getRangedHitChance());
+        }
+        if (data.dropper.hasMixin("Defense")) {
+          data.dropper.setDodgeChance(data.dropper.getDodgeChance() - this.getDodgeChance());
+          data.dropper.setNormalArmor(data.dropper.getNormalArmor() - this.getNormalArmor());
+          for (element in this.getElementArmor()) {
+            data.dropper.setElementArmor(element, data.dropper.getElementArmor(element) - this.getElementArmor()[element]);
+          }
+        }
+        if (data.dropper.hasMixin("Sight")) {
+          data.dropper.setSightRadius(data.dropper.getSightRadius() - this.getSight());
+        }
+      }
+    }
+  },
+
+  getMaxHP() {
+    return this.attr._PassiveBuff_attr.hp;
+  },
+
+  getMeleeHitChance() {
+    return this.attr._PassiveBuff_attr.meleeHitChance;
+  },
+
+  getRangedHitChance() {
+    return this.attr._PassiveBuff_attr.rangedHitChance;
+  },
+
+  getDodgeChance() {
+    return this.attr._PassiveBuff_attr.dodgeChance;
+  },
+
+  getNormalArmor() {
+    return this.attr._PassiveBuff_attr.normalArmor;
+  },
+
+  getSight() {
+    return this.attr._PassiveBuff_attr.sight;
+  },
+
+  getElementArmor() {
+    return this.attr._PassiveBuff_attr.elementArmor;
+  }
+}
