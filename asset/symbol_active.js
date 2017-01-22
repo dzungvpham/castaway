@@ -63,6 +63,19 @@ Game.SymbolActive.prototype.getDescription = function() {
 
 Game.SymbolActive.prototype.getDetailedDescription = function () {
   var descr = this.getRepresentation() + ' ' + Game.UIMode.DEFAULT_COLOR_STR + this.getName() + ': ' + this.getDescription();
+  var descrDetails = this.raiseSymbolActiveEvent('getStats');
+  var detailsText = '';
+  for (var det in descrDetails) {
+    if (descrDetails.hasOwnProperty(det)) {
+      if (detailsText) {
+        detailsText += '\n';
+      }
+      detailsText += det + ': ' + descrDetails[det];
+    }
+  }
+  if (detailsText) {
+    descr += "\n"+detailsText;
+  }
   return descr;
 };
 

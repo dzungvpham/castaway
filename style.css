@@ -1,13 +1,17 @@
+body {
+  background-color: black;
+}
+
 .wsrl-display {
   padding: 4px;
   background: #000;
   float: left;
 }
 
-.dev-outline {
-  border: 1px solid red;
-  background: #500;
-}
+/*#container {
+  margin: auto;
+  width: 80%;
+}*/
 
 #wsrl-avatar-display {
   padding-top: 8px;

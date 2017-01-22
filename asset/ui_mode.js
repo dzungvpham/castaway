@@ -6,23 +6,195 @@ Game.UIMode.DEFAULT_COLOR_STR = '%c{' + Game.UIMode.DEFAULT_FG + '}%b{' + Game.U
 
 Game.UIMode.gameStart = {
   enter: function() {
-    Game.KeyBinding.setKeyBinding();
     Game.refresh();
   },
 
   exit: function() {
-    Game.KeyBinding.informPlayer();
+    //Game.KeyBinding.informPlayer();
     Game.refresh();
   },
 
   render: function(display) {
-    display.drawText(5, 5, Game.UIMode.DEFAULT_COLOR_STR + "Press any key to play");
+    display.drawText(8, 1, Game.UIMode.DEFAULT_COLOR_STR + Game.Misc.gameStart);
+    display.drawText(30, 15, Game.UIMode.DEFAULT_COLOR_STR + "Press any key to continue");
   },
 
   handleInput: function(inputType, inputData) {
     if (inputData.charCode !== 0) {
-      Game.switchUIMode("gamePlay");
+      Game.switchUIMode("gamePersistence");
     }
+  }
+}
+
+Game.UIMode.gamePersistence = {
+  RANDOM_SEED_KEY: 'gameRandomSeed',
+  _storedKeyBinding: '',
+
+  enter: function() {
+    this._storedKeyBinding = Game.KeyBinding.getKeyBinding();
+    Game.KeyBinding.setKeyBinding('persist');
+    Game.refresh();
+    setTimeout(function() {Game.specialMessage(" ");}, 1);
+  },
+
+  exit: function() {
+  },
+
+  render: function(display) {
+    display.drawText(8, 1, Game.UIMode.DEFAULT_COLOR_STR + Game.Misc.gameStart);
+    if (Game.isStarted()) {
+      display.drawText(20, 15, Game.UIMode.DEFAULT_COLOR_STR + "Press N for new game, S to save, L to load, ESC to resume");
+    } else {
+      display.drawText(30, 15, Game.UIMode.DEFAULT_COLOR_STR + "Press N for new game, L to load");
+    }
+  },
+
+  handleInput: function(inputType, inputData) {
+    var actionBinding = Game.KeyBinding.getInputBinding(inputType, inputData);
+    if (!actionBinding) {
+      return false;
+    }
+    switch (actionBinding.actionKey) {
+      case "PERSISTENCE_SAVE":
+        Game.getDisplay("main").drawText(30, 18, "Saving....");
+        setTimeout(function() {Game.getCurUIMode().saveGame();}, 100);
+        break;
+      case "PERSISTENCE_LOAD":
+        Game.getDisplay("main").drawText(30, 18, "Loading....");
+        setTimeout(function() {Game.getCurUIMode().loadGame();}, 100);
+        break;
+      case "PERSISTENCE_NEW":
+        Game.getDisplay("main").drawText(30, 18, "Loading....");
+        setTimeout(function() {Game.getCurUIMode().newGame();}, 100);
+        break;
+      case "CANCEL":
+        if (Game.isStarted()) {
+          Game.switchUIMode("gamePlay");
+          Game.KeyBinding.setKeyBinding(this._storedKeyBinding);
+        }
+        break;
+      case "HELP":
+        Game.UIMode.LAYER_textReading.setText(Game.KeyBinding.getBindingHelpText());
+        Game.addUIMode("LAYER_textReading");
+        break;
+    }
+    return false;
+  },
+
+  saveGame: function() {
+    if (this.localStorageAvailable()) {
+      Game.DATASTORE.GAME_PLAY = Game.UIMode.gamePlay.attr;
+      Game.DATASTORE.MESSAGE = Game.Message.attr;
+      Game.DATASTORE.KEY_BINDING_SET = this._storedKeyBinding;
+      Game.DATASTORE.SCHEDULE = {};
+      //offsetting times by 1 so later restore can just drop them in and go
+      Game.DATASTORE.SCHEDULE[Game.Scheduler._current.getID()] = 1;
+      for (var i = 0; i < Game.Scheduler._queue._eventTimes.length; i++) {
+        Game.DATASTORE.SCHEDULE[Game.Scheduler._queue._events[i].getID()] = Game.Scheduler._queue._eventTimes[i] + 1;
+      }
+      Game.DATASTORE.SCHEDULE_TIME = Game.Scheduler._queue.getTime() - 1; //offset by 1 so that when the engine is started after restore the queue state will match that as when it was saved
+
+      window.localStorage.setItem(Game._PERSISTENCE_NAMESPACE, JSON.stringify(Game.DATASTORE));
+      Game.getDisplay("main").drawText(30, 18, "Game saved");
+    }
+  },
+
+  loadGame: function() {
+    var json_state_data = window.localStorage.getItem(Game._PERSISTENCE_NAMESPACE);
+    var state_data = JSON.parse(json_state_data);
+
+    this.resetDatastore();
+
+    Game.setRandomSeed(state_data[this.RANDOM_SEED_KEY]);
+
+    for (var mapID in state_data.MAP) {
+      if (state_data.MAP.hasOwnProperty(mapID)) {
+        var mapAttr = JSON.parse(state_data.MAP[mapID]);
+        Game.DATASTORE.MAP[mapID] = new Game.Map(mapAttr._mapTileSetName, mapID);
+        Game.DATASTORE.MAP[mapID].fromJSON(state_data.MAP[mapID]);
+      }
+    }
+
+    ROT.RNG.getUniform(); //Once map is generated, RNG is cycled to get new data for entity generation
+
+    for (var entityID in state_data.ENTITY) {
+      if (state_data.ENTITY.hasOwnProperty(entityID)) {
+        var entityAttr = JSON.parse(state_data.ENTITY[entityID]);
+        Game.DATASTORE.ENTITY[entityID] = Game.EntityGenerator.create(entityAttr._generator_template_key, entityAttr._ID);
+        Game.DATASTORE.ENTITY[entityID].fromJSON(state_data.ENTITY[entityID]);
+      }
+    }
+
+    for (var itemID in state_data.ITEM) {
+      if (state_data.ITEM.hasOwnProperty(itemID)) {
+        var itemAttr = JSON.parse(state_data.ITEM[itemID]);
+        var newItem = Game.ItemGenerator.create(itemAttr._generator_template_key, itemAttr._id);
+        Game.DATASTORE.ITEM[itemID] = newItem;
+        Game.DATASTORE.ITEM[itemID].fromJSON(state_data.ITEM[itemID]);
+      }
+    }
+
+    Game.UIMode.gamePlay.attr = state_data.GAME_PLAY;
+    Game.Message.attr = state_data.MESSAGE;
+
+    Game.initTimeEngine();
+      for (var schedItemId in state_data.SCHEDULE) {
+        if (state_data.SCHEDULE.hasOwnProperty(schedItemId)) {
+          // check here to determine which data store thing will be added to the scheduler (and the actual addition may vary - e.g. not everyting will be a repeatable thing)
+          if (Game.DATASTORE.ENTITY.hasOwnProperty(schedItemId)) {
+            Game.Scheduler.add(Game.DATASTORE.ENTITY[schedItemId], true, state_data.SCHEDULE[schedItemId]);
+          }
+        }
+      }
+      Game.Scheduler._queue._time = state_data.SCHEDULE_TIME;
+
+    Game.switchUIMode("gamePlay");
+    Game.KeyBinding.setKeyBinding(state_data.KEY_BINDING_SET);
+    Game.KeyBinding.informPlayer();
+  },
+
+  newGame: function() {
+    this.resetDatastore();
+    Game.setRandomSeed(5 + Math.floor(Game.TRANSIENT_RNG.getUniform() * 100000));
+    Game.UIMode.gamePlay.setupNewGame();
+    setTimeout(function(){ Game.switchUIMode("gamePlay"); }, 1);
+  },
+
+  localStorageAvailable: function() {
+    try {
+      var x = '__storage_test__';
+      window.localStorage.setItem(x, x);
+      window.localStorage.removeItem(x);
+      return true;
+    } catch(e) {
+      Game.Message.send("No local data storage is available for this browser");
+      return false;
+    }
+  },
+
+  resetDatastore: function() {
+    Game.DATASTORE = {};
+    Game.DATASTORE.MAP = {};
+    Game.DATASTORE.ENTITY = {};
+    Game.DATASTORE.ITEM = {};
+    Game.initTimeEngine();
+  },
+
+  BASE_toJSON: function(state_hash_name) {
+    var state = this.attr;
+    if (state_hash_name) {
+      state = this[state_hash_name];
+    }
+    var json = JSON.stringify(state);
+    return json;
+  },
+
+  BASE_fromJSON: function (json, state_hash_name) {
+    var using_state_hash = 'attr';
+    if (state_hash_name) {
+      using_state_hash = state_hash_name;
+    }
+    this[using_state_hash] = JSON.parse(json);
   }
 }
 
@@ -38,6 +210,7 @@ Game.UIMode.gamePlay = {
   IS_STARTED: false,
 
   enter: function() {
+    Game.KeyBinding.setKeyBinding();
     this.IS_STARTED = true;
     if (this.attr._avatarID) {
       this.setCameraToAvatar();
@@ -61,7 +234,7 @@ Game.UIMode.gamePlay = {
     this.getMap().renderOn(display, this.attr._camX, this.attr._camY, renderOptions);
     this.getAvatar().rememberCoords(renderOptions.visibleCells);
     this.renderAvatar(display);
-    display.drawText(0, 0, Game.UIMode.DEFAULT_COLOR_STR + "Press = to save/load/start new game");
+    display.drawText(0, 0, Game.UIMode.DEFAULT_COLOR_STR + "Press ? to open help, = to open save/load/new game menu");
   },
 
   getMap: function() {
@@ -230,175 +403,6 @@ Game.UIMode.gamePlay = {
 
   fromJSON: function (json) {
     Game.UIMode.gamePersistence.BASE_fromJSON.call(this, json);
-  }
-}
-
-Game.UIMode.gamePersistence = {
-  RANDOM_SEED_KEY: 'gameRandomSeed',
-  _storedKeyBinding: '',
-
-  enter: function() {
-    this._storedKeyBinding = Game.KeyBinding.getKeyBinding();
-    Game.KeyBinding.setKeyBinding('persist');
-    Game.refresh();
-    setTimeout(function() {Game.specialMessage(" ");}, 1);
-  },
-
-  exit: function() {
-  },
-
-  render: function(display) {
-    if (Game.isStarted()) {
-      display.drawText(5, 5, Game.UIMode.DEFAULT_COLOR_STR + "Press S to save, L to load, N for new game, ESC to resume");
-    } else {
-      display.drawText(5, 5, Game.UIMode.DEFAULT_COLOR_STR + "Press L to load, N for new game");
-    }
-  },
-
-  handleInput: function(inputType, inputData) {
-    var actionBinding = Game.KeyBinding.getInputBinding(inputType, inputData);
-    if (!actionBinding) {
-      return false;
-    }
-    switch (actionBinding.actionKey) {
-      case "PERSISTENCE_SAVE":
-        this.saveGame();
-        break;
-      case "PERSISTENCE_LOAD":
-        this.loadGame();
-        break;
-      case "PERSISTENCE_NEW":
-        this.newGame();
-        break;
-      case "CANCEL":
-        if (Game.isStarted()) {
-          Game.switchUIMode("gamePlay");
-          Game.KeyBinding.setKeyBinding(this._storedKeyBinding);
-        }
-        break;
-      case "HELP":
-        Game.UIMode.LAYER_textReading.setText(Game.KeyBinding.getBindingHelpText());
-        Game.addUIMode("LAYER_textReading");
-        break;
-    }
-    return false;
-  },
-
-  saveGame: function() {
-    if (this.localStorageAvailable()) {
-      Game.DATASTORE.GAME_PLAY = Game.UIMode.gamePlay.attr;
-      Game.DATASTORE.MESSAGE = Game.Message.attr;
-      Game.DATASTORE.KEY_BINDING_SET = this._storedKeyBinding;
-      Game.DATASTORE.SCHEDULE = {};
-      //offsetting times by 1 so later restore can just drop them in and go
-      Game.DATASTORE.SCHEDULE[Game.Scheduler._current.getID()] = 1;
-      for (var i = 0; i < Game.Scheduler._queue._eventTimes.length; i++) {
-        Game.DATASTORE.SCHEDULE[Game.Scheduler._queue._events[i].getID()] = Game.Scheduler._queue._eventTimes[i] + 1;
-      }
-      Game.DATASTORE.SCHEDULE_TIME = Game.Scheduler._queue.getTime() - 1; //offset by 1 so that when the engine is started after restore the queue state will match that as when it was saved
-
-      window.localStorage.setItem(Game._PERSISTENCE_NAMESPACE, JSON.stringify(Game.DATASTORE));
-      Game.KeyBinding.setKeyBinding(this._storedKeyBinding);
-      Game.switchUIMode("gamePlay");
-    }
-  },
-
-  loadGame: function() {
-    var json_state_data = window.localStorage.getItem(Game._PERSISTENCE_NAMESPACE);
-    var state_data = JSON.parse(json_state_data);
-
-    this.resetDatastore();
-
-    Game.setRandomSeed(state_data[this.RANDOM_SEED_KEY]);
-
-    for (var mapID in state_data.MAP) {
-      if (state_data.MAP.hasOwnProperty(mapID)) {
-        var mapAttr = JSON.parse(state_data.MAP[mapID]);
-        Game.DATASTORE.MAP[mapID] = new Game.Map(mapAttr._mapTileSetName, mapID);
-        Game.DATASTORE.MAP[mapID].fromJSON(state_data.MAP[mapID]);
-      }
-    }
-
-    ROT.RNG.getUniform(); //Once map is generated, RNG is cycled to get new data for entity generation
-
-    for (var entityID in state_data.ENTITY) {
-      if (state_data.ENTITY.hasOwnProperty(entityID)) {
-        var entityAttr = JSON.parse(state_data.ENTITY[entityID]);
-        Game.DATASTORE.ENTITY[entityID] = Game.EntityGenerator.create(entityAttr._generator_template_key, entityAttr._ID);
-        Game.DATASTORE.ENTITY[entityID].fromJSON(state_data.ENTITY[entityID]);
-      }
-    }
-
-    for (var itemID in state_data.ITEM) {
-      if (state_data.ITEM.hasOwnProperty(itemID)) {
-        var itemAttr = JSON.parse(state_data.ITEM[itemID]);
-        var newItem = Game.ItemGenerator.create(itemAttr._generator_template_key, itemAttr._id);
-        Game.DATASTORE.ITEM[itemID] = newItem;
-        Game.DATASTORE.ITEM[itemID].fromJSON(state_data.ITEM[itemID]);
-      }
-    }
-
-    Game.UIMode.gamePlay.attr = state_data.GAME_PLAY;
-    Game.Message.attr = state_data.MESSAGE;
-
-    Game.initTimeEngine();
-      for (var schedItemId in state_data.SCHEDULE) {
-        if (state_data.SCHEDULE.hasOwnProperty(schedItemId)) {
-          // check here to determine which data store thing will be added to the scheduler (and the actual addition may vary - e.g. not everyting will be a repeatable thing)
-          if (Game.DATASTORE.ENTITY.hasOwnProperty(schedItemId)) {
-            Game.Scheduler.add(Game.DATASTORE.ENTITY[schedItemId], true, state_data.SCHEDULE[schedItemId]);
-          }
-        }
-      }
-      Game.Scheduler._queue._time = state_data.SCHEDULE_TIME;
-
-    Game.switchUIMode("gamePlay");
-    Game.KeyBinding.setKeyBinding(state_data.KEY_BINDING_SET);
-    Game.KeyBinding.informPlayer();
-  },
-
-  newGame: function() {
-    this.resetDatastore();
-    Game.setRandomSeed(5 + Math.floor(Game.TRANSIENT_RNG.getUniform() * 100000));
-    Game.UIMode.gamePlay.setupNewGame();
-    setTimeout(function(){ Game.switchUIMode("gameStart"); }, 1);
-  },
-
-  localStorageAvailable: function() {
-    try {
-      var x = '__storage_test__';
-      window.localStorage.setItem(x, x);
-      window.localStorage.removeItem(x);
-      return true;
-    } catch(e) {
-      Game.Message.send("No local data storage is available for this browser");
-      return false;
-    }
-  },
-
-  resetDatastore: function() {
-    Game.DATASTORE = {};
-    Game.DATASTORE.MAP = {};
-    Game.DATASTORE.ENTITY = {};
-    Game.DATASTORE.ITEM = {};
-    Game.initTimeEngine();
-  },
-
-  BASE_toJSON: function(state_hash_name) {
-    var state = this.attr;
-    if (state_hash_name) {
-      state = this[state_hash_name];
-    }
-    var json = JSON.stringify(state);
-    return json;
-  },
-
-  BASE_fromJSON: function (json, state_hash_name) {
-    var using_state_hash = 'attr';
-    if (state_hash_name) {
-      using_state_hash = state_hash_name;
-    }
-    this[using_state_hash] = JSON.parse(json);
   }
 }
 

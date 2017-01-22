@@ -49,7 +49,7 @@ Game.Symbol.prototype.draw = function (display, dispX, dispY, isMasked) {
     char = this.attr._char[this.getDirection()];
   }
   if (isMasked) {
-    display.draw(dispX, dispY, char, Game.util.changeColorLuminance(this.attr._fg, -0.5), Game.util.changeColorLuminance(this.attr._bg, -0.5));
+    display.draw(dispX, dispY, char, Game.util.changeColorLuminance(this.attr._fg, -0.8), Game.util.changeColorLuminance(this.attr._bg, -0.8));
   } else {
     display.draw(dispX, dispY, char, this.attr._fg, this.attr._bg);
   }

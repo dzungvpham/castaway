@@ -93,7 +93,7 @@ Game.ItemMixin.PassiveBuff = {
     stateNamespace: "_PassiveBuff_attr",
     stateModel: {
       hp: 0,
-      meleeHitChance: 0,
+      rangedAttackPower: 0,
       rangedHitChance: 0,
       dodgeChance: 0,
       normalArmor: 0,
@@ -103,7 +103,7 @@ Game.ItemMixin.PassiveBuff = {
 
     init: function(template) {
       this.attr._PassiveBuff_attr.hp = template.hp || 0;
-      this.attr._PassiveBuff_attr.meleeHitChance = template.meleeHitChance || 0;
+      this.attr._PassiveBuff_attr.rangedAttackPower = template.rangedAttackPower || 0;
       this.attr._PassiveBuff_attr.rangedHitChance = template.rangedHitChance || 0;
       this.attr._PassiveBuff_attr.dodgeChance = template.dodgeChance || 0;
       this.attr._PassiveBuff_attr.normalArmor = template.normalArmor || 0;
@@ -116,10 +116,8 @@ Game.ItemMixin.PassiveBuff = {
         if (data.picker.hasMixin("HitPoints")) {
           data.picker.setMaxHP(data.picker.getMaxHP() + this.getMaxHP());
         }
-        if (data.picker.hasMixin("MeleeAttacker")) {
-          data.picker.setMeleeHitChance(data.picker.getMeleeHitChance() + this.getMeleeHitChance());
-        }
         if (data.picker.hasMixin("RangedAttacker")) {
+          data.picker.setRangedAttackPower(data.picker.getRangedAttackPower() + this.getRangedAttackPower());
           data.picker.setRangedHitChance(data.picker.getRangedHitChance() + this.getRangedHitChance());
         }
         if (data.picker.hasMixin("Defense")) {
@@ -138,10 +136,8 @@ Game.ItemMixin.PassiveBuff = {
         if (data.dropper.hasMixin("HitPoints")) {
           data.dropper.setMaxHP(data.dropper.getMaxHP() - this.getMaxHP());
         }
-        if (data.dropper.hasMixin("MeleeAttacker")) {
-          data.dropper.setMeleeHitChance(data.dropper.getMeleeHitChance() - this.getMeleeHitChance());
-        }
         if (data.dropper.hasMixin("RangedAttacker")) {
+          data.dropper.setRangedAttackPower(data.dropper.getRangedAttackPower() - this.getRangedAttackPower());
           data.dropper.setRangedHitChance(data.dropper.getRangedHitChance() - this.getRangedHitChance());
         }
         if (data.dropper.hasMixin("Defense")) {
@@ -154,6 +150,18 @@ Game.ItemMixin.PassiveBuff = {
         if (data.dropper.hasMixin("Sight")) {
           data.dropper.setSightRadius(data.dropper.getSightRadius() - this.getSight());
         }
+      },
+
+      'getStats': function(data) {
+        return {
+          'Max HP': this.getMaxHP(),
+          'Damage': this.getRangedAttackPower(),
+          'Hit Chance': this.getRangedHitChance(),
+          'Dodge Chance': this.getDodgeChance(),
+          'Sight': this.getSight(),
+          'Physical Armor': this.getNormalArmor(),
+          'Elemental Armor': this.getElementArmorString()
+        };
       }
     }
   },
@@ -162,8 +170,8 @@ Game.ItemMixin.PassiveBuff = {
     return this.attr._PassiveBuff_attr.hp;
   },
 
-  getMeleeHitChance() {
-    return this.attr._PassiveBuff_attr.meleeHitChance;
+  getRangedAttackPower() {
+    return this.attr._PassiveBuff_attr.rangedAttackPower;
   },
 
   getRangedHitChance() {
@@ -182,7 +190,18 @@ Game.ItemMixin.PassiveBuff = {
     return this.attr._PassiveBuff_attr.sight;
   },
 
-  getElementArmor() {
+  getElementArmor(elem) {
+    if (elem && this.attr._PassiveBuff_attr.elementArmor[elem]) {
+      return this.attr._PassiveBuff_attr.elementArmor[elem];
+    }
     return this.attr._PassiveBuff_attr.elementArmor;
+  },
+
+  getElementArmorString() {
+    var str = "";
+    for (elem in this.getElementArmor()) {
+      str += elem + ": " + this.getElementArmor(elem) + "; ";
+    }
+    return str;
   }
 }
