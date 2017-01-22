@@ -14,7 +14,7 @@ window.onload = function() {
       Game.getDisplay('message').getContainer()
     );
 
-    Game.switchUIMode("gamePersistence");
+    Game.switchUIMode("gameStart");
   }
 };
 
@@ -44,7 +44,7 @@ var Game = {
     },
     message: {
       w: 100,
-      h: 6,
+      h: 10,
       o: null
     }
   },
