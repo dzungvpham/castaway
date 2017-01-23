@@ -292,11 +292,7 @@ Game.UIMode.gamePlay = {
     }
     return false;
   },
-
-  moveCamera: function (dx,dy) {
-    this.setCamera(this.attr._cameraX + dx,this.attr._cameraY + dy);
-  },
-
+  
   setCamera: function (sx, sy) {
     this.attr._camX = Math.min(Math.max(0, sx), this.getMap().getWidth());
     this.attr._camY = Math.min(Math.max(0, sy), this.getMap().getHeight());

@@ -56,3 +56,4 @@ Game.Symbol.prototype.draw = function (display, dispX, dispY, isMasked) {
 };
 
 Game.Symbol.ITEM_PILE = new Game.Symbol({chr: "*", fg: "#dcc"});
+Game.Symbol.PROJECTILE = new Game.Symbol({chr: "*", fg: "#fff"});

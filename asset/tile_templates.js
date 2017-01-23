@@ -13,7 +13,7 @@ Game.Tile.floorTile = new Game.Tile({
 
 Game.Tile.wallTile = new Game.Tile({
   name: "wallTile",
-  chr: '#',
+  chr: '🌲',
   description: "The wall. Someone must have paid for it"
 });
 
