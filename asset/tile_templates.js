@@ -19,6 +19,7 @@ Game.Tile.wallTile = new Game.Tile({
 
 Game.Tile.lavaTile = new Game.Tile({
   name: "lava",
+  //chr: "🔥",
   bg: "#ff2500",
   walkable: true,
   transparent: true,

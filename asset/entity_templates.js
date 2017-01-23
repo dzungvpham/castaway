@@ -29,7 +29,7 @@ Game.EntityGenerator.learn({
 
 Game.EntityGenerator.learn({
   name: 'newt',
-  chr: '~',
+  chr: '🐛',
   maxHP: 10,
   element: ["earth"],
   elementArmor: {lightning: -5, water: 5},
@@ -38,7 +38,7 @@ Game.EntityGenerator.learn({
 
 Game.EntityGenerator.learn({
   name: 'squirell',
-  chr: '&',
+  chr: '🐿️',
   maxHP: 10,
   element: ["lightning"],
   elementArmor: {wind: -5, earth: 5},
