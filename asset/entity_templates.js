@@ -5,8 +5,6 @@ Game.EntityGenerator.learn({
   chr: {north: '^', south: 'v', west: '<', east: '>'},
   maxHP: 100,
   sightRadius: 10,
-  meleeAttackPower: 5,
-  meleeHitChance: 0.9,
   rangedAttackPower: 10,
   rangedHitChance: 80,
   dodgeChance: 20,

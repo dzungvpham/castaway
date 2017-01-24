@@ -91,6 +91,37 @@ Game.SymbolActive.prototype.hasMixin = function(mixin) {
   }
 };
 
+Game.SymbolActive.prototype.addMixin = function(mixinName, template) {
+    this._mixinsName.push(mixinName);
+    var mixin = this._mixinSet[mixinName];
+    this._mixins.push(mixin);
+    this._mixinTracker[mixin.META.mixinName] = true;
+    this._mixinTracker[mixin.META.mixinGroup] = true;
+
+    for (var mixinProp in mixin) {
+      if (mixinProp != 'META' && mixin.hasOwnProperty(mixinProp)) {
+        this[mixinProp] = mixin[mixinProp];
+      }
+    }
+
+    if (mixin.META.hasOwnProperty('stateNamespace')) {
+      this.attr[mixin.META.stateNamespace] = {};
+      for (var mixinStateProp in mixin.META.stateModel) {
+        if (mixin.META.stateModel.hasOwnProperty(mixinStateProp)) {
+          if (typeof mixin.META.stateModel[mixinStateProp] == "object") {
+            this.attr[mixin.META.stateNamespace][mixinStateProp] = JSON.parse(JSON.stringify(mixin.META.stateModel[mixinStateProp]));
+          } else {
+            this.attr[mixin.META.stateNamespace][mixinStateProp] = mixin.META.stateModel[mixinStateProp];
+          }
+        }
+      }
+    }
+
+    if (mixin.META.hasOwnProperty('init')) {
+      mixin.META.init.call(this, template);
+    }
+};
+
 Game.SymbolActive.prototype.raiseSymbolActiveEvent = function(evt, data) {
   var response = {};
   for (var i = 0; i < this._mixins.length; i++) {

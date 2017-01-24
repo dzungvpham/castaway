@@ -419,13 +419,13 @@ Game.UIMode.gamePlay = {
     this.setCurrentStage(stage);
     this.setMap(new Game.Map(stage));
     var map = this.getMap();
-    Game.Stage.populateMap(map, stage);
-    if (stage == "stage_1") {
-      this.setAvatar(Game.EntityGenerator.create('avatar'));
+    if (this.getAvatar()) {
       map.addEntity(this.getAvatar(), map.getRandomWalkableLocation());
     } else {
+      this.setAvatar(Game.EntityGenerator.create('avatar'));
       map.addEntity(this.getAvatar(), map.getRandomWalkableLocation());
     }
+    Game.Stage.modifyStage(map, stage);
     this.setCameraToAvatar();
   },
 
