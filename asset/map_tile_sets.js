@@ -1,5 +1,5 @@
 Game.MapTileSets = {
-  caves1: {
+  stage1: {
     _width: 20,
     _height: 20,
 
