@@ -4,15 +4,17 @@ Game.ItemGenerator.learn({name:'_inventoryContainer', mixins: ["Container"]});
 
 Game.ItemGenerator.learn({
   name: "rock",
-  chr: String.fromCharCode(174),
-  fg: "#aaa",
+  chr: '🔮',
+  //chr: String.fromCharCode(174),
+  //fg: "#aaa",
   description: "A simple rock"
 });
 
 Game.ItemGenerator.learn({
   name: "chakra shard",
-  chr: "$",
-  fg: "#aaa",
+  chr: '💎',
+  //chr: "$",
+  //fg: "#aaa",
   description: "Crystalized chakra",
   hp: 5,
   rangedHitChance: 5,
