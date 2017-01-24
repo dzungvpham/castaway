@@ -154,6 +154,7 @@ Game.UIMode.gamePersistence = {
 
   newGame: function() {
     this.resetDatastore();
+    Game.initTimeEngine();
     Game.setRandomSeed(5 + Math.floor(Game.TRANSIENT_RNG.getUniform() * 100000));
     Game.UIMode.gamePlay.setupNewGame("stage_1");
     setTimeout(function(){ Game.switchUIMode("gamePlay"); }, 1);
@@ -176,7 +177,7 @@ Game.UIMode.gamePersistence = {
     Game.DATASTORE.MAP = {};
     Game.DATASTORE.ENTITY = {};
     Game.DATASTORE.ITEM = {};
-    Game.initTimeEngine();
+    //Game.initTimeEngine();
   },
 
   BASE_toJSON: function(state_hash_name) {
@@ -457,6 +458,16 @@ Game.UIMode.gameNextStage = {
     if (num < 3) {
       num++;
     }
+    var avatarID = Game.getAvatar().getID();
+    var avatar = Game.getAvatar();
+    var container = avatar.getContainer();
+    var itemsInventory = container.getAllItems();
+    Game.UIMode.gamePersistence.resetDatastore();
+    Game.DATASTORE.ITEM[container.getID()] = container;
+    for (var i = 0; i < itemsInventory.length; i++) {
+      Game.DATASTORE.ITEM[itemsInventory[i].getID()] = itemsInventory[i];
+    }
+    Game.DATASTORE.ENTITY[avatarID] = avatar;
     Game.UIMode.gamePlay.setupNewGame("stage_" + num);
   }
 }
