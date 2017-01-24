@@ -372,17 +372,21 @@ Game.UIMode.gamePlay = {
 
     Game.refresh();
     if (tookTurn) {
-      this.getAvatar().raiseSymbolActiveEvent('actionDone');
-      if (this.checkWin()) {
-        if (this.getCurrentStage() != "stage_3") {
-          setTimeout(function() {Game.switchUIMode("gameNextStage");}, 1);
-        } else {
-          setTimeout(function() {Game.switchUIMode("gameWin");}, 1);
+      if (this.getAvatar()) {
+        this.getAvatar().raiseSymbolActiveEvent('actionDone');
+        if (this.checkWin()) {
+          if (this.getCurrentStage() != "stage_3") {
+            setTimeout(function() {Game.switchUIMode("gameNextStage");}, 1);
+          } else {
+            setTimeout(function() {Game.switchUIMode("gameWin");}, 1);
+          }
+        } else if (this.checkLose()) {
+          setTimeout(function() {Game.switchUIMode("gameLose");}, 1);
         }
-      } else if (this.checkLose()) {
+        return true;
+      } else {
         setTimeout(function() {Game.switchUIMode("gameLose");}, 1);
       }
-      return true;
     }
     return false;
   },
@@ -404,6 +408,9 @@ Game.UIMode.gamePlay = {
   },
 
   checkLose: function() {
+    if (!this.getAvatar().isAlive()) {
+      return true;
+    }
     return false;
   },
 
@@ -468,6 +475,7 @@ Game.UIMode.gameNextStage = {
       Game.DATASTORE.ITEM[itemsInventory[i].getID()] = itemsInventory[i];
     }
     Game.DATASTORE.ENTITY[avatarID] = avatar;
+    Game.setRandomSeed(5 + Math.floor(Game.TRANSIENT_RNG.getUniform() * 100000));
     Game.UIMode.gamePlay.setupNewGame("stage_" + num);
   }
 }

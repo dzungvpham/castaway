@@ -73,7 +73,7 @@ Game.Entity.prototype.destroy = function() {
 Game.Entity.prototype.isAlive = function() {
   var loc = this.getMap().attr._locationsByEntity[this.getID()];
   var id = this.getMap().attr._entitiesByLocation[loc];
-  if (loc != 'undefined' && id != 'undefined') {
+  if (loc != 'undefined' || id != 'undefined') {
     return true;
   }
   return false;

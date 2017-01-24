@@ -6,7 +6,7 @@ Game.Stage.populateMap = function(map, stage) {
   switch(stage) {
     case "stage_1":
       //entityList = {"newt": 2, "moss": 5, "squirell": 3, "slug": 1};
-      entityList = {"water spirit": 3, "earth spirit": 3};
+      entityList = {"water spirit": 3, "earth spirit": 3, "fire spirit": 1};
       itemList = {"chakra shard": 1};
       break;
     case "stage_2":
