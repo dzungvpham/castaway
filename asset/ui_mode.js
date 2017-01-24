@@ -10,7 +10,6 @@ Game.UIMode.gameStart = {
   },
 
   exit: function() {
-    //Game.KeyBinding.informPlayer();
     Game.refresh();
   },
 
@@ -156,7 +155,7 @@ Game.UIMode.gamePersistence = {
   newGame: function() {
     this.resetDatastore();
     Game.setRandomSeed(5 + Math.floor(Game.TRANSIENT_RNG.getUniform() * 100000));
-    Game.UIMode.gamePlay.setupNewGame("stage1");
+    Game.UIMode.gamePlay.setupNewGame("stage_1");
     setTimeout(function(){ Game.switchUIMode("gamePlay"); }, 1);
   },
 
@@ -236,6 +235,7 @@ Game.UIMode.gamePlay = {
     this.getAvatar().rememberCoords(renderOptions.visibleCells);
     this.renderAvatar(display);
     display.drawText(0, 0, Game.UIMode.DEFAULT_COLOR_STR + "Press ? to open help, = to open save/load/new game menu");
+    display.drawText(72, 0, Game.UIMode.DEFAULT_COLOR_STR + "Stage " + this.getCurrentStage().split("_")[1]);
   },
 
   getMap: function() {
@@ -293,7 +293,7 @@ Game.UIMode.gamePlay = {
     }
     return false;
   },
-  
+
   setCamera: function (sx, sy) {
     this.attr._camX = Math.min(Math.max(0, sx), this.getMap().getWidth());
     this.attr._camY = Math.min(Math.max(0, sy), this.getMap().getHeight());
@@ -373,13 +373,13 @@ Game.UIMode.gamePlay = {
     if (tookTurn) {
       this.getAvatar().raiseSymbolActiveEvent('actionDone');
       if (this.checkWin()) {
-        if (this.getCurrentStage() != "stageFinal") {
-          Game.switchUIMode("gameNextStage");
+        if (this.getCurrentStage() != "stage_3") {
+          setTimeout(function() {Game.switchUIMode("gameNextStage");}, 1);
         } else {
-          Game.switchUIMode("gameWin");
+          setTimeout(function() {Game.switchUIMode("gameWin");}, 1);
         }
       } else if (this.checkLose()) {
-        Game.switchUIMode("gameLose");
+        setTimeout(function() {Game.switchUIMode("gameLose");}, 1);
       }
       return true;
     }
@@ -394,8 +394,9 @@ Game.UIMode.gamePlay = {
     this.attr._currentStage = stage;
   },
 
-  checkWin: function(stage) {
-    if (this.getAvatar().getMap().attr._entitiesByLocation.length <= 0) {
+  checkWin: function() {
+    var loc = this.getAvatar().getMap().attr._locationsByEntity;
+    if (Object.keys(loc).length == 1 && this.getAvatar().isAlive()) {
       return true;
     }
     return false;
@@ -407,10 +408,11 @@ Game.UIMode.gamePlay = {
 
   setupNewGame: function(stage) {
     Game.Message.clear();
+    this.setCurrentStage(stage);
     this.setMap(new Game.Map(stage));
     var map = this.getMap();
     Game.Stage.populateMap(map, stage);
-    if (stage == "stage1") {
+    if (stage == "stage_1") {
       this.setAvatar(Game.EntityGenerator.create('avatar'));
       map.addEntity(this.getAvatar(), map.getRandomWalkableLocation());
     } else {
@@ -438,18 +440,32 @@ Game.UIMode.gameNextStage = {
   },
 
   render: function(display) {
-    display.drawText(5, 12, Game.UIMode.DEFAULT_COLOR_STR + "Stage Completed!";
-    display.drawText(5, 13, Game.UIMode.DEFAULT_COLOR_STR + "Loading...";
+    display.drawText(5, 12, Game.UIMode.DEFAULT_COLOR_STR + "Stage Completed!");
+    display.drawText(5, 13, Game.UIMode.DEFAULT_COLOR_STR + "Loading next stage...");
+    this.setupNextStage();
+    display.drawText(5, 13, Game.UIMode.DEFAULT_COLOR_STR + "Press any key to continue");
   },
 
   handleInput: function(inputType, inputData) {
-    Game.Message.clear();
+    if (inputData.charCode !== 0) {
+      Game.switchUIMode("gamePlay");
+    }
+  },
+
+  setupNextStage: function() {
+    var num = Game.UIMode.gamePlay.getCurrentStage().split("_")[1];
+    if (num < 3) {
+      num++;
+    }
+    Game.UIMode.gamePlay.setupNewGame("stage_" + num);
   }
 }
 
 Game.UIMode.gameWin = {
   enter: function() {
+    Game.isStarted = false;
     Game.TimeEngine.lock();
+    Game.refresh();
   },
 
   exit: function() {
@@ -457,16 +473,20 @@ Game.UIMode.gameWin = {
 
   render: function(display) {
     display.drawText(5, 5, Game.UIMode.DEFAULT_COLOR_STR + "You won!");
+    display.drawText(5, 6, Game.UIMode.DEFAULT_COLOR_STR + "Press any key to go continue");
   },
 
   handleInput: function(inputType, inputData) {
-    Game.Message.clear();
+    if (inputData.charCode !== 0) {
+      Game.switchUIMode("gamePersistence");
+    }
   }
 }
 
 Game.UIMode.gameLose = {
   enter: function() {
     Game.TimeEngine.lock();
+    Game.refresh();
   },
 
   exit: function() {
@@ -474,10 +494,13 @@ Game.UIMode.gameLose = {
 
   render: function(display) {
     display.drawText(5, 5, Game.UIMode.DEFAULT_COLOR_STR + "You lose!");
+    display.drawText(5, 6, Game.UIMode.DEFAULT_COLOR_STR + "Press any key to go continue");
   },
 
   handleInput: function(inputType, inputData) {
-    Game.Message.clear();
+    if (inputData.charCode !== 0) {
+      Game.switchUIMode("gamePersistence");
+    }
   }
 }
 
