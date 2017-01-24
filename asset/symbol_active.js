@@ -92,6 +92,7 @@ Game.SymbolActive.prototype.hasMixin = function(mixin) {
 };
 
 Game.SymbolActive.prototype.addMixin = function(mixinName, template) {
+  if (!this._mixinsName.includes(mixinName)) {
     this._mixinsName.push(mixinName);
     var mixin = this._mixinSet[mixinName];
     this._mixins.push(mixin);
@@ -120,6 +121,7 @@ Game.SymbolActive.prototype.addMixin = function(mixinName, template) {
     if (mixin.META.hasOwnProperty('init')) {
       mixin.META.init.call(this, template);
     }
+  }
 };
 
 Game.SymbolActive.prototype.raiseSymbolActiveEvent = function(evt, data) {
