@@ -1,20 +1,27 @@
 Game.Tile.nullTile = new Game.Tile({
   name: "nullTile",
-  description: "Nothing whatsoever"
+  description: "Nothing interesting"
 });
 
 Game.Tile.floorTile = new Game.Tile({
   name: "floorTile",
   chr: '.',
+  fg: "#FFCB2D",
   walkable: true,
   transparent: true,
   description: "As good as a floor can be"
 });
 
 Game.Tile.wallTile = new Game.Tile({
-  name: "wallTile",
+  name: "tree",
   chr: '🌲',
-  description: "The wall. Someone must have paid for it"
+  description: "An evergreen."
+});
+
+Game.Tile.wallTile2 = new Game.Tile({
+  name: "tree",
+  chr: '🌳',
+  description: "A decidous tree."
 });
 
 Game.Tile.lavaTile = new Game.Tile({

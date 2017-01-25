@@ -17,7 +17,11 @@ Game.MapTileSets = {
         if (v === 1) {
           mapTiles[x][y] = Game.Tile.floorTile;
         } else {
-          mapTiles[x][y] = Game.Tile.wallTile;
+          if (ROT.RNG.getUniform() < 0.5) {
+            mapTiles[x][y] = Game.Tile.wallTile;
+          } else {
+            mapTiles[x][y] = Game.Tile.wallTile2;
+          }
         }
       }, 1);
 

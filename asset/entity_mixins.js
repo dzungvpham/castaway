@@ -21,28 +21,8 @@ Game.EntityMixin.Sight = {
       'examine': function(data) {
         if (this.hasMixin("Directed")) {
           var dir = this.getDirection();
-          var dx = 0;
-          var dy = 0;
-          switch (dir) {
-            case "north":
-              dx = 0;
-              dy = -1;
-              break;
-            case "south":
-              dx = 0;
-              dy = 1;
-              break;
-            case "west":
-              dx = -1;
-              dy = 0;
-              break;
-            case "east":
-              dx = 1;
-              dy = 0;
-              break;
-            default:
-              return false;
-          }
+          var dx = Game.util.getDirectionalDeltas(dir).dx;
+          var dy = Game.util.getDirectionalDeltas(dir).dy;
           var targetX = this.getX() + dx;
           var targetY = this.getY() + dy;
           var map = this.getMap();
@@ -53,6 +33,7 @@ Game.EntityMixin.Sight = {
             return;
           }
           var item = map.getItems(targetX, targetY);
+          Game.Message.ageMessages();
           if (item.length == 1) {
             Game.Message.send(item[0].getDetailedDescription());
             return;
@@ -338,8 +319,8 @@ Game.EntityMixin.HitPoints = {
 
 Game.EntityMixin.MeleeAttacker = {
   META: {
-    mixinName: 'meleeAttacker',
-    mixinGroup: 'attacker',
+    mixinName: 'MeleeAttacker',
+    mixinGroup: 'Attacker',
     stateNamespace: '_MeleeAttacker_attr',
 
     stateModel: {
@@ -394,7 +375,7 @@ Game.EntityMixin.MeleeAttacker = {
 Game.EntityMixin.RangedAttacker = {
   META: {
     mixinName: 'RangedAttacker',
-    mixinGroup: 'attacker',
+    mixinGroup: 'Attacker',
     stateNamespace: '_RangedAttacker_attr',
 
     stateModel: {
@@ -411,29 +392,34 @@ Game.EntityMixin.RangedAttacker = {
 
     listeners: {
       'shoot': function(data) {
-        var hit = this.checkShootPath();
-        if (!hit) {
-          return false;
-        } else if (hit == 'wallTile') {
-          Game.Message.send("You hit the wall");
-        } else {
-          var flag = hit.raiseSymbolActiveEvent("calcHit", {hitChance: this.getRangedHitChance()}).targetHit[0];
-          if (flag) {
-            var damage = this.getRangedAttackPower();
-            if (this.hasMixin('Elemental') && hit.hasMixin("Defense")) {
-              damage = hit.raiseSymbolActiveEvent('calcDamage', {element: this.getCurrentElement(), attackPower: damage}).damage;
-            }
-            hit.raiseSymbolActiveEvent('attacked', {attacker: this, attackPower: damage});
+        if (!this.hasMixin("CombatMultipleProjectiles")) {
+          var hit = this.checkShootPath();
+          if (!hit) {
+            return false;
+          } else if (typeof hit == 'string') {
+            Game.Message.ageMessages();
+            Game.Message.send("You hit " + hit);
           } else {
-            this.raiseSymbolActiveEvent("attackMissed", {target: hit});
-            hit.raiseSymbolActiveEvent("attackDodged", {attacker: this});
-          }
-        }
-        this.setCurrentActionDuration(this.attr._RangedAttacker_attr.attackActionDuration);
-      },
+            var flag = hit.raiseSymbolActiveEvent("calcHit", {hitChance: this.getRangedHitChance()}).targetHit[0];
+            if (flag) {
+              if (this.hasMixin("CombatPushBack")) {
+                this.raiseSymbolActiveEvent("pushBack", {pusher: this, pushee: hit});
+              }
+              var damage = this.getRangedAttackPower();
+              if (this.hasMixin('Elemental') && hit.hasMixin("Defense")) {
+                damage = hit.raiseSymbolActiveEvent('calcDamage', {element: this.getCurrentElement(), attackPower: damage}).damage;
+              }
+              hit.raiseSymbolActiveEvent('attacked', {attacker: this, attackPower: damage});
 
-      'attackAnimationDone': function(data) {
-        this.raiseSymbolActiveEvent('actionDone');
+            } else {
+              this.raiseSymbolActiveEvent("attackMissed", {target: hit});
+              hit.raiseSymbolActiveEvent("attackDodged", {attacker: this});
+            }
+          }
+          this.setCurrentActionDuration(this.attr._RangedAttacker_attr.attackActionDuration);
+        } else {
+          this.raiseSymbolActiveEvent("shootMultiple");
+        }
       }
     }
   },
@@ -458,32 +444,19 @@ Game.EntityMixin.RangedAttacker = {
     if (this.hasMixin("Directed")) {
       Game.TimeEngine.lock();
       var dir = this.getDirection();
-      var dx = 0;
-      var dy = 0;
+      var deltas = Game.util.getDirectionalDeltas(dir);
+      if (deltas) {
+        var dx = deltas.dx;
+        var dy = deltas.dy;
+      } else {
+        return false;
+      }
+
       var targetX = this.getX();
       var targetY = this.getY();
-      switch (dir) {
-        case "north":
-          dx = 0;
-          dy = -1;
-          break;
-        case "south":
-          dx = 0;
-          dy = 1;
-          break;
-        case "west":
-          dx = -1;
-          dy = 0;
-          break;
-        case "east":
-          dx = 1;
-          dy = 0;
-          break;
-        default:
-          return false;
-      }
       var actor = this;
       var step = 0;
+
       while (true) {
         step++;
         targetX += dx;
@@ -492,20 +465,20 @@ Game.EntityMixin.RangedAttacker = {
 
         if (tile.getName() == 'nullTile') {
           setTimeout(function() {
-            actor.raiseSymbolActiveEvent('attackAnimationDone');
+            actor.raiseSymbolActiveEvent('actionDone');
           }, 1);
           return false;
-        } else if (tile.getName() == 'wallTile') {
+        } else if (!tile.isWalkable()) {
           setTimeout(function() {
-            actor.raiseSymbolActiveEvent('attackAnimationDone');
+            actor.raiseSymbolActiveEvent('actionDone');
           }, 1);
-          return 'wallTile';
+          return tile.getName();
         }
+
         var entity = this.getMap().getEntity(targetX, targetY);
         if (entity) {
-
           setTimeout(function() {
-            actor.raiseSymbolActiveEvent('attackAnimationDone');
+            actor.raiseSymbolActiveEvent('actionDone');
           }, 1);
           return entity;
         }
@@ -542,7 +515,6 @@ Game.EntityMixin.RangedAttacker = {
         }
       }
     }
-    Game.TimeEngine.unlock();
     return false;
   }
 };
@@ -580,7 +552,7 @@ Game.EntityMixin.PlayerMessager = {
     listeners: {
       'walkForbidden': function(data) {
         Game.Message.ageMessages();
-        Game.Message.send("You cannot walk into the " + data.target.getName());
+        Game.Message.send("You cannot walk into " + data.target.getName());
       },
 
       'dealtDamage': function(data) {
@@ -860,7 +832,8 @@ Game.EntityMixin.Elemental = {
     stateModel: {
       element: ["fire"],
       currentElemIndex: 0,
-      elementColor: {fire: '#f00', water: '#00f', earth: '#940', wind: '#fff', lightning: '#ff0'}
+      elementColor: {fire: '#f00', water: '#00bcf2', earth: '#940', wind: '#fff', lightning: '#ff0'},
+      elementIcon: {fire: '🔥', water: '💦', earth: '🗻', wind: '💨', lightning: '⚡'}
     },
 
     init: function(template) {
@@ -890,8 +863,15 @@ Game.EntityMixin.Elemental = {
     return this.attr._Elemental_attr.element[this.attr._Elemental_attr.currentElemIndex];
   },
 
-  getElementColor() {
-    var color = this.attr._Elemental_attr.elementColor[this.getCurrentElement()];
+  getElementColor(elem) {
+    var color = this.attr._Elemental_attr.elementColor[elem] || this.attr._Elemental_attr.elementColor[this.getCurrentElement()];
+    if (color != 'undefined') {
+      return color;
+    }
+  },
+
+  getElementIcon(elem) {
+    var color = this.attr._Elemental_attr.elementIcon[elem] || this.attr._Elemental_attr.elementIcon[this.getCurrentElement()];
     if (color != 'undefined') {
       return color;
     }

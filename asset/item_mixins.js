@@ -144,6 +144,9 @@ Game.ItemMixin.PassiveBuff = {
       'dropped': function(data) {
         if (data.dropper.hasMixin("HitPoints")) {
           data.dropper.setMaxHP(data.dropper.getMaxHP() - this.getMaxHP());
+          if (data.dropper.getCurrentHP() > data.dropper.getMaxHP()) {
+            data.dropper.setCurrentHP(data.dropper.getMaxHP());
+          }
         }
         if (data.dropper.hasMixin("RangedAttacker")) {
           data.dropper.setRangedAttackPower(data.dropper.getRangedAttackPower() - this.getRangedAttackPower());

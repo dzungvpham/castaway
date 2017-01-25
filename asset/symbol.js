@@ -39,7 +39,7 @@ Game.Symbol.prototype.getColorDesignator = function(){
 };
 
 Game.Symbol.prototype.getRepresentation = function() {
-  return '%c{' + this.attr._fg + '}%b{' + this.attr._bg + '}' + this.attr._char;
+  return '%c{' + this.attr._fg + '}%b{' + this.attr._bg + '}';
 };
 
 
@@ -55,5 +55,5 @@ Game.Symbol.prototype.draw = function (display, dispX, dispY, isMasked) {
   }
 };
 
-Game.Symbol.ITEM_PILE = new Game.Symbol({chr: "*", fg: "#dcc"});
+Game.Symbol.ITEM_PILE = new Game.Symbol({chr: "❓", fg: "#dcc"});
 Game.Symbol.PROJECTILE = new Game.Symbol({chr: "*", fg: "#fff"});

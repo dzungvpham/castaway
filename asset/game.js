@@ -23,6 +23,9 @@ var Game = {
   _PERSISTENCE_NAMESPACE: "ws2017",
   _randomSeed: null,
   _DISPLAY_SPACING: 1.1,
+  _tileWidth: 32,
+  _tileHeight: 32,
+  _squareRatio: false,
   _curUIMode: null,
   _UIModeNameStack: [],
   _game: null,
@@ -38,12 +41,12 @@ var Game = {
       o: null
     },
     avatar: {
-      w: 20,
+      w: 24,
       h: 24,
       o: null
     },
     message: {
-      w: 100,
+      w: 104,
       h: 10,
       o: null
     }
@@ -59,7 +62,10 @@ var Game = {
       this.display[display_key].o = new ROT.Display({
         width: this.display[display_key].w,
         height: this.display[display_key].h,
-        spacing: this._DISPLAY_SPACING
+        spacing: this._DISPLAY_SPACING,
+        tileWidth: this._tileWidth,
+        tileHeight: this._tileHeight,
+        forceSquareRatio: this._squareRatio
       });
     }
 
