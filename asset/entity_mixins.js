@@ -429,8 +429,11 @@ Game.EntityMixin.RangedAttacker = {
             hit.raiseSymbolActiveEvent("attackDodged", {attacker: this});
           }
         }
-        this.raiseSymbolActiveEvent('actionDone');
         this.setCurrentActionDuration(this.attr._RangedAttacker_attr.attackActionDuration);
+      },
+
+      'attackAnimationDone': function(data) {
+        this.raiseSymbolActiveEvent('actionDone');
       }
     }
   },
@@ -453,6 +456,7 @@ Game.EntityMixin.RangedAttacker = {
 
   checkShootPath: function() {
     if (this.hasMixin("Directed")) {
+      Game.TimeEngine.lock();
       var dir = this.getDirection();
       var dx = 0;
       var dy = 0;
@@ -478,21 +482,67 @@ Game.EntityMixin.RangedAttacker = {
         default:
           return false;
       }
+      var actor = this;
+      var step = 0;
       while (true) {
+        step++;
         targetX += dx;
         targetY += dy;
         var tile = this.getMap().getTile(targetX, targetY);
+
         if (tile.getName() == 'nullTile') {
+          setTimeout(function() {
+            actor.raiseSymbolActiveEvent('attackAnimationDone');
+          }, 1);
           return false;
         } else if (tile.getName() == 'wallTile') {
+          setTimeout(function() {
+            actor.raiseSymbolActiveEvent('attackAnimationDone');
+          }, 1);
           return 'wallTile';
         }
         var entity = this.getMap().getEntity(targetX, targetY);
         if (entity) {
+
+          setTimeout(function() {
+            actor.raiseSymbolActiveEvent('attackAnimationDone');
+          }, 1);
           return entity;
+        }
+        //util
+        var drawX = targetX - Game.UIMode.gamePlay.attr._camX + Game.getDisplayWidth("main")/2;
+        var drawY = targetY - Game.UIMode.gamePlay.attr._camY + Game.getDisplayHeight("main")/2;
+        var items = this.getMap().getItems(targetX, targetY);
+        var fg = "#fff";
+        if (this.hasMixin("Elemental")) {
+          fg = this.getElementColor();
+        }
+        setTimeout(function(fg, tile, x, y) {
+          Game.Symbol.PROJECTILE.setFg(fg);
+          Game.Symbol.PROJECTILE.setBg(tile.getBg());
+          Game.Symbol.PROJECTILE.draw(Game.getDisplay("main"), x, y);
+        }, 20*step, fg, tile, drawX, drawY);
+
+        if (items.length == 1) {
+          setTimeout(function(item, bg, x, y) {
+            var origBg = item.getBg();
+            item.setBg(bg);
+            item.draw(Game.getDisplay("main"), x, y);
+            item.setBg(origBg);
+          }, 20*step + 20, items[0], tile.getBg(), drawX, drawY);
+        } else if (items.length >= 2){
+          setTimeout(function(bg, x, y) {
+            Game.Symbol.ITEM_PILE.setBg(bg);
+            Game.Symbol.ITEM_PILE.draw(Game.getDisplay("main"), x, y);
+          }, 20*step + 20, tile.getBg(), drawX, drawY);
+        } else {
+          setTimeout(function(tile, x, y) {
+            tile.draw(Game.getDisplay("main"), x, y);
+          }, 20*step + 20, tile, drawX, drawY);
         }
       }
     }
+    Game.TimeEngine.unlock();
     return false;
   }
 };

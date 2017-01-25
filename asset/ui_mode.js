@@ -10,7 +10,6 @@ Game.UIMode.gameStart = {
   },
 
   exit: function() {
-    //Game.KeyBinding.informPlayer();
     Game.refresh();
   },
 
@@ -155,8 +154,9 @@ Game.UIMode.gamePersistence = {
 
   newGame: function() {
     this.resetDatastore();
+    Game.initTimeEngine();
     Game.setRandomSeed(5 + Math.floor(Game.TRANSIENT_RNG.getUniform() * 100000));
-    Game.UIMode.gamePlay.setupNewGame();
+    Game.UIMode.gamePlay.setupNewGame("stage_1");
     setTimeout(function(){ Game.switchUIMode("gamePlay"); }, 1);
   },
 
@@ -177,7 +177,7 @@ Game.UIMode.gamePersistence = {
     Game.DATASTORE.MAP = {};
     Game.DATASTORE.ENTITY = {};
     Game.DATASTORE.ITEM = {};
-    Game.initTimeEngine();
+    //Game.initTimeEngine();
   },
 
   BASE_toJSON: function(state_hash_name) {
@@ -203,7 +203,8 @@ Game.UIMode.gamePlay = {
       _mapID: null,
       _avatarID: null,
       _camX: 0,
-      _camY: 0
+      _camY: 0,
+      _currentStage: null
   },
 
   JSON_KEY: 'UIMode_gamePlay',
@@ -235,6 +236,7 @@ Game.UIMode.gamePlay = {
     this.getAvatar().rememberCoords(renderOptions.visibleCells);
     this.renderAvatar(display);
     display.drawText(0, 0, Game.UIMode.DEFAULT_COLOR_STR + "Press ? to open help, = to open save/load/new game menu");
+    display.drawText(72, 0, Game.UIMode.DEFAULT_COLOR_STR + "Stage " + this.getCurrentStage().split("_")[1]);
   },
 
   getMap: function() {
@@ -291,10 +293,6 @@ Game.UIMode.gamePlay = {
       return true;
     }
     return false;
-  },
-
-  moveCamera: function (dx,dy) {
-    this.setCamera(this.attr._cameraX + dx,this.attr._cameraY + dy);
   },
 
   setCamera: function (sx, sy) {
@@ -375,26 +373,53 @@ Game.UIMode.gamePlay = {
     Game.refresh();
     if (tookTurn) {
       this.getAvatar().raiseSymbolActiveEvent('actionDone');
+      if (this.checkWin()) {
+        if (this.getCurrentStage() != "stage_3") {
+          setTimeout(function() {Game.switchUIMode("gameNextStage");}, 1);
+        } else {
+          setTimeout(function() {Game.switchUIMode("gameWin");}, 1);
+        }
+      } else if (this.checkLose()) {
+        setTimeout(function() {Game.switchUIMode("gameLose");}, 1);
+      }
       return true;
     }
     return false;
   },
 
-  setupNewGame: function() {
-    Game.Message.clear();
-    this.setMap(new Game.Map('caves1'));
-    this.setAvatar(Game.EntityGenerator.create('avatar'));
-    var map = this.getMap();
-    map.addEntity(this.getAvatar(), map.getRandomWalkableLocation());
-    this.setCameraToAvatar();
-    var test = Game.ItemGenerator.create('rock');
-    for (var count = 0; count < 4; count++) { //Not consistent
-       map.addEntity(Game.EntityGenerator.create('moss'), map.getRandomWalkableLocation());
-       map.addEntity(Game.EntityGenerator.create('newt'), map.getRandomWalkableLocation());
-       map.addEntity(Game.EntityGenerator.create('squirell'), map.getRandomWalkableLocation());
-       map.addEntity(Game.EntityGenerator.create('slug'), map.getRandomWalkableLocation());
-       map.addItem(Game.ItemGenerator.create("chakra shard"), map.getRandomWalkableLocation());
+  getCurrentStage: function() {
+    return this.attr._currentStage;
+  },
+
+  setCurrentStage: function(stage) {
+    this.attr._currentStage = stage;
+  },
+
+  checkWin: function() {
+    var loc = this.getAvatar().getMap().attr._locationsByEntity;
+    if (Object.keys(loc).length == 1 && this.getAvatar().isAlive()) {
+      return true;
     }
+    return false;
+  },
+
+  checkLose: function() {
+    return false;
+  },
+
+  setupNewGame: function(stage) {
+    Game.Message.clear();
+    this.setCurrentStage(stage);
+    this.setMap(new Game.Map(stage));
+    var map = this.getMap();
+    Game.Stage.populateMap(map, stage);
+    if (stage == "stage_1") {
+      this.setAvatar(Game.EntityGenerator.create('avatar'));
+      map.addEntity(this.getAvatar(), map.getRandomWalkableLocation());
+    } else {
+      map.addEntity(this.getAvatar(), map.getRandomWalkableLocation());
+    }
+    this.setCameraToAvatar();
   },
 
   toJSON: function() {
@@ -406,9 +431,52 @@ Game.UIMode.gamePlay = {
   }
 }
 
-Game.UIMode.gameWin = {
+Game.UIMode.gameNextStage = {
   enter: function() {
     Game.TimeEngine.lock();
+    Game.refresh();
+  },
+
+  exit: function() {
+  },
+
+  render: function(display) {
+    display.drawText(5, 12, Game.UIMode.DEFAULT_COLOR_STR + "Stage Completed!");
+    display.drawText(5, 13, Game.UIMode.DEFAULT_COLOR_STR + "Loading next stage...");
+    this.setupNextStage();
+    display.drawText(5, 13, Game.UIMode.DEFAULT_COLOR_STR + "Press any key to continue");
+  },
+
+  handleInput: function(inputType, inputData) {
+    if (inputData.charCode !== 0) {
+      Game.switchUIMode("gamePlay");
+    }
+  },
+
+  setupNextStage: function() {
+    var num = Game.UIMode.gamePlay.getCurrentStage().split("_")[1];
+    if (num < 3) {
+      num++;
+    }
+    var avatarID = Game.getAvatar().getID();
+    var avatar = Game.getAvatar();
+    var container = avatar.getContainer();
+    var itemsInventory = container.getAllItems();
+    Game.UIMode.gamePersistence.resetDatastore();
+    Game.DATASTORE.ITEM[container.getID()] = container;
+    for (var i = 0; i < itemsInventory.length; i++) {
+      Game.DATASTORE.ITEM[itemsInventory[i].getID()] = itemsInventory[i];
+    }
+    Game.DATASTORE.ENTITY[avatarID] = avatar;
+    Game.UIMode.gamePlay.setupNewGame("stage_" + num);
+  }
+}
+
+Game.UIMode.gameWin = {
+  enter: function() {
+    Game.isStarted = false;
+    Game.TimeEngine.lock();
+    Game.refresh();
   },
 
   exit: function() {
@@ -416,16 +484,20 @@ Game.UIMode.gameWin = {
 
   render: function(display) {
     display.drawText(5, 5, Game.UIMode.DEFAULT_COLOR_STR + "You won!");
+    display.drawText(5, 6, Game.UIMode.DEFAULT_COLOR_STR + "Press any key to go continue");
   },
 
   handleInput: function(inputType, inputData) {
-    Game.Message.clear();
+    if (inputData.charCode !== 0) {
+      Game.switchUIMode("gamePersistence");
+    }
   }
 }
 
 Game.UIMode.gameLose = {
   enter: function() {
     Game.TimeEngine.lock();
+    Game.refresh();
   },
 
   exit: function() {
@@ -433,10 +505,13 @@ Game.UIMode.gameLose = {
 
   render: function(display) {
     display.drawText(5, 5, Game.UIMode.DEFAULT_COLOR_STR + "You lose!");
+    display.drawText(5, 6, Game.UIMode.DEFAULT_COLOR_STR + "Press any key to go continue");
   },
 
   handleInput: function(inputType, inputData) {
-    Game.Message.clear();
+    if (inputData.charCode !== 0) {
+      Game.switchUIMode("gamePersistence");
+    }
   }
 }
 

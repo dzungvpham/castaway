@@ -19,8 +19,8 @@ Game.EntityGenerator.learn({
 });
 
 Game.EntityGenerator.learn({
-  name: 'moss',
-  chr: '%',
+  name: 'water spirit',
+  chr: '💧',
   maxHP: 10,
   element: ["water"],
   elementArmor: {fire: 5, earth: -5},
@@ -28,17 +28,17 @@ Game.EntityGenerator.learn({
 });
 
 Game.EntityGenerator.learn({
-  name: 'newt',
-  chr: '~',
+  name: 'earth spirit',
+  chr: '💩',
   maxHP: 10,
   element: ["earth"],
   elementArmor: {lightning: -5, water: 5},
-  mixins: ["HitPoints", "WanderActor", "WalkerCorporeal", "Elemental", "Defense"]
+  mixins: ["HitPoints", "WanderActor", "WalkerCorporeal", "Elemental", "Defense", "MeleeAttacker"]
 });
 
 Game.EntityGenerator.learn({
   name: 'squirell',
-  chr: '&',
+  chr: '🐿️',
   maxHP: 10,
   element: ["lightning"],
   elementArmor: {wind: -5, earth: 5},
@@ -46,8 +46,9 @@ Game.EntityGenerator.learn({
 });
 
 Game.EntityGenerator.learn({
-  name: 'slug',
-  chr: '~',
+  name: 'fire spirit',
+  //chr: '~',
+  chr: '🔥',
   maxHP: 30,
   sightRadius: 5,
   meleeAttackPower: 10,

@@ -6,7 +6,7 @@ Game.ItemMixin.Container = {
     mixinGroup: 'Container',
     stateNamespace: '_Container_attr',
     stateModel:  {
-      itemIs: [],
+      itemIDs: [],
       capacity: 1
     },
 
@@ -83,6 +83,15 @@ Game.ItemMixin.Container = {
       }
     }
     return ret;
+  },
+
+  getAllItems: function() {
+    var result = [];
+    var itemIDs = this.getItemIDs();
+    for (var i = 0; i < itemIDs.length; i++) {
+      result.push(Game.DATASTORE.ITEM[itemIDs[i]]);
+    }
+    return result;
   }
 };
 

@@ -69,3 +69,12 @@ Game.Entity.prototype.destroy = function() {
   Game.Scheduler.remove(this);
   delete Game.DATASTORE.ENTITY[this.getID()];
 };
+
+Game.Entity.prototype.isAlive = function() {
+  var loc = this.getMap().attr._locationsByEntity[this.getID()];
+  var id = this.getMap().attr._entitiesByLocation[loc];
+  if (loc != 'undefined' && id != 'undefined') {
+    return true;
+  }
+  return false;
+}
