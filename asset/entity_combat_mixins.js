@@ -94,3 +94,144 @@ Game.EntityMixin.CombatPushBack = {
     this.attr._CombatPushBack_attr.pushChance = c;
   }
 };
+
+Game.EntityMixin.CombatMultipleProjectiles = {
+  META: {
+    mixinName: "CombatMultipleProjectiles",
+    mixinGroup: "CombatModifier",
+    listeners: {
+      "shootMultiple": function(data) {
+        var hitResult = this.checkShootPaths();
+        for (var i = 0; i < hitResult.length; i++) {
+          
+        }
+      }
+    }
+  },
+
+  checkShootPaths: function() {
+    if (this.hasMixin("Directed")) {
+      Game.TimeEngine.lock();
+      var dir = this.getDirection();
+      var delta = Game.util.getDirectionalDeltas(dir);
+      if (delta) {
+        var dx1 = delta.dx;
+        var dy1 = delta.dy;
+      } else {
+        return false;
+      }
+
+      if (dx1 = 0) {
+        dx2 = 1;
+        dx3 = -1;
+        dy2 = dy1;
+        dy3 = dy1;
+      } else {
+        dy2 = 1;
+        dy3 = -1;
+        dx2 = dx1;
+        dx3 = dx1;
+      }
+      var deltas = {
+        'd1': {
+          x: dx1,
+          y: dy1,
+          targetX: this.getX(),
+          targetY: this.getY(),
+          step: 0
+        },
+        'd2': {
+          x: dx2,
+          y: dy2,
+          targetX: this.getX(),
+          targetY: this.getY(),
+          step: 0
+        },
+        'd3': {
+          x: dx3,
+          y: dy3,
+          targetX: this.getX(),
+          targetY: this.getY(),
+          step: 0
+        }
+      }
+      var actor = this;
+      var result = [];
+
+      while (true) {
+        for (del in deltas) {
+          if (deltas[del]) {
+            deltas[del].targetX += deltas[del].dx;
+            deltas[del].targetY += deltas[del].dy;
+            deltas[del].step++;
+            var tile = this.getMap().getTile(deltas[del].targetX, deltas[del].targetY);
+
+            if (tile.getName() == 'nullTile') {
+              result.push(false);
+              deltas[del] = false;
+            } else if (!tile.isWalkable()) {
+              result.push(tile.getName());
+              deltas[del] = false;
+            }
+
+            var entity = this.getMap().getEntity(targetX, targetY);
+            if (entity) {
+              result.push(entity);
+              deltas[del] = false;
+            }
+          }
+
+          var drawX = deltas[del].targetX - Game.UIMode.gamePlay.attr._camX + Game.getDisplayWidth("main")/2;
+          var drawY = deltas[del].targetY - Game.UIMode.gamePlay.attr._camY + Game.getDisplayHeight("main")/2;
+          var items = this.getMap().getItems(deltas[del].targetX, deltas[del].targetY);
+          var fg = "#fff";
+          if (this.hasMixin("Elemental")) {
+            fg = this.getElementColor();
+          }
+          setTimeout(function(fg, tile, x, y) {
+            Game.Symbol.PROJECTILE.setFg(fg);
+            Game.Symbol.PROJECTILE.setBg(tile.getBg());
+            Game.Symbol.PROJECTILE.draw(Game.getDisplay("main"), x, y);
+          }, 20*deltas[del].step, fg, tile, drawX, drawY);
+
+          if (items.length == 1) {
+            setTimeout(function(item, bg, x, y) {
+              var origBg = item.getBg();
+              item.setBg(bg);
+              item.draw(Game.getDisplay("main"), x, y);
+              item.setBg(origBg);
+            }, 20*deltas[del].step + 20, items[0], tile.getBg(), drawX, drawY);
+          } else if (items.length >= 2){
+            setTimeout(function(bg, x, y) {
+              Game.Symbol.ITEM_PILE.setBg(bg);
+              Game.Symbol.ITEM_PILE.draw(Game.getDisplay("main"), x, y);
+            }, 20*deltas[del].step + 20, tile.getBg(), drawX, drawY);
+          } else {
+            setTimeout(function(tile, x, y) {
+              tile.draw(Game.getDisplay("main"), x, y);
+            }, 20*deltas[del].step + 20, tile, drawX, drawY);
+          }
+
+        }
+
+        var flag = true;
+        for (del in deltas) {
+          if (deltas[del]) {
+            flag = false;
+            break;
+          }
+        }
+
+        if (flag) {
+          setTimeout(function() {
+            actor.raiseSymbolActiveEvent('actionDone');
+          }, 1);
+          break;
+        }
+      }
+      Game.TimeEngine.unlock();
+      return result;
+    }
+    return false;
+  }
+};

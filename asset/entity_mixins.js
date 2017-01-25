@@ -338,8 +338,8 @@ Game.EntityMixin.HitPoints = {
 
 Game.EntityMixin.MeleeAttacker = {
   META: {
-    mixinName: 'meleeAttacker',
-    mixinGroup: 'attacker',
+    mixinName: 'MeleeAttacker',
+    mixinGroup: 'Attacker',
     stateNamespace: '_MeleeAttacker_attr',
 
     stateModel: {
@@ -394,7 +394,7 @@ Game.EntityMixin.MeleeAttacker = {
 Game.EntityMixin.RangedAttacker = {
   META: {
     mixinName: 'RangedAttacker',
-    mixinGroup: 'attacker',
+    mixinGroup: 'Attacker',
     stateNamespace: '_RangedAttacker_attr',
 
     stateModel: {
@@ -411,34 +411,34 @@ Game.EntityMixin.RangedAttacker = {
 
     listeners: {
       'shoot': function(data) {
-        var hit = this.checkShootPath();
-        if (!hit) {
-          return false;
-        } else if (typeof hit == 'string') {
-          Game.Message.ageMessages();
-          Game.Message.send("You hit " + hit);
-        } else {
-          var flag = hit.raiseSymbolActiveEvent("calcHit", {hitChance: this.getRangedHitChance()}).targetHit[0];
-          if (flag) {
-            if (this.hasMixin("CombatPushBack")) {
-              this.raiseSymbolActiveEvent("pushBack", {pusher: this, pushee: hit});
-            }
-            var damage = this.getRangedAttackPower();
-            if (this.hasMixin('Elemental') && hit.hasMixin("Defense")) {
-              damage = hit.raiseSymbolActiveEvent('calcDamage', {element: this.getCurrentElement(), attackPower: damage}).damage;
-            }
-            hit.raiseSymbolActiveEvent('attacked', {attacker: this, attackPower: damage});
-
+        if (!this.hasMixin("CombatMultipleProjectiles")) {
+          var hit = this.checkShootPath();
+          if (!hit) {
+            return false;
+          } else if (typeof hit == 'string') {
+            Game.Message.ageMessages();
+            Game.Message.send("You hit " + hit);
           } else {
-            this.raiseSymbolActiveEvent("attackMissed", {target: hit});
-            hit.raiseSymbolActiveEvent("attackDodged", {attacker: this});
-          }
-        }
-        this.setCurrentActionDuration(this.attr._RangedAttacker_attr.attackActionDuration);
-      },
+            var flag = hit.raiseSymbolActiveEvent("calcHit", {hitChance: this.getRangedHitChance()}).targetHit[0];
+            if (flag) {
+              if (this.hasMixin("CombatPushBack")) {
+                this.raiseSymbolActiveEvent("pushBack", {pusher: this, pushee: hit});
+              }
+              var damage = this.getRangedAttackPower();
+              if (this.hasMixin('Elemental') && hit.hasMixin("Defense")) {
+                damage = hit.raiseSymbolActiveEvent('calcDamage', {element: this.getCurrentElement(), attackPower: damage}).damage;
+              }
+              hit.raiseSymbolActiveEvent('attacked', {attacker: this, attackPower: damage});
 
-      'attackAnimationDone': function(data) {
-        this.raiseSymbolActiveEvent('actionDone');
+            } else {
+              this.raiseSymbolActiveEvent("attackMissed", {target: hit});
+              hit.raiseSymbolActiveEvent("attackDodged", {attacker: this});
+            }
+          }
+          this.setCurrentActionDuration(this.attr._RangedAttacker_attr.attackActionDuration);
+        } else {
+          this.raiseSymbolActiveEvent("shootMultiple");
+        }
       }
     }
   },
@@ -484,20 +484,20 @@ Game.EntityMixin.RangedAttacker = {
 
         if (tile.getName() == 'nullTile') {
           setTimeout(function() {
-            actor.raiseSymbolActiveEvent('attackAnimationDone');
+            actor.raiseSymbolActiveEvent('actionDone');
           }, 1);
           return false;
         } else if (!tile.isWalkable()) {
           setTimeout(function() {
-            actor.raiseSymbolActiveEvent('attackAnimationDone');
+            actor.raiseSymbolActiveEvent('actionDone');
           }, 1);
           return tile.getName();
         }
+
         var entity = this.getMap().getEntity(targetX, targetY);
         if (entity) {
-
           setTimeout(function() {
-            actor.raiseSymbolActiveEvent('attackAnimationDone');
+            actor.raiseSymbolActiveEvent('actionDone');
           }, 1);
           return entity;
         }
@@ -534,7 +534,6 @@ Game.EntityMixin.RangedAttacker = {
         }
       }
     }
-    Game.TimeEngine.unlock();
     return false;
   }
 };
