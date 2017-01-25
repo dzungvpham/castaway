@@ -12,8 +12,10 @@ Game.EntityGenerator.learn({
   element: ["fire", "water", "earth", "wind", "lightning"],
   elementArmor: {fire: 5},
   inventoryCapacity: 3,
+  pushDistance: 1,
+  pushChance: 80,
   mixins: ["PlayerActor", "PlayerMessager", "Sight", "Directed", "MapMemory", "WalkerCorporeal",
-   "Chronicle", "HitPoints", "RangedAttacker", "Elemental", "Defense", "InventoryHolder"]
+   "Chronicle", "HitPoints", "RangedAttacker", "Elemental", "Defense", "InventoryHolder", "CombatPushBack"]
 });
 
 Game.EntityGenerator.learn({
@@ -22,7 +24,7 @@ Game.EntityGenerator.learn({
   maxHP: 10,
   element: ["water"],
   elementArmor: {fire: 5, earth: -5},
-  mixins: ["HitPoints", "Elemental", "Defense"]
+  mixins: ["HitPoints", "Elemental", "Defense", "CombatPhysics"]
 });
 
 Game.EntityGenerator.learn({
@@ -31,7 +33,7 @@ Game.EntityGenerator.learn({
   maxHP: 10,
   element: ["earth"],
   elementArmor: {lightning: -5, water: 5},
-  mixins: ["HitPoints", "WanderActor", "WalkerCorporeal", "Elemental", "Defense", "MeleeAttacker"]
+  mixins: ["HitPoints", "WanderActor", "WalkerCorporeal", "Elemental", "Defense", "MeleeAttacker", "CombatPhysics"]
 });
 
 Game.EntityGenerator.learn({
@@ -40,7 +42,7 @@ Game.EntityGenerator.learn({
   maxHP: 10,
   element: ["lightning"],
   elementArmor: {wind: -5, earth: 5},
-  mixins: ["HitPoints", "WanderActor", "WalkerCorporeal", "MeleeAttacker", "Elemental", "Defense"]
+  mixins: ["HitPoints", "WanderActor", "WalkerCorporeal", "MeleeAttacker", "Elemental", "Defense", "CombatPhysics"]
 });
 
 Game.EntityGenerator.learn({
@@ -54,5 +56,5 @@ Game.EntityGenerator.learn({
   elementArmor: {wind: 5, water: -5},
   meleeAttackActionDuration: 3000,
   wanderChaserActionDuration: 1200,
-  mixins: ["HitPoints", "Sight", "WalkerCorporeal", "MeleeAttacker", "WanderChaserActor", "Elemental", "Defense"]
+  mixins: ["HitPoints", "Sight", "WalkerCorporeal", "MeleeAttacker", "WanderChaserActor", "Elemental", "Defense", "CombatPhysics"]
 });

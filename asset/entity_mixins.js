@@ -414,16 +414,21 @@ Game.EntityMixin.RangedAttacker = {
         var hit = this.checkShootPath();
         if (!hit) {
           return false;
-        } else if (hit == 'wallTile') {
-          Game.Message.send("You hit the wall");
+        } else if (typeof hit == 'string') {
+          Game.Message.ageMessages();
+          Game.Message.send("You hit " + hit);
         } else {
           var flag = hit.raiseSymbolActiveEvent("calcHit", {hitChance: this.getRangedHitChance()}).targetHit[0];
           if (flag) {
+            if (this.hasMixin("CombatPushBack")) {
+              this.raiseSymbolActiveEvent("pushBack", {pusher: this, pushee: hit});
+            }
             var damage = this.getRangedAttackPower();
             if (this.hasMixin('Elemental') && hit.hasMixin("Defense")) {
               damage = hit.raiseSymbolActiveEvent('calcDamage', {element: this.getCurrentElement(), attackPower: damage}).damage;
             }
             hit.raiseSymbolActiveEvent('attacked', {attacker: this, attackPower: damage});
+
           } else {
             this.raiseSymbolActiveEvent("attackMissed", {target: hit});
             hit.raiseSymbolActiveEvent("attackDodged", {attacker: this});
@@ -458,32 +463,19 @@ Game.EntityMixin.RangedAttacker = {
     if (this.hasMixin("Directed")) {
       Game.TimeEngine.lock();
       var dir = this.getDirection();
-      var dx = 0;
-      var dy = 0;
+      var deltas = Game.util.getDirectionalDeltas(dir);
+      if (deltas) {
+        var dx = deltas.dx;
+        var dy = deltas.dy;
+      } else {
+        return false;
+      }
+
       var targetX = this.getX();
       var targetY = this.getY();
-      switch (dir) {
-        case "north":
-          dx = 0;
-          dy = -1;
-          break;
-        case "south":
-          dx = 0;
-          dy = 1;
-          break;
-        case "west":
-          dx = -1;
-          dy = 0;
-          break;
-        case "east":
-          dx = 1;
-          dy = 0;
-          break;
-        default:
-          return false;
-      }
       var actor = this;
       var step = 0;
+
       while (true) {
         step++;
         targetX += dx;
@@ -495,11 +487,11 @@ Game.EntityMixin.RangedAttacker = {
             actor.raiseSymbolActiveEvent('attackAnimationDone');
           }, 1);
           return false;
-        } else if (tile.getName() == 'wallTile') {
+        } else if (!tile.isWalkable()) {
           setTimeout(function() {
             actor.raiseSymbolActiveEvent('attackAnimationDone');
           }, 1);
-          return 'wallTile';
+          return tile.getName();
         }
         var entity = this.getMap().getEntity(targetX, targetY);
         if (entity) {

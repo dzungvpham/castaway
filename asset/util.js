@@ -134,5 +134,47 @@ Game.util = {
   		rgb += ("00"+c).substr(c.length);
   	}
   	return rgb;
+  },
+
+  getDirectionalDeltas: function(dir) {
+    var deltaX = 0;
+    var deltaY = 0;
+    switch (dir) {
+      case "north":
+        deltaX = 0;
+        deltaY = -1;
+        break;
+      case "south":
+        deltaX = 0;
+        deltaY = 1;
+        break;
+      case "west":
+        deltaX = -1;
+        deltaY = 0;
+        break;
+      case "east":
+        deltaX = 1;
+        deltaY = 0;
+        break;
+      case "northwest":
+        deltaX = -1;
+        deltaY = -1;
+        break;
+      case "southwest":
+        deltaX = -1;
+        deltaY = 1;
+        break;
+      case "northeast":
+        deltaX = 1;
+        deltaY = -1;
+        break;
+      case "southeast":
+        deltaX = 1;
+        deltaY = 1;
+        break;
+      default:
+        return false;
+    }
+    return {dx: deltaX, dy: deltaY};
   }
 };

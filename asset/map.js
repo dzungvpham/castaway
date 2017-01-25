@@ -77,7 +77,6 @@ Game.Map.prototype.updateEntityLocation = function(entity) {
   var origPos = this.attr._locationsByEntity[entity.getID()];
   if (origPos) {
     delete this.attr._entitiesByLocation[origPos];
-    //this.attr._entitiesByLocation[origPos] = undefined;
   }
   var newPos = entity.getPos();
   this.attr._entitiesByLocation[newPos.x + "," + newPos.y] = entity.getID();
