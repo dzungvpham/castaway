@@ -103,7 +103,7 @@ Game.EntityMixin.CombatMultipleProjectiles = {
       "shootMultiple": function(data) {
         var hitResult = this.checkShootPaths();
         for (var i = 0; i < hitResult.length; i++) {
-          
+
         }
       }
     }
@@ -234,4 +234,25 @@ Game.EntityMixin.CombatMultipleProjectiles = {
     }
     return false;
   }
+};
+
+Game.EntityMixin.CombatDefensive = {
+  META: {
+    mixinName: "CombatDefensive",
+    mixinGroup: "CombatBehavior",
+
+    listeners: {
+      "attacked": function(data) {
+        if (this.hasMixin("WalkerCorporeal") && !this.hasMixin("WanderChaserActor")) {
+          if (!this.hasMixin("WanderActor")) {
+              this.addMixin("WanderChaserActor", {});
+          } else {
+
+          }
+        }
+        return;
+      }
+    }
+  }
+
 };

@@ -25,7 +25,7 @@ Game.EntityGenerator.learn({
   maxHP: 10,
   element: ["water"],
   elementArmor: {fire: 5, earth: -5},
-  mixins: ["HitPoints", "Elemental", "Defense", "CombatPhysics"]
+  mixins: ["HitPoints", "WalkerCorporeal", "MeleeAttacker", "Elemental", "Defense", "CombatPhysics", "CombatDefensive"]
 });
 
 Game.EntityGenerator.learn({
