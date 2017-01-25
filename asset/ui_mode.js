@@ -55,8 +55,10 @@ Game.UIMode.gamePersistence = {
     }
     switch (actionBinding.actionKey) {
       case "PERSISTENCE_SAVE":
-        Game.getDisplay("main").drawText(30, 18, "Saving....");
-        setTimeout(function() {Game.getCurUIMode().saveGame();}, 100);
+        if (Game.isStarted()) {
+          Game.getDisplay("main").drawText(30, 18, "Saving....");
+          setTimeout(function() {Game.getCurUIMode().saveGame();}, 100);
+        }
         break;
       case "PERSISTENCE_LOAD":
         Game.getDisplay("main").drawText(30, 18, "Loading....");
@@ -270,22 +272,21 @@ Game.UIMode.gamePlay = {
     var fg = Game.UIMode.DEFAULT_FG;
     var bg = Game.UIMode.DEFAULT_BG;
     var avatar = this.getAvatar();
-    display.drawText(3, 1, "HP: " + avatar.getCurrentHP() + "/" + avatar.getMaxHP());
-    display.draw(1, 1, "❤️️");
-    display.drawText(3, 2, "Base Damage: " + avatar.getRangedAttackPower());
-    display.draw(1, 2, "💥");
-    display.drawText(3, 3, "Accuracy: " + avatar.getRangedHitChance() + "%");
-    display.draw(1, 3, "🎯");
-    display.drawText(3, 4, "Evasion: " + avatar.getDodgeChance() + "%");
-    display.draw(1, 4, "🔰");
-    display.drawText(3, 5, "Sight: " + avatar.getSightRadius());
-    display.draw(1, 5, "👁️");
-    display.drawText(3, 6, "Chakra:   " + "%c{" + avatar.getElementColor() + "}%b{#000}"  + avatar.getCurrentElement());
-    display.draw(1, 6, "☄️");
-    display.draw(11, 6, avatar.getElementIcon());
+    display.drawText(1, 1, "--- STATS ---")
+    display.drawText(3, 2, "HP: " + avatar.getCurrentHP() + "/" + avatar.getMaxHP());
+    display.draw(1, 2, "❤️️");
+    display.drawText(3, 3, "Base Damage: " + avatar.getRangedAttackPower());
+    display.draw(1, 3, "💥");
+    display.drawText(3, 4, "Accuracy: " + avatar.getRangedHitChance() + "%");
+    display.draw(1, 4, "🎯");
+    display.drawText(3, 5, "Evasion: " + avatar.getDodgeChance() + "%");
+    display.draw(1, 5, "🔰");
+    display.drawText(3, 6, "Sight: " + avatar.getSightRadius());
+    display.draw(1, 6, "👁️");
     display.drawText(3, 7, "Killed: " + avatar.getKillCount());
     display.draw(1, 7, "☠️");
-    display.drawText( 1, 9, "--- ARMOR ---");
+
+    display.drawText(1, 9, "--- ARMOR ---");
     display.drawText(3, 10, "Base Armor: " + avatar.getNormalArmor());
     display.draw(1, 10, "🛡️");
     display.drawText(3, 11, "Fire: " + avatar.getElementArmor("fire"));
@@ -298,6 +299,17 @@ Game.UIMode.gamePlay = {
     display.draw(1, 14, avatar.getElementIcon("wind"));
     display.drawText(3, 15, "Lightning: " + avatar.getElementArmor("lightning"));
     display.draw(1, 15, avatar.getElementIcon("lightning"));
+
+    display.drawText(1, 17, "--- CHAKRA ---");
+    display.drawText(3, 18, "Current:   " + "%c{" + avatar.getElementColor() + "}%b{#000}"  + avatar.getCurrentElement());
+    display.draw(1, 18, "☄️");
+    display.draw(12, 18, avatar.getElementIcon());
+    var strong = avatar.getStrongAgainst();
+    var weak = avatar.getWeakAgainst();
+    display.drawText(1, 19, "Strong vs:   " + "%c{" + avatar.getElementColor(strong) + "}%b{#000}" + strong);
+    display.drawText(1, 20, "Weak vs:     " + "%c{" + avatar.getElementColor(weak) + "}%b{#000}" + weak);
+    display.draw(12, 19, avatar.getElementIcon(strong));
+    display.draw(12, 20, avatar.getElementIcon(weak));
   },
 
   moveAvatar: function (pdx, pdy) {
@@ -347,6 +359,7 @@ Game.UIMode.gamePlay = {
         tookTurn = this.moveAvatar(0, 1);
         break;
       case "SHOOT":
+        this.getAvatar().raiseSymbolActiveEvent("specialTerrain", {tile: this.getMap().getTile(this.getAvatar().getPos())});
         this.getAvatar().raiseSymbolActiveEvent("shoot");
         tookTurn = true;
         break;

@@ -496,23 +496,9 @@ Game.EntityMixin.RangedAttacker = {
           Game.Symbol.PROJECTILE.draw(Game.getDisplay("main"), x, y);
         }, 20*step, fg, tile, drawX, drawY);
 
-        if (items.length == 1) {
-          setTimeout(function(item, bg, x, y) {
-            var origBg = item.getBg();
-            item.setBg(bg);
-            item.draw(Game.getDisplay("main"), x, y);
-            item.setBg(origBg);
-          }, 20*step + 20, items[0], tile.getBg(), drawX, drawY);
-        } else if (items.length >= 2){
-          setTimeout(function(bg, x, y) {
-            Game.Symbol.ITEM_PILE.setBg(bg);
-            Game.Symbol.ITEM_PILE.draw(Game.getDisplay("main"), x, y);
-          }, 20*step + 20, tile.getBg(), drawX, drawY);
-        } else {
-          setTimeout(function(tile, x, y) {
-            tile.draw(Game.getDisplay("main"), x, y);
-          }, 20*step + 20, tile, drawX, drawY);
-        }
+        setTimeout(function(x, y) {
+          Game.refresh();
+        }, 20*step + 20);
       }
     }
     return false;
@@ -833,7 +819,7 @@ Game.EntityMixin.Elemental = {
       element: ["fire"],
       currentElemIndex: 0,
       elementColor: {fire: '#f00', water: '#00bcf2', earth: '#940', wind: '#fff', lightning: '#ff0'},
-      elementIcon: {fire: '🔥', water: '💦', earth: '🗻', wind: '💨', lightning: '⚡'}
+      elementIcon: {fire: '🔥', water: '💦', earth: '🌑', wind: '💨', lightning: '⚡'}
     },
 
     init: function(template) {
@@ -894,6 +880,36 @@ Game.EntityMixin.Elemental = {
       this.attr._Elemental_attr.currentElemIndex = this.attr._Elemental_attr.element.length - 1;
     }
   },
+
+  getStrongAgainst() {
+    switch(this.getCurrentElement()) {
+      case "fire":
+        return "wind";
+      case "water":
+        return "fire";
+      case "earth":
+        return "water";
+      case "wind":
+        return "lightning";
+      case "lightning":
+        return "earth";
+    }
+  },
+
+  getWeakAgainst() {
+    switch(this.getCurrentElement()) {
+      case "fire":
+        return "water";
+      case "water":
+        return "earth";
+      case "earth":
+        return "lightning";
+      case "wind":
+        return "fire";
+      case "lightning":
+        return "wind";
+    }
+  }
 };
 
 Game.EntityMixin.Defense = {
@@ -1097,3 +1113,14 @@ Game.EntityMixin.InventoryHolder = {
     return dropResult;
   }
 };
+
+Game.EntityMixin.HitPointsRegenerate = {
+  META: {
+    mixinName: "HitPointsRegenerate",
+    mixinGroup: "HitPoints",
+    stateNamespace: "_HitPoints_Regenerate",
+    stateModel: {
+      regenerateAmount: 1;
+    }
+  }
+}

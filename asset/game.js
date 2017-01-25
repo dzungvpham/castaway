@@ -23,6 +23,7 @@ var Game = {
   _PERSISTENCE_NAMESPACE: "ws2017",
   _randomSeed: null,
   _DISPLAY_SPACING: 1.1,
+  _fontSize: 15,
   _tileWidth: 32,
   _tileHeight: 32,
   _squareRatio: false,
@@ -63,6 +64,7 @@ var Game = {
         width: this.display[display_key].w,
         height: this.display[display_key].h,
         spacing: this._DISPLAY_SPACING,
+        fontSize: this._fontSize,
         tileWidth: this._tileWidth,
         tileHeight: this._tileHeight,
         forceSquareRatio: this._squareRatio
