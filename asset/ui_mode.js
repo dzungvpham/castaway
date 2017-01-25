@@ -14,7 +14,7 @@ Game.UIMode.gameStart = {
   },
 
   render: function(display) {
-    display.drawText(8, 1, Game.UIMode.DEFAULT_COLOR_STR + Game.Misc.gameStart);
+    display.drawText(8, 1, Game.UIMode.DEFAULT_COLOR_STR + Game.AsciiArt.gameStart);
     display.drawText(30, 15, Game.UIMode.DEFAULT_COLOR_STR + "Press any key to continue");
   },
 
@@ -40,7 +40,7 @@ Game.UIMode.gamePersistence = {
   },
 
   render: function(display) {
-    display.drawText(8, 1, Game.UIMode.DEFAULT_COLOR_STR + Game.Misc.gameStart);
+    display.drawText(8, 1, Game.UIMode.DEFAULT_COLOR_STR + Game.AsciiArt.gameStart);
     if (Game.isStarted()) {
       display.drawText(20, 15, Game.UIMode.DEFAULT_COLOR_STR + "Press N for new game, S to save, L to load, ESC to resume");
     } else {
@@ -270,19 +270,34 @@ Game.UIMode.gamePlay = {
     var fg = Game.UIMode.DEFAULT_FG;
     var bg = Game.UIMode.DEFAULT_BG;
     var avatar = this.getAvatar();
-    display.drawText(1, 1, "HP: " + avatar.getCurrentHP() + "/" + avatar.getMaxHP());
-    display.drawText(1, 2, "Base Damage: " + avatar.getRangedAttackPower());
-    display.drawText(1, 3, "Accuracy: " + avatar.getRangedHitChance() + "%");
-    display.drawText(1, 4, "Evasion: " + avatar.getDodgeChance() + "%");
-    display.drawText(1, 5, "Sight: " + avatar.getSightRadius());
-    display.drawText(1, 6, "Chakra: " + avatar.getCurrentElement());
-    display.drawText(1, 7, "Killed: " + avatar.getKillCount());
-    // display.drawText(1, 7, "Physical Armor: " + avatar.getNormalArmor());
-    // display.drawText(1, 8, "Fire Armor: " + avatar.getElementArmor("fire"));
-    // display.drawText(1, 9, "Water Armor: " + avatar.getElementArmor("water"));
-    // display.drawText(1, 10, "Earth Armor: " + avatar.getElementArmor("earth"));
-    // display.drawText(1, 11, "Wind Armor: " + avatar.getElementArmor("wind"));
-    // display.drawText(1, 12, "Lightning Armor: " + avatar.getElementArmor("lightning"));
+    display.drawText(3, 1, "HP: " + avatar.getCurrentHP() + "/" + avatar.getMaxHP());
+    display.draw(1, 1, "❤️️");
+    display.drawText(3, 2, "Base Damage: " + avatar.getRangedAttackPower());
+    display.draw(1, 2, "💥");
+    display.drawText(3, 3, "Accuracy: " + avatar.getRangedHitChance() + "%");
+    display.draw(1, 3, "🎯");
+    display.drawText(3, 4, "Evasion: " + avatar.getDodgeChance() + "%");
+    display.draw(1, 4, "🔰");
+    display.drawText(3, 5, "Sight: " + avatar.getSightRadius());
+    display.draw(1, 5, "👁️");
+    display.drawText(3, 6, "Chakra:   " + "%c{" + avatar.getElementColor() + "}%b{#000}"  + avatar.getCurrentElement());
+    display.draw(1, 6, "☄️");
+    display.draw(11, 6, avatar.getElementIcon());
+    display.drawText(3, 7, "Killed: " + avatar.getKillCount());
+    display.draw(1, 7, "☠️");
+    display.drawText( 1, 9, "--- ARMOR ---");
+    display.drawText(3, 10, "Base Armor: " + avatar.getNormalArmor());
+    display.draw(1, 10, "🛡️");
+    display.drawText(3, 11, "Fire: " + avatar.getElementArmor("fire"));
+    display.draw(1, 11, avatar.getElementIcon("fire"));
+    display.drawText(3, 12, "Water: " + avatar.getElementArmor("water"));
+    display.draw(1, 12, avatar.getElementIcon("water"));
+    display.drawText(3, 13, "Earth: " + avatar.getElementArmor("earth"));
+    display.draw(1, 13, avatar.getElementIcon("earth"));
+    display.drawText(3, 14, "Wind: " + avatar.getElementArmor("wind"));
+    display.draw(1, 14, avatar.getElementIcon("wind"));
+    display.drawText(3, 15, "Lightning: " + avatar.getElementArmor("lightning"));
+    display.draw(1, 15, avatar.getElementIcon("lightning"));
   },
 
   moveAvatar: function (pdx, pdy) {
@@ -482,8 +497,9 @@ Game.UIMode.gameNextStage = {
 
 Game.UIMode.gameWin = {
   enter: function() {
-    Game.isStarted = false;
+    Game.UIMode.gamePlay.IS_STARTED = false;
     Game.TimeEngine.lock();
+    Game.Message.clear();
     Game.refresh();
   },
 
@@ -491,8 +507,9 @@ Game.UIMode.gameWin = {
   },
 
   render: function(display) {
-    display.drawText(5, 5, Game.UIMode.DEFAULT_COLOR_STR + "You won!");
-    display.drawText(5, 6, Game.UIMode.DEFAULT_COLOR_STR + "Press any key to go continue");
+    display.drawText(1, 1, Game.UIMode.DEFAULT_COLOR_STR + "You won!");
+    display.drawText(1, 2, Game.UIMode.DEFAULT_COLOR_STR + "Press any key to continue");
+    display.drawText(1, 3, Game.UIMode.DEFAULT_COLOR_STR + Game.AsciiArt.gameWin);
   },
 
   handleInput: function(inputType, inputData) {
@@ -504,7 +521,9 @@ Game.UIMode.gameWin = {
 
 Game.UIMode.gameLose = {
   enter: function() {
+    Game.UIMode.gamePlay.IS_STARTED = false;
     Game.TimeEngine.lock();
+    Game.Message.clear();
     Game.refresh();
   },
 
@@ -512,8 +531,9 @@ Game.UIMode.gameLose = {
   },
 
   render: function(display) {
-    display.drawText(5, 5, Game.UIMode.DEFAULT_COLOR_STR + "You lose!");
-    display.drawText(5, 6, Game.UIMode.DEFAULT_COLOR_STR + "Press any key to go continue");
+    display.drawText(1, 1, Game.UIMode.DEFAULT_COLOR_STR + "You lose!");
+    display.drawText(1, 2, Game.UIMode.DEFAULT_COLOR_STR + "Press any key to continue");
+    display.drawText(1, 3, Game.UIMode.DEFAULT_COLOR_STR + Game.AsciiArt.gameLose);
   },
 
   handleInput: function(inputType, inputData) {
@@ -575,7 +595,7 @@ Game.UIMode.LAYER_textReading = {
         Game.renderMain();
         return true;
       case "MISC":
-        this.setText(Game.Misc.Chi);
+        this.setText(Game.AsciiArt.Chi);
         Game.renderMain();
         return true;
     }

@@ -21,28 +21,8 @@ Game.EntityMixin.Sight = {
       'examine': function(data) {
         if (this.hasMixin("Directed")) {
           var dir = this.getDirection();
-          var dx = 0;
-          var dy = 0;
-          switch (dir) {
-            case "north":
-              dx = 0;
-              dy = -1;
-              break;
-            case "south":
-              dx = 0;
-              dy = 1;
-              break;
-            case "west":
-              dx = -1;
-              dy = 0;
-              break;
-            case "east":
-              dx = 1;
-              dy = 0;
-              break;
-            default:
-              return false;
-          }
+          var dx = Game.util.getDirectionalDeltas(dir).dx;
+          var dy = Game.util.getDirectionalDeltas(dir).dy;
           var targetX = this.getX() + dx;
           var targetY = this.getY() + dy;
           var map = this.getMap();
@@ -53,6 +33,7 @@ Game.EntityMixin.Sight = {
             return;
           }
           var item = map.getItems(targetX, targetY);
+          Game.Message.ageMessages();
           if (item.length == 1) {
             Game.Message.send(item[0].getDetailedDescription());
             return;
@@ -571,7 +552,7 @@ Game.EntityMixin.PlayerMessager = {
     listeners: {
       'walkForbidden': function(data) {
         Game.Message.ageMessages();
-        Game.Message.send("You cannot walk into the " + data.target.getName());
+        Game.Message.send("You cannot walk into " + data.target.getName());
       },
 
       'dealtDamage': function(data) {
@@ -851,7 +832,8 @@ Game.EntityMixin.Elemental = {
     stateModel: {
       element: ["fire"],
       currentElemIndex: 0,
-      elementColor: {fire: '#f00', water: '#00f', earth: '#940', wind: '#fff', lightning: '#ff0'}
+      elementColor: {fire: '#f00', water: '#00bcf2', earth: '#940', wind: '#fff', lightning: '#ff0'},
+      elementIcon: {fire: '🔥', water: '💦', earth: '💩', wind: '💨', lightning: '⚡'}
     },
 
     init: function(template) {
@@ -881,8 +863,15 @@ Game.EntityMixin.Elemental = {
     return this.attr._Elemental_attr.element[this.attr._Elemental_attr.currentElemIndex];
   },
 
-  getElementColor() {
-    var color = this.attr._Elemental_attr.elementColor[this.getCurrentElement()];
+  getElementColor(elem) {
+    var color = this.attr._Elemental_attr.elementColor[elem] || this.attr._Elemental_attr.elementColor[this.getCurrentElement()];
+    if (color != 'undefined') {
+      return color;
+    }
+  },
+
+  getElementIcon(elem) {
+    var color = this.attr._Elemental_attr.elementIcon[elem] || this.attr._Elemental_attr.elementIcon[this.getCurrentElement()];
     if (color != 'undefined') {
       return color;
     }
