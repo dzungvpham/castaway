@@ -273,7 +273,7 @@ Game.UIMode.gamePlay = {
     var bg = Game.UIMode.DEFAULT_BG;
     var avatar = this.getAvatar();
     display.drawText(1, 1, "--- STATS ---")
-    display.drawText(3, 2, "HP: " + avatar.getCurrentHP() + "/" + avatar.getMaxHP());
+    display.drawText(3, 2, "HP: " + avatar.getCurrentHP().toFixed(1) + "/" + avatar.getMaxHP().toFixed(1));
     display.draw(1, 2, "❤️️");
     display.drawText(3, 3, "Base Damage: " + avatar.getRangedAttackPower());
     display.draw(1, 3, "💥");
@@ -401,6 +401,7 @@ Game.UIMode.gamePlay = {
     Game.refresh();
     if (tookTurn) {
       if (this.getAvatar()) {
+        this.getAvatar().raiseSymbolActiveEvent("autoRegenerate");
         this.getAvatar().raiseSymbolActiveEvent('actionDone');
         if (this.checkWin()) {
           if (this.getCurrentStage() != "stage_3") {

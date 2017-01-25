@@ -4,6 +4,7 @@ Game.EntityGenerator.learn({
   name: 'avatar',
   chr: {north: '^', south: 'v', west: '<', east: '>'},
   maxHP: 100,
+  regenerateAmount: 0.1,
   sightRadius: 10,
   rangedAttackPower: 10,
   rangedHitChance: 80,
@@ -15,7 +16,7 @@ Game.EntityGenerator.learn({
   pushDistance: 1,
   pushChance: 80,
   mixins: ["PlayerActor", "PlayerMessager", "Sight", "Directed", "MapMemory", "WalkerCorporeal",
-   "Chronicle", "HitPoints", "RangedAttacker", "Elemental", "Defense", "InventoryHolder", "CombatPushBack"]
+   "Chronicle", "HitPoints", "HitPointsRegenerate", "RangedAttacker", "Elemental", "Defense", "InventoryHolder", "CombatPushBack"]
 });
 
 Game.EntityGenerator.learn({

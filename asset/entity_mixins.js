@@ -1117,10 +1117,41 @@ Game.EntityMixin.InventoryHolder = {
 Game.EntityMixin.HitPointsRegenerate = {
   META: {
     mixinName: "HitPointsRegenerate",
-    mixinGroup: "HitPoints",
+    mixinGroup: "Passive",
     stateNamespace: "_HitPoints_Regenerate",
     stateModel: {
-      regenerateAmount: 1;
+      regenerateAmount: 0,
+      regenerateTurn: 0
+    },
+
+    init: function(template) {
+      this.attr._HitPoints_Regenerate.regenerateAmount = template.regenerateAmount || 0;
+      this.attr._HitPoints_Regenerate.regenerateTurn = template.regenerateTurn || 3;
+    },
+
+    listeners: {
+      "autoRegenerate": function(data) {
+        if (this.hasMixin("HitPoints") && this.hasMixin("Chronicle")) {
+          if (this.getTurn() % this.getRegenerateTurn() == 0)
+          this.recoverHits(this.getRegenerateAmount());
+        }
+      }
     }
+  },
+
+  getRegenerateAmount: function() {
+    return this.attr._HitPoints_Regenerate.regenerateAmount;
+  },
+
+  setRegenerateAmount: function(n) {
+    this.attr._HitPoints_Regenerate.regenerateAmount = n;
+  },
+
+  getRegenerateTurn: function() {
+    return this.attr._HitPoints_Regenerate.regenerateTurn;
+  },
+
+  setRegenerateTurn: function(n) {
+    this.attr._HitPoints_Regenerate.regenerateTurn = n;
   }
 }
