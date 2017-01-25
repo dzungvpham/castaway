@@ -833,7 +833,7 @@ Game.EntityMixin.Elemental = {
       element: ["fire"],
       currentElemIndex: 0,
       elementColor: {fire: '#f00', water: '#00bcf2', earth: '#940', wind: '#fff', lightning: '#ff0'},
-      elementIcon: {fire: '🔥', water: '💦', earth: '💩', wind: '💨', lightning: '⚡'}
+      elementIcon: {fire: '🔥', water: '💦', earth: '🗻', wind: '💨', lightning: '⚡'}
     },
 
     init: function(template) {

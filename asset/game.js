@@ -41,12 +41,12 @@ var Game = {
       o: null
     },
     avatar: {
-      w: 20,
+      w: 24,
       h: 24,
       o: null
     },
     message: {
-      w: 100,
+      w: 104,
       h: 10,
       o: null
     }
