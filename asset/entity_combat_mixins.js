@@ -103,7 +103,7 @@ Game.EntityMixin.CombatMultipleProjectiles = {
       "shootMultiple": function(data) {
         var hitResult = this.checkShootPaths();
         for (var i = 0; i < hitResult.length; i++) {
-          
+
         }
       }
     }
@@ -234,4 +234,64 @@ Game.EntityMixin.CombatMultipleProjectiles = {
     }
     return false;
   }
+};
+
+Game.EntityMixin.CombatDefensive = {
+  META: { //Basic defensive behavior: Chases player if attacked, dumbly flees away if HP falls too low
+    mixinName: "CombatDefensive",
+    mixinGroup: "CombatBehavior",
+
+    listeners: {
+      "attacked": function(data) {
+        var provoked = false;
+        var flee = false;
+        if (this.hasMixin("WalkerCorporeal") && !this.hasMixin("WanderChaserActor")) {
+          if (this.getPercentageHP() > 0.3) {
+            if (!this.hasMixin("WanderActor")) {
+                this.addMixin("WanderChaserActor", {
+                  wanderChaserActionDuration: 1200
+                });
+                provoked = true;
+                flee = false;
+            } else {
+              this.removeMixin("WanderActor");
+              this.addMixin("WanderChaserActor", {
+                wanderChaserActionDuration: 1200
+              });
+              provoked = true;
+              flee = false;
+            }
+          } else {
+            if (!this.hasMixin("WanderActor")) {
+                this.addMixin("WanderChaserActor", {
+                  wanderChaserActionDuration: 1200,
+                  reverse: true
+                });
+                provoked = false;
+                flee = true;
+            } else {
+              this.removeMixin("WanderActor");
+              this.addMixin("WanderChaserActor", {
+                wanderChaserActionDuration: 1200,
+                reverse: true
+              });
+              provoked = false;
+              flee = true;
+            }
+          }
+        } else if (this.hasMixin("WalkerCorporeal") && this.hasMixin("WanderChaserActor") && this.getPercentageHP() < 0.3) {
+          this.setReverseChaser(true);
+          provoked = false;
+          flee = true;
+        }
+        if (provoked) {
+          Game.Message.send(this.getName() + " is provoked");
+        }
+        if (flee) {
+          Game.Message.send(this.getName() + " is fleeing");
+        }
+      }
+    }
+  }
+
 };

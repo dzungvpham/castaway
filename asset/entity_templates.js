@@ -4,6 +4,7 @@ Game.EntityGenerator.learn({
   name: 'avatar',
   chr: {north: '^', south: 'v', west: '<', east: '>'},
   maxHP: 100,
+  regenerateAmount: 0.1,
   sightRadius: 10,
   rangedAttackPower: 10,
   rangedHitChance: 80,
@@ -15,7 +16,7 @@ Game.EntityGenerator.learn({
   pushDistance: 1,
   pushChance: 80,
   mixins: ["PlayerActor", "PlayerMessager", "Sight", "Directed", "MapMemory", "WalkerCorporeal",
-   "Chronicle", "HitPoints", "RangedAttacker", "Elemental", "Defense", "InventoryHolder", "CombatPushBack"]
+   "Chronicle", "HitPoints", "HitPointsRegenerate", "RangedAttacker", "Elemental", "Defense", "InventoryHolder", "CombatPushBack"]
 });
 
 Game.EntityGenerator.learn({
@@ -24,7 +25,7 @@ Game.EntityGenerator.learn({
   maxHP: 10,
   element: ["water"],
   elementArmor: {fire: 5, earth: -5},
-  mixins: ["HitPoints", "Elemental", "Defense", "CombatPhysics"]
+  mixins: ["HitPoints", "WalkerCorporeal", "MeleeAttacker", "Elemental", "Defense", "CombatPhysics", "CombatDefensive"]
 });
 
 Game.EntityGenerator.learn({
@@ -33,7 +34,7 @@ Game.EntityGenerator.learn({
   maxHP: 10,
   element: ["earth"],
   elementArmor: {lightning: -5, water: 5},
-  mixins: ["HitPoints", "WanderActor", "WalkerCorporeal", "Elemental", "Defense", "MeleeAttacker", "CombatPhysics"]
+  mixins: ["HitPoints", "WanderActor", "WalkerCorporeal", "Elemental", "Defense", "MeleeAttacker", "CombatPhysics", "CombatDefensive"]
 });
 
 Game.EntityGenerator.learn({
@@ -49,7 +50,7 @@ Game.EntityGenerator.learn({
   name: 'fire spirit',
   //chr: '~',
   chr: '🔥',
-  maxHP: 30,
+  maxHP: 5,
   sightRadius: 5,
   meleeAttackPower: 10,
   element: ["fire"],

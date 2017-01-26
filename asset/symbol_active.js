@@ -124,6 +124,39 @@ Game.SymbolActive.prototype.addMixin = function(mixinName, template) {
   }
 };
 
+Game.SymbolActive.prototype.removeMixin = function(mixinName) {
+  var index = this._mixinsName.indexOf(mixinName);
+  if (index > -1) {
+    this._mixinsName.splice(index, 1);
+
+    var mixin;
+    for (var i = 0; i < this._mixins.length; i++) {
+      if (this._mixins[i].META.mixinName == mixinName) {
+        mixin = this._mixins[i];
+        break;
+      }
+    }
+
+    if (mixin.META.mixinGroup == "Actor") {
+      Game.Scheduler.remove(this);
+    }
+    this._mixinTracker[mixin.META.mixinName] = false;
+    this._mixinTracker[mixin.META.mixinGroup] = false; //Needs to be fixed later
+
+    for (var mixinProp in mixin) {
+      if (mixinProp != 'META' && mixin.hasOwnProperty(mixinProp)) {
+        delete this[mixinProp];
+      }
+    }
+
+    if (mixin.META.hasOwnProperty('stateNamespace')) {
+      delete this.attr[mixin.META.stateNamespace];
+    }
+
+    this._mixins.splice(index, 1);
+  }
+};
+
 Game.SymbolActive.prototype.raiseSymbolActiveEvent = function(evt, data) {
   var response = {};
   for (var i = 0; i < this._mixins.length; i++) {

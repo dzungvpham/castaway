@@ -254,6 +254,59 @@ Game.Map.prototype.renderOn = function (display, camX, camY, renderOptions) {
       }
     }
   }
+
+  // for (var x = 0; x < dim.w; x++) {
+  //   for (var y = 0; y < dim.h; y++) {
+  //
+  //     var mapPos = {x: x + xStart, y: y + yStart};
+  //     var mapCoord = mapPos.x + ',' + mapPos.y;
+  //     if (!((checkCellVisible && visibleCells[mapCoord]) || (checkCellMasked && maskedCells[mapCoord]))) {
+  //       if (!visibleCells[mapPos.x + ',' + mapPos.y]) {
+  //         continue; //Skip this loop if current pos is not to be shown (i.e not remembered)
+  //       }
+  //     }
+  //
+  //     var tile = this.getTile(mapPos);
+  //
+  //     var items = this.getItems(mapPos);
+  //     if (items.length == 1) {
+  //       if (showVisibleItems && visibleCells[mapCoord]) {
+  //         var origBg = items[0].getBg();
+  //         items[0].setBg(tile.getBg());
+  //         items[0].draw(display, x, y);
+  //         items[0].setBg(origBg);
+  //       } else if (showMaskedItems && maskedCells[mapCoord]) {
+  //         var origBg = items[0].getBg();
+  //         items[0].setBg(tile.getBg());
+  //         items[0].draw(display, x, y, true);
+  //         items[0].setBg(origBg);
+  //       }
+  //     } else if (items.length > 1) {
+  //       if (showVisibleItems && visibleCells[mapCoord]) {
+  //         var origBg = Game.Symbol.ITEM_PILE.getBg();
+  //         Game.Symbol.ITEM_PILE.setBg(tile.getBg());
+  //         Game.Symbol.ITEM_PILE.draw(display, x, y);
+  //         Game.Symbol.ITEM_PILE.setBg(origBg);
+  //       } else if (showMaskedItems && maskedCells[mapCoord]) {
+  //         var origBg = Game.Symbol.ITEM_PILE.getBg();
+  //         Game.Symbol.ITEM_PILE.setBg(tile.getBg());
+  //         Game.Symbol.ITEM_PILE.draw(display, x, y, true);
+  //         Game.Symbol.ITEM_PILE.setBg(origBg);
+  //       }
+  //     }
+  //
+  //     var entity = this.getEntity(mapPos);
+  //     if (entity) {
+  //       if (showVisibleEntities && visibleCells[mapCoord]) {
+  //         entity.setBg(tile.getBg());
+  //         entity.draw(display, x, y);
+  //       } else if (showMaskedEntities && maskedCells[mapCoord]) {
+  //         entity.setBg(tile.getBg());
+  //         entity.draw(display, x, y, true);
+  //       }
+  //     }
+  //   }
+  // }
 };
 
 Game.Map.prototype.toJSON = function() {

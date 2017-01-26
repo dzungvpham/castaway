@@ -308,6 +308,10 @@ Game.EntityMixin.HitPoints = {
     this.attr._HitPoints_attr.curHP = n;
   },
 
+  getPercentageHP: function() {
+    return this.attr._HitPoints_attr.curHP/this.attr._HitPoints_attr.maxHP;
+  },
+
   takeHits: function (amt) {
     this.attr._HitPoints_attr.curHP -= amt;
   },
@@ -496,23 +500,9 @@ Game.EntityMixin.RangedAttacker = {
           Game.Symbol.PROJECTILE.draw(Game.getDisplay("main"), x, y);
         }, 20*step, fg, tile, drawX, drawY);
 
-        if (items.length == 1) {
-          setTimeout(function(item, bg, x, y) {
-            var origBg = item.getBg();
-            item.setBg(bg);
-            item.draw(Game.getDisplay("main"), x, y);
-            item.setBg(origBg);
-          }, 20*step + 20, items[0], tile.getBg(), drawX, drawY);
-        } else if (items.length >= 2){
-          setTimeout(function(bg, x, y) {
-            Game.Symbol.ITEM_PILE.setBg(bg);
-            Game.Symbol.ITEM_PILE.draw(Game.getDisplay("main"), x, y);
-          }, 20*step + 20, tile.getBg(), drawX, drawY);
-        } else {
-          setTimeout(function(tile, x, y) {
-            tile.draw(Game.getDisplay("main"), x, y);
-          }, 20*step + 20, tile, drawX, drawY);
-        }
+        setTimeout(function(x, y) {
+          Game.refresh();
+        }, 20*step + 20);
       }
     }
     return false;
@@ -753,18 +743,20 @@ Game.EntityMixin.WanderActor = {
 
 Game.EntityMixin.WanderChaserActor = {
   META: {
-    mixinName: 'WanderActorChaser',
+    mixinName: 'WanderChaserActor',
     mixinGroup: 'Actor',
     stateNamespace: '_WanderChaserActor_attr',
     stateModel:  {
       baseActionDuration: 1000,
-      currentActionDuration: 1000
+      currentActionDuration: 1000,
+      reverse: false
     },
 
     init: function (template) {
       Game.Scheduler.add(this, true, Game.util.randomInt(2, this.getBaseActionDuration()));
       this.attr._WanderChaserActor_attr.baseActionDuration = template.wanderChaserActionDuration || 1000;
       this.attr._WanderChaserActor_attr.currentActionDuration = this.attr._WanderChaserActor_attr.baseActionDuration;
+      this.attr._WanderChaserActor_attr.reverse = template.reverse || false;
     }
   },
 
@@ -784,6 +776,14 @@ Game.EntityMixin.WanderChaserActor = {
     this.attr._WanderChaserActor_attr.currentActionDuration = n;
   },
 
+  isReverseChaser: function() {
+    return this.attr._WanderChaserActor_attr.reverse;
+  },
+
+  setReverseChaser: function(bool) {
+    this.attr._WanderChaserActor_attr.reverse = bool;
+  },
+
   getMoveDelta: function () {
     var avatar = Game.getAvatar();
     var senseResp = this.raiseSymbolActiveEvent("senseEntity", {entity: avatar});
@@ -796,7 +796,7 @@ Game.EntityMixin.WanderChaserActor = {
           return false;
         }
         return map.getTile(x, y).isWalkable();
-      }, {topology: 8});
+      }, {topology: 4});
       var count = 0;
       var moveDelta = {x: 0, y: 0};
       path.compute(this.getX(), this.getY(), function(x, y) {
@@ -806,6 +806,10 @@ Game.EntityMixin.WanderChaserActor = {
         }
         count++;
       });
+      if (this.isReverseChaser()) {
+        moveDelta.x *= -1;
+        moveDelta.y *= -1;
+      }
       return moveDelta;
     }
     return Game.util.positionsAdjacentTo({x: 0, y: 0}).random(); //If no entity found
@@ -833,7 +837,7 @@ Game.EntityMixin.Elemental = {
       element: ["fire"],
       currentElemIndex: 0,
       elementColor: {fire: '#f00', water: '#00bcf2', earth: '#940', wind: '#fff', lightning: '#ff0'},
-      elementIcon: {fire: '🔥', water: '💦', earth: '🗻', wind: '💨', lightning: '⚡'}
+      elementIcon: {fire: '🔥', water: '💦', earth: '🌑', wind: '💨', lightning: '⚡'}
     },
 
     init: function(template) {
@@ -894,6 +898,36 @@ Game.EntityMixin.Elemental = {
       this.attr._Elemental_attr.currentElemIndex = this.attr._Elemental_attr.element.length - 1;
     }
   },
+
+  getStrongAgainst() {
+    switch(this.getCurrentElement()) {
+      case "fire":
+        return "wind";
+      case "water":
+        return "fire";
+      case "earth":
+        return "water";
+      case "wind":
+        return "lightning";
+      case "lightning":
+        return "earth";
+    }
+  },
+
+  getWeakAgainst() {
+    switch(this.getCurrentElement()) {
+      case "fire":
+        return "water";
+      case "water":
+        return "earth";
+      case "earth":
+        return "lightning";
+      case "wind":
+        return "fire";
+      case "lightning":
+        return "wind";
+    }
+  }
 };
 
 Game.EntityMixin.Defense = {
@@ -1097,3 +1131,45 @@ Game.EntityMixin.InventoryHolder = {
     return dropResult;
   }
 };
+
+Game.EntityMixin.HitPointsRegenerate = {
+  META: {
+    mixinName: "HitPointsRegenerate",
+    mixinGroup: "Passive",
+    stateNamespace: "_HitPoints_Regenerate",
+    stateModel: {
+      regenerateAmount: 0,
+      regenerateTurn: 0
+    },
+
+    init: function(template) {
+      this.attr._HitPoints_Regenerate.regenerateAmount = template.regenerateAmount || 0;
+      this.attr._HitPoints_Regenerate.regenerateTurn = template.regenerateTurn || 3;
+    },
+
+    listeners: {
+      "autoRegenerate": function(data) {
+        if (this.hasMixin("HitPoints") && this.hasMixin("Chronicle")) {
+          if (this.getTurn() % this.getRegenerateTurn() == 0)
+          this.recoverHits(this.getRegenerateAmount());
+        }
+      }
+    }
+  },
+
+  getRegenerateAmount: function() {
+    return this.attr._HitPoints_Regenerate.regenerateAmount;
+  },
+
+  setRegenerateAmount: function(n) {
+    this.attr._HitPoints_Regenerate.regenerateAmount = n;
+  },
+
+  getRegenerateTurn: function() {
+    return this.attr._HitPoints_Regenerate.regenerateTurn;
+  },
+
+  setRegenerateTurn: function(n) {
+    this.attr._HitPoints_Regenerate.regenerateTurn = n;
+  }
+}
