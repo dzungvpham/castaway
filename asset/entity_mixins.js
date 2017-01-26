@@ -567,7 +567,7 @@ Game.EntityMixin.PlayerMessager = {
 
       'healedBy': function(data) {
         Game.Message.ageMessages();
-        Game.Message.send("You were healed by " + data.healAmount + " HP");
+        Game.Message.send("You were healed by " + data.healAmount.toFixed(1) + " HP");
       },
 
       'attackDodged': function(data) {

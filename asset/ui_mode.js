@@ -287,7 +287,7 @@ Game.UIMode.gamePlay = {
     display.draw(1, 7, "☠️");
 
     display.drawText(1, 9, "--- ARMOR ---");
-    display.drawText(3, 10, "Base Armor: " + avatar.getNormalArmor());
+    display.drawText(3, 10, "Base Armor: " + avatar.getNormalArmor().toFixed(1));
     display.draw(1, 10, "🛡️");
     display.drawText(3, 11, "Fire: " + avatar.getElementArmor("fire"));
     display.draw(1, 11, avatar.getElementIcon("fire"));
@@ -359,6 +359,7 @@ Game.UIMode.gamePlay = {
         tookTurn = this.moveAvatar(0, 1);
         break;
       case "SHOOT":
+        Game.Audio.shoot.load();
         Game.Audio.shoot.play();
         this.getAvatar().raiseSymbolActiveEvent("specialTerrain", {tile: this.getMap().getTile(this.getAvatar().getPos())});
         this.getAvatar().raiseSymbolActiveEvent("shoot");
@@ -397,6 +398,13 @@ Game.UIMode.gamePlay = {
         Game.UIMode.LAYER_textReading.setText(Game.KeyBinding.getBindingHelpText());
         Game.addUIMode("LAYER_textReading");
         break;
+      case "CHEAT":
+        if (this.getCurrentStage() != Game.Stage.finalStage) {
+          setTimeout(function() {Game.switchUIMode("gameNextStage");}, 1);
+        } else {
+          setTimeout(function() {Game.switchUIMode("gameWin");}, 1);
+        }
+        break;
     }
 
     Game.refresh();
@@ -405,7 +413,7 @@ Game.UIMode.gamePlay = {
         this.getAvatar().raiseSymbolActiveEvent("autoRegenerate");
         this.getAvatar().raiseSymbolActiveEvent('actionDone');
         if (this.checkWin()) {
-          if (this.getCurrentStage() != "stage_3") {
+          if (this.getCurrentStage() != Game.Stage.finalStage) {
             setTimeout(function() {Game.switchUIMode("gameNextStage");}, 1);
           } else {
             setTimeout(function() {Game.switchUIMode("gameWin");}, 1);
@@ -415,7 +423,7 @@ Game.UIMode.gamePlay = {
         }
         return true;
       } else {
-        setTimeout(function() {Game.switchUIMode();}, 1);
+        setTimeout(function() {Game.switchUIMode("gameLose");}, 1);
       }
     }
     return false;
@@ -492,21 +500,26 @@ Game.UIMode.gameNextStage = {
 
   setupNextStage: function() {
     var num = Game.UIMode.gamePlay.getCurrentStage().split("_")[1];
-    if (num < 3) {
+    if (num < Game.Stage.finalStage) {
       num++;
-    }
-    var avatarID = Game.getAvatar().getID();
-    var avatar = Game.getAvatar();
-    var container = avatar.getContainer();
-    var itemsInventory = container.getAllItems();
-    Game.UIMode.gamePersistence.resetDatastore();
-    Game.DATASTORE.ITEM[container.getID()] = container;
-    for (var i = 0; i < itemsInventory.length; i++) {
-      Game.DATASTORE.ITEM[itemsInventory[i].getID()] = itemsInventory[i];
-    }
-    Game.DATASTORE.ENTITY[avatarID] = avatar;
-    Game.setRandomSeed(5 + Math.floor(Game.TRANSIENT_RNG.getUniform() * 100000));
-    Game.UIMode.gamePlay.setupNewGame("stage_" + num);
+      var avatarID = Game.getAvatar().getID();
+      var avatar = Game.getAvatar();
+      var container = avatar.getContainer();
+      var itemsInventory = container.getAllItems();
+      for (var entityID in Game.getAvatar().getMap()._locationsByEntity) {
+        if (entityID != avatarID) {
+          Game.DATASTORE.ENTITY[entityID].destroy();
+        }
+      }
+      Game.UIMode.gamePersistence.resetDatastore();
+      Game.DATASTORE.ITEM[container.getID()] = container;
+      for (var i = 0; i < itemsInventory.length; i++) {
+        Game.DATASTORE.ITEM[itemsInventory[i].getID()] = itemsInventory[i];
+      }
+      Game.DATASTORE.ENTITY[avatarID] = avatar;
+      Game.setRandomSeed(5 + Math.floor(Game.TRANSIENT_RNG.getUniform() * 100000));
+      Game.UIMode.gamePlay.setupNewGame("stage_" + num);
+    }    
   }
 }
 
