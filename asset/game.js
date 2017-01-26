@@ -81,6 +81,9 @@ var Game = {
     // Bind keyboard input events
     bindEventToUIMode('keypress');
     bindEventToUIMode('keydown');
+
+    Game.Audio.background.loop = true;
+    Game.Audio.background.play();
   },
 
   initTimeEngine: function() {

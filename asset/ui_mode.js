@@ -359,6 +359,7 @@ Game.UIMode.gamePlay = {
         tookTurn = this.moveAvatar(0, 1);
         break;
       case "SHOOT":
+        Game.Audio.shoot.play();
         this.getAvatar().raiseSymbolActiveEvent("specialTerrain", {tile: this.getMap().getTile(this.getAvatar().getPos())});
         this.getAvatar().raiseSymbolActiveEvent("shoot");
         tookTurn = true;
