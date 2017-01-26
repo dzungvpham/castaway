@@ -1,4 +1,6 @@
-Game.Stage = {};
+Game.Stage = {
+  finalStage: "stage_2"
+};
 
 Game.Stage.modifyStage = function(map, stage) {
   var entityList = {};
@@ -6,24 +8,36 @@ Game.Stage.modifyStage = function(map, stage) {
   var newMixin = {};
   switch(stage) {
     case "stage_1":
-      //entityList = {"newt": 2, "moss": 5, "squirell": 3, "slug": 1};
-      entityList = {"water spirit": 3, "earth spirit": 3, "fire spirit": 1};
-      itemList = {"chakra shard": 1};
+      entityList = {"Passive Water Spirit": 1, "Passive Earth Spirit": 1, "Passive Fire Spirit": 1, "Passive Wind Spirit": 1, "Passive Lightning Spirit": 1};
       break;
     case "stage_2":
-      entityList = {"water spirit": 7, "earth spirit": 5, "fire spirit": 3};
-      itemList = {"rock": 5, "chakra shard": 5};
+      entityList = {"Water Spirit": 20, "Earth Spirit": 15, "Fire Spirit": 10, "Lightning Spirit": 5, "Wind Spirit": 5};
+      itemList = {"Chakra Shard": 20, "Apprentice Rod": 1, "Glass of Foresight": 1};
       newMixin = {
-        "MeleeAttacker": {
-          meleeAttackPower: 5,
-          meleeHitChance: 90,
+        "HitPointsRegenerate": {
+          regenerateAmount: 0.1,
+          regenerateTurn: 5
+        },
+        "CombatPushBack": {
+          pushDistance: 1,
+          pushChance: 50
         }
       };
       break;
     case "stage_3":
-      entityList = {"water spirit": 7, "earth spirit": 5, "fire spirit": 5};
-      itemList = {"rock": 5, "chakra shard": 10};
+      entityList = {"Earth Spirit": 5, "Fire Spirit": 5, "Lightning Spirit": 3};
+      itemList = {"Chakra Shard": 5, "Apprentice Rod": 1, "Glass of Foresight": 1};
+      newMixin = {
+        "CombatPushBack": {
+          pushDistance: 1,
+          pushChance: 70
+        }
+      }
       break;
+    case "stage_4":
+      entityList = {"Earth Spirit": 3, "Fire Spirit": 5, };
+      itemList = {"Chakra Shard": 3, "Glass of Foresight": 1};
+    break;
     default:
       return false;
   }

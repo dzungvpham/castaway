@@ -240,6 +240,10 @@ Game.KeyBinding = {
     },
     MISC : {action_group:'data_nav', guid:Game.util.uniqueID() ,ordering:8.3 ,short:'down' ,long :'scroll content down',
       LAYER_textReading: {label:'c'     ,inputMatch:'c'      ,inputType:'keypress' ,inputMetaShift:false ,inputMetaCtrl:false}
+    },
+    CHEAT : {action_group:'data_nav', guid:Game.util.uniqueID() ,ordering:8.4 ,short:'down' ,long :'scroll content down',
+    numpad: {label:'p' ,inputMatch:ROT.VK_P ,inputType:'keydown' ,inputMetaShift:false  ,inputMetaCtrl:false} ,
+    waxd  : {label:'p' ,inputMatch:ROT.VK_P ,inputType:'keydown' ,inputMetaShift:false  ,inputMetaCtrl:false}
     }
   }
 };
