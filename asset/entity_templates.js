@@ -34,7 +34,7 @@ Game.EntityGenerator.learn({
   maxHP: 10,
   element: ["earth"],
   elementArmor: {lightning: -5, water: 5},
-  mixins: ["HitPoints", "WanderActor", "WalkerCorporeal", "Elemental", "Defense", "MeleeAttacker", "CombatPhysics"]
+  mixins: ["HitPoints", "WanderActor", "WalkerCorporeal", "Elemental", "Defense", "MeleeAttacker", "CombatPhysics", "CombatDefensive"]
 });
 
 Game.EntityGenerator.learn({
@@ -50,7 +50,7 @@ Game.EntityGenerator.learn({
   name: 'fire spirit',
   //chr: '~',
   chr: '🔥',
-  maxHP: 30,
+  maxHP: 5,
   sightRadius: 5,
   meleeAttackPower: 10,
   element: ["fire"],

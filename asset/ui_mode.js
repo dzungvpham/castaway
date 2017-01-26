@@ -315,7 +315,7 @@ Game.UIMode.gamePlay = {
   moveAvatar: function (pdx, pdy) {
     var moveResp = this.getAvatar().raiseSymbolActiveEvent("adjacentMove", {dx: pdx, dy: pdy});
 
-    if (moveResp.madeAdjacentMove && moveResp.madeAdjacentMove[0]) {
+    if (moveResp.madeAdjacentMove && moveResp.madeAdjacentMove[0] && this.getAvatar()) {
       this.setCameraToAvatar();
       return true;
     }
@@ -414,7 +414,7 @@ Game.UIMode.gamePlay = {
         }
         return true;
       } else {
-        setTimeout(function() {Game.switchUIMode("gameLose");}, 1);
+        setTimeout(function() {Game.switchUIMode();}, 1);
       }
     }
     return false;
